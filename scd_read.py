@@ -10,7 +10,7 @@ def read_data(path):
     return sp.read(file_name)  # anndata
 
 def umap_scanpy(X: sp.AnnData, groups_plots: list()):
-    sp.tl.umap(X, min_dist=200, n_components=2)
+    # sp.tl.umap(X, min_dist=200, n_components=2)
     sp.pl.umap(X, color=groups_plots)
 
 def tsne(X):
@@ -42,7 +42,8 @@ def plot_tsne(X_low_dim):
 
 file_name = 'data/neftel_malignant.h5ad'
 X = read_data(file_name)
-
+print(X.obs)
+# print(X)
 
 groups_plots = ['histology', 'cross_section']
 umap_scanpy(X, groups_plots)

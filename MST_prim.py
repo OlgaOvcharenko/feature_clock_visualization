@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from scipy.spatial import distance_matrix
 
-# from mnist_umap_phate import hdbscan_low_dim
+from mnist_umap_phate import hdbscan_low_dim
 
 
 class Graph:
@@ -14,7 +14,6 @@ class Graph:
     
     def __init__(self, num_of_nodes):
         self.m_num_of_nodes = num_of_nodes
-        # Initialize the adjacency matrix with zeros
         self.m_graph = [[0 for _ in range(num_of_nodes)] 
                     for _ in range(num_of_nodes)]
         
@@ -103,60 +102,42 @@ class Graph:
                 if result[i][j] != 0:
                     print("%d - %d: %d" % (i, j, result[i][j]))
 
-def plot_MST(ax, graph, data):
+def plot_MST(graph, data):
     for i in range(len(graph)):
         for j in range(0+i, len(graph)):
             if graph[i][j] != 0:
-                ax.plot([data[i][0], data[j][0]],[data[i][1], data[j][1]])
+                plt.plot([data[i][0], data[j][0]],[data[i][1], data[j][1]])
 
-def plot_MSTs(ax, graphs, data):
+def plot_MSTs(graphs, data):
     for g in graphs:
-        plot_MST(ax, g, data)
+        plot_MST(g, data)
+        plt.show()
     # plt.savefig("plots/test_mst.png")
-
-
-with open('data/phate_mnist.csv', newline='') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',')
-    
-    standard_embedding = []
-    for lines in reader:
-        for row in lines:
-            vals = [float(t) for t in row.strip('][').split(' ') if t.replace(" ", "") != ""]
-            standard_embedding.append(vals)
-
-cluster_labels = hdbscan_low_dim(standard_embedding)
-standard_embedding = standard_embedding[:100]
-cluster_labels = cluster_labels[:100]
 
 def get_cluster_MST(standard_embedding, in_cluster_vector):
     graph = Graph(num_of_nodes=sum(in_cluster_vector))
-    graph.add_all_nodes(np.array(standard_embedding)[in_cluster_vector])
+    data = np.array(standard_embedding)[in_cluster_vector]
+    print(data.shape)
+    print(sum(in_cluster_vector))
+    graph.add_all_nodes(data)
     res = graph.prims_mst()
     return res
 
-print(len(np.unique(cluster_labels)))
+# with open('data/phate_mnist.csv', newline='') as csvfile:
+#     reader = csv.reader(csvfile, delimiter=',')
+    
+#     standard_embedding = []
+#     for lines in reader:
+#         for row in lines:
+#             vals = [float(t) for t in row.strip('][').split(' ') if t.replace(" ", "") != ""]
+#             standard_embedding.append(vals)
+# print("Read PHATE")
 
-clusters_graphs = dict()
-combined_res = Parallel(-1)\
-    (delayed(get_cluster_MST)\
-    (standard_embedding, cluster_labels == label) for label in np.unique(cluster_labels))
+# cluster_labels = hdbscan_low_dim(standard_embedding)
+# standard_embedding = standard_embedding[:100]
+# cluster_labels = cluster_labels[:100]
 
-print(len(combined_res))
-plot_MSTs(combined_res, standard_embedding)
+# print("Start Prim")
+# combined_res = get_cluster_MST(standard_embedding, cluster_labels == 0)
 
-# nodes = [[x + (random.random()- 0.5)*10, x + (random.random()- 0.5)*10] for x in range(10)]
-# g = Graph(len(nodes))
-# g.add_all_nodes(np.array(nodes))
-# mst = g.prims_mst()
-
-# xs = [x[0] for x in nodes]
-# ys = [x[1] for x in nodes]
-
-# plt.scatter(xs, ys)
-
-# for i in range(len(mst)):
-#     for j in range(0+i, len(mst)):
-#         if mst[i][j] != 0:
-#             plt.plot([nodes[i][0], nodes[j][0]],[nodes[i][1], nodes[j][1]])
-
-# plt.savefig("test.png")
+# plot_MSTs([combined_res], standard_embedding)
