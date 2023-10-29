@@ -1,5 +1,6 @@
 from joblib import Parallel, delayed
 import matplotlib
+import statsmodels.api as sm
 from sklearn.datasets import fetch_openml
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,10 +15,12 @@ from shapely.ops import unary_union
 import csv
 import pandas as pd
 import matplotlib.colors as mcolors
+from sklearn.linear_model import LinearRegression
 from mycolorpy import colorlist as mcp
 import scanpy as sp
 from skspatial.objects import Line
 from skspatial.plotting import plot_2d
+import math
 
 
 def read_mnist_data():
@@ -139,45 +142,102 @@ def plot_scd(data, projected_points, min_point, max_point):
     plt.tight_layout()
     plt.show()
 
-def project_line(data):
-    min_point = data["emb1"].min() if data["emb1"].min() < data["emb2"].min() else data["emb2"].min()
-    max_point = data["emb1"].max() if data["emb1"].max() > data["emb2"].max() else data["emb2"].max()
-    # line = Line.from_points(point_a=[min_point, min_point], point_b=[max_point, max_point])
-    line = Line.from_points(point_a=[0, 0], point_b=[1, 1])
+def project_line(data, point_a: list=[0, 0], point_b: list=[1, 1]):
+    # min_point = data["emb1"].min() if data["emb1"].min() < data["emb2"].min() else data["emb2"].min()
+    # max_point = data["emb1"].max() if data["emb1"].max() > data["emb2"].max() else data["emb2"].max()
+    line = Line.from_points(point_a=point_a, point_b=point_b)
 
-    # line = Line.from_points(point_a=[0, 0], point_b=[10, 0])
-    # point = (100, 1)
-    # print(point)
-    # print(line.project_point(point))
-    # return
-    
     projected_points = []
     for i in range(data.shape[0]):
         point = (data["emb1"][i], data["emb2"][i])
-        projected_points.append(line.project_point(point))
-    []
-    return np.array(projected_points), min_point, max_point
+        new_point = line.project_point(point)
+        new_point = rotate(new_point)
+        projected_points.append(new_point[0])
+    
+    return np.array(projected_points)
+
+def get_slope_from_angle(angle: float):
+    res = []
+    if 0 < angle < 90:
+        res = [math.tan(angle) * 100, 100]
+    elif 90 < angle < 180:
+        res = [-math.tan(180-angle) * 100, 100]
+    elif angle == 0 or angle % 180 == 0:
+        res = [100, 0]
+    elif angle % 90 == 0:
+        res = [0, 100]
+    elif angle > 180:
+        raise Exception("Projection angle greater than 180.")
+    return res
+
+def rotate(point: list):
+    val = math.sqrt(math.pow(point[0], 2) + math.pow(point[1], 2))
+    x_new = val if point[0] >= 0 else -val
+    y_new = 0
+    return[x_new, y_new]
+
+def get_importance(X, y, significance: float = 0.05):
+    # lm = LinearRegression()
+    # lm.fit(X, y)
+    # print(lm.coef_)
+
+    coefs, pvals, is_significant = [], [], []
+    for i in range(y.shape[1]):
+        # X = sm.add_constant(X)
+        lm = sm.OLS(y[:, i], X).fit()
+        pval = np.array(lm.pvalues)
+        coefs.append(np.array(lm.params))
+        pvals.append(pval)
+        is_significant.append(pval <= significance)
+        
+    return coefs, pvals, is_significant
+
 
 def try_scd():
+    # read data
     file_name = 'data/neftel_malignant.h5ad'
     X = read_data(file_name)
-    standard_embedding = X.obsm['X_umap']
+
+    # cut necessary 
+
+    # obs = ['genes_expressed', 
+    #        'MESlike2', 'MESlike1', 'AClike', 'OPClike', 'NPClike1', 'NPClike2', 
+    #        'G1S', 'G2M']
+
+    obs = ['MESlike2', 'MESlike1', 'AClike', 'OPClike', 'NPClike1', 'NPClike2']
+    
+    new_data = X.obs[obs].dropna()
+    X_new = sp.AnnData(new_data)
+
+    # compute umap
+    sp.pp.neighbors(X_new)
+    sp.tl.umap(X_new, min_dist=2)
+    # sp.pl.umap(X_new)
+
+    # get clusters
+    standard_embedding = X_new.obsm['X_umap']
     cluster_labels = hdbscan_low_dim(standard_embedding)
 
-    mes = np.stack((X.obs.MESlike1, X.obs.MESlike2))
-    npc = np.stack((X.obs.NPClike1, X.obs.NPClike2))
+    # get labels
+    mes = np.stack((X_new.X[:, 0], X_new.X[:,1]))
+    npc = np.stack((X_new.X[:, 4], X_new.X[:, 5]))
     mes_max = np.max(mes, axis=0)
     npc_max = np.max(npc, axis=0)
-
-    res_vect = np.stack((X.obs.AClike, X.obs.OPClike, mes_max, npc_max))
+    res_vect = np.stack((X_new.X[:, 2], X_new.X[:, 3], mes_max, npc_max))
     res_labels = np.max(res_vect, axis=0)
 
+    # make data with labels and clusters
     data = pd.DataFrame(standard_embedding, columns=["emb1", "emb2"])
     data["cluster"] = cluster_labels
     data["label"] = res_labels
 
-    projected_points, min_point, max_point = project_line(data)
+    angles = list(range(0, 195, 15))
+    projections = [project_line(data, point_a=[0, 0], point_b=get_slope_from_angle(angle)) for angle in angles]
+    projections = np.array(projections).T
 
-    plot_scd(data, projected_points, min_point, max_point)
+    importances, reject = get_importance(new_data.to_numpy(), projections)
+    
+    # plot_scd(data, projected_points, min_point, max_point)
+    
 
 try_scd()
