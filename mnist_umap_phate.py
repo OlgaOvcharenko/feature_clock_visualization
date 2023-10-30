@@ -1,10 +1,12 @@
 from joblib import Parallel, delayed
 import matplotlib
 import statsmodels.api as sm
+from matplotlib import pyplot as plt, patches
 from sklearn.datasets import fetch_openml
 import numpy as np
 import matplotlib.pyplot as plt
 import umap
+from sklearn import preprocessing
 import hdbscan
 import sklearn.cluster as cluster
 from sklearn.metrics import adjusted_rand_score, adjusted_mutual_info_score
@@ -35,10 +37,10 @@ def calculate_dim_red(data, method: str = 'phate'):
     return standard_embedding
 
 def hdbscan_low_dim(standard_embedding):
-    labels = hdbscan.HDBSCAN(min_samples=5, min_cluster_size=30).fit_predict(standard_embedding)
+    labels = hdbscan.HDBSCAN(min_samples=5, min_cluster_size=40).fit_predict(standard_embedding)
     return labels
 
-def draw_clusters(ax, data):
+def draw_clusters(ax, data, alpha):
     num_clusters = data['cluster'].nunique()
     colors = mcp.gen_color(cmap="Spectral", n=num_clusters)
     for i in data['cluster'].unique():
@@ -49,8 +51,8 @@ def draw_clusters(ax, data):
                 vert = np.append(hull.vertices, hull.vertices[0])
 
                 a, b = points['emb1'].iloc[vert], points['emb2'].iloc[vert]
-                ax.plot(a, b, '--', c=colors[i], alpha=0.5)
-                ax.fill(a, b, alpha=0.5, c=colors[i])
+                ax.plot(a, b, '--', c=colors[i], alpha=alpha)
+                ax.fill(a, b, alpha=alpha, c=colors[i])
 
 def plot(mnist, emb_df, method, standard_embedding, combined_res):
     fig, ax = plt.subplots(1, figsize=(7, 5))
@@ -159,9 +161,9 @@ def project_line(data, point_a: list=[0, 0], point_b: list=[1, 1]):
 def get_slope_from_angle(angle: float):
     res = []
     if 0 < angle < 90:
-        res = [math.tan(angle) * 100, 100]
+        res = [math.tan(math.radians(angle)) * 100, 100]
     elif 90 < angle < 180:
-        res = [-math.tan(180-angle) * 100, 100]
+        res = [-math.tan(math.radians(180-angle)) * 100, 100]
     elif angle == 0 or angle % 180 == 0:
         res = [100, 0]
     elif angle % 90 == 0:
@@ -190,7 +192,56 @@ def get_importance(X, y, significance: float = 0.05):
         pvals.append(pval)
         is_significant.append(pval <= significance)
         
-    return coefs, pvals, is_significant
+    return np.array(coefs), np.array(pvals), np.array(is_significant)
+
+def get_center(data):
+    return data["emb1"].mean(), data["emb2"].mean()
+
+def get_min_max(data):
+    return data["emb1"].min(), data["emb1"].max(), data["emb2"].min(), data["emb2"].max()
+
+def plot_central(data, angles_shift, angles, coefs, pvals, is_significant, labels, draw_clusters: bool = False):
+    fig, ax = plt.subplots(1, figsize=(12, 8))
+    colors = list(mcolors.TABLEAU_COLORS.keys())
+    alpha = 0.4
+
+    if draw_clusters:
+        draw_clusters(ax, data, alpha)
+    sc = plt.scatter(data["emb1"], data["emb2"], c=data["label"], cmap="viridis", 
+                     vmin=data["label"].min(), vmax=data["label"].max(), s=3, alpha=alpha)
+    fig.colorbar(sc)
+
+    x_center, y_center = get_center(data)
+    x_min, x_max, y_min, y_max = get_min_max(data)
+    radius = abs(min(x_max-x_min, y_max-y_min)) * 0.5
+    circle = patches.Circle((x_center, y_center), radius=radius, edgecolor='gray', facecolor='aliceblue', linewidth=1, alpha=0.4) 
+    ax.add_patch(circle)
+    ax.axis('equal')
+
+    # TODO try -radius, radius
+    coefs_scaled = -radius +  (coefs - coefs.min()) * ((2 * radius) / (coefs.max()-coefs.min()))
+    
+    arrows = []
+    for a, a_s, c, s in zip(angles, list(range(0, 360, angles_shift)), coefs_scaled, is_significant):
+        a, a_s = math.radians(a), math.radians(a_s)
+        x_add, y_add = math.cos(a_s) * radius, math.sin(a_s) * radius
+        plt.plot((x_center, x_center+x_add), (y_center, y_center+y_add), c='gray', linestyle="--", alpha=0.7, linewidth=1)
+
+        # plot contributions
+        ind = abs(c).argsort(axis=None)[::-1]
+        x_add_coefs, y_add_coefs = math.cos(a_s) * c[ind], math.sin(a_s) * c[ind]
+        
+        for is_s, x_c, y_c, i in zip(s[ind], x_add_coefs, y_add_coefs, ind):
+            if is_s:
+                col = colors[i]
+                lbl = labels[i]
+                arrows.append(plt.arrow(x_center, y_center, x_c, y_c, width=0.1, color=col, label=lbl))
+    plt.legend(arrows, labels)
+    plt.xlabel(f"UMAP 1")
+    plt.ylabel(f"UMAP 2")
+    plt.title("Malignant cells")
+    plt.tight_layout()
+    plt.show()
 
 
 def try_scd():
@@ -231,13 +282,12 @@ def try_scd():
     data["cluster"] = cluster_labels
     data["label"] = res_labels
 
-    angles = list(range(0, 195, 15))
+    angles_shift = 15
+    angles = list(range(0, 180, angles_shift))
     projections = [project_line(data, point_a=[0, 0], point_b=get_slope_from_angle(angle)) for angle in angles]
     projections = np.array(projections).T
 
-    importances, reject = get_importance(new_data.to_numpy(), projections)
-    
-    # plot_scd(data, projected_points, min_point, max_point)
-    
+    coefs, pvals, is_significant = get_importance(new_data.to_numpy(), projections)
+    plot_central(data, angles_shift, angles, coefs, pvals, is_significant, obs)
 
 try_scd()
