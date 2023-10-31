@@ -54,95 +54,9 @@ def draw_clusters(ax, data, alpha):
                 ax.plot(a, b, '--', c=colors[i], alpha=alpha)
                 ax.fill(a, b, alpha=alpha, c=colors[i])
 
-def plot(mnist, emb_df, method, standard_embedding, combined_res):
-    fig, ax = plt.subplots(1, figsize=(7, 5))
-    
-    draw_clusters(ax, emb_df)
-
-    colors = mcp.gen_color(cmap="Spectral", n=len(mnist.target.unique()))
-    j = 0
-    for i in mnist.target.unique():
-        plt.scatter(emb_df['emb1'][mnist.target==i], emb_df['emb2'][mnist.target==i], c=colors[j], s=10, label=str(i))
-        j += 1
-        
-    plot_MSTs(ax, combined_res, standard_embedding)
-
-    plt.xlabel(f"{method} 1")
-    plt.ylabel(f"{method} 2")
-    ax.legend()
-    plt.tight_layout()
-    plt.show()
-
-def get_cluster_MST(standard_embedding, in_cluster_vector):
-    graph = Graph(num_of_nodes=sum(in_cluster_vector))
-    graph.add_all_nodes(np.array(standard_embedding)[in_cluster_vector])
-    res = graph.prims_mst()
-    return res
-
-def main():
-    mnist = read_mnist_data()
-
-    read = True
-    if read:
-        with open('data/phate_mnist.csv', newline='') as csvfile:
-            reader = csv.reader(csvfile, delimiter=',')
-            
-            standard_embedding = []
-            for lines in reader:
-                for row in lines:
-                    vals = [float(t) for t in row.strip('][').split(' ') if t.replace(" ", "") != ""]
-                    standard_embedding.append(vals)
-    else:
-        standard_embedding = calculate_dim_red(mnist.data)
-
-    write = False
-    if write:
-        with open('data/phate_mnist.csv', 'w') as f:
-            # create the csv writer
-            writer = csv.writer(f)
-            # write a row to the csv file
-            writer.writerow(standard_embedding)
-
-    cluster_labels = hdbscan_low_dim(standard_embedding)
-
-    ix = 100
-    mnist.data = mnist.data[:ix]
-    mnist.target = mnist.target[:ix]
-    standard_embedding = standard_embedding[:ix]
-    cluster_labels = cluster_labels[:ix]
-
-    mnist.data['cluster'] = cluster_labels
-    emb_df = pd.DataFrame(standard_embedding, columns =['emb1', 'emb2'])
-    emb_df['cluster'] = cluster_labels
-
-    clusters_graphs = dict()
-    combined_res = Parallel(-1)\
-        (delayed(get_cluster_MST)\
-        (standard_embedding, cluster_labels == label) for label in np.unique(cluster_labels[0]))
-
-    plot(mnist, emb_df, 'phate', standard_embedding, combined_res)
-
 
 def read_data(path):
     return sp.read(path)  # anndata
-
-def plot_scd(data, projected_points, min_point, max_point):
-    fig, ax = plt.subplots(1, figsize=(12, 8))
-    
-    draw_clusters(ax, data)
-
-    sc = plt.scatter(data["emb1"], data["emb2"], c=data["label"], cmap="viridis", vmin=data["label"].min(), vmax=data["label"].max(), s=5, alpha=0.5)
-    fig.colorbar(sc)
-
-    # Global projection
-    plt.plot([min_point, max_point + 1], [min_point, max_point + 1], c="grey", alpha=0.4)
-    plt.scatter(projected_points[:, 0], projected_points[:, 1], c="black", s=1)
-
-    plt.xlabel(f"UMAP 1")
-    plt.ylabel(f"UMAP 2")
-    plt.title("Malignant cells")
-    plt.tight_layout()
-    plt.show()
 
 def project_line(data, point_a: list=[0, 0], point_b: list=[1, 1]):
     # min_point = data["emb1"].min() if data["emb1"].min() < data["emb2"].min() else data["emb2"].min()
@@ -162,10 +76,10 @@ def get_slope_from_angle(angle: float):
     res = []
     if 0 < angle < 90:
         res = [math.tan(math.radians(angle)) * 100, 100]
-    elif 90 < angle < 180:
-        res = [-math.tan(math.radians(180-angle)) * 100, 100]
     elif angle == 0 or angle % 180 == 0:
         res = [100, 0]
+    elif 90 < angle < 180:
+        res = [-math.tan(math.radians(180-angle)) * 100, 100]
     elif angle % 90 == 0:
         res = [0, 100]
     elif angle > 180:
@@ -224,24 +138,29 @@ def plot_central(data, angles_shift, angles, coefs, is_significant, labels, draw
         a_s = math.radians(a_s)
         x_add, y_add = math.cos(a_s) * radius, math.sin(a_s) * radius
         plt.plot((x_center, x_center+x_add), (y_center, y_center+y_add), c='gray', linestyle="--", alpha=0.7, linewidth=1)
-
     
-    arrows = []
-    for a, c, s in zip(angles, coefs_scaled, is_significant):
+    points_x, points_y = [], []
+    for a, c in zip(angles, coefs_scaled):
         a = math.radians(a)
         x_add, y_add = math.cos(a) * radius, math.sin(a) * radius
 
         # plot contributions
         ind = abs(c).argsort(axis=None)[::-1]
         x_add_coefs, y_add_coefs = math.cos(a) * c[ind], math.sin(a) * c[ind]
-        
-        for is_s, x_c, y_c, i in zip(s[ind], x_add_coefs, y_add_coefs, ind):
-            if is_s:
-                col = colors[i]
-                lbl = labels[i]
-                arrows.append(plt.arrow(x_center, y_center, x_c, y_c, width=0.1, color=col, label=lbl))
 
-    plt.legend(arrows, labels)
+        points_x.append(x_center + x_add_coefs)
+        points_y.append(y_center + y_add_coefs)
+    
+    points_x = np.array(points_x)
+    points_y = np.array(points_y)
+
+    order_ix = np.argsort(points_x.mean(axis=0) + points_y.mean(axis=0))[::-1]
+
+    for i in order_ix:
+        ax.plot(points_x[:, i], points_y[:, i], '-', c=colors[i], alpha=1)
+        ax.fill(points_x[:, i], points_y[:, i], alpha=0.7, c=colors[i], label=labels[i])
+
+    plt.legend()
     plt.xlabel(f"UMAP 1")
     plt.ylabel(f"UMAP 2")
     plt.title("Malignant cells")
@@ -338,7 +257,7 @@ def try_scd():
     data["cluster"] = cluster_labels
     data["label"] = res_labels
 
-    angles_shift = 15
+    angles_shift = 1
     angles = list(range(0, 180, angles_shift))
     projections = [project_line(data, point_a=[0, 0], point_b=get_slope_from_angle(angle)) for angle in angles]
     projections = np.array(projections).T
@@ -346,9 +265,9 @@ def try_scd():
     plot_central_clock = True
     if plot_central_clock:
         coefs, pvals, is_significant = get_importance(new_data.to_numpy(), projections)
-        plot_central(data, angles_shift, angles, coefs, is_significant, obs)
+        plot_central(data, 90, angles, coefs, is_significant, obs)
 
-    plot_small_clock = True
+    plot_small_clock = False
     if plot_small_clock:
         dist_clusters = data["cluster"].unique()
         dist_clusters.sort()
