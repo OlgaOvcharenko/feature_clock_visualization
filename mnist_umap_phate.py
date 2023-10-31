@@ -158,7 +158,7 @@ def plot_central(data, angles_shift, angles, coefs, is_significant, labels, draw
 
     for i in order_ix:
         ax.plot(points_x[:, i], points_y[:, i], '-', c=colors[i], alpha=1)
-        ax.fill(points_x[:, i], points_y[:, i], alpha=0.7, c=colors[i], label=labels[i])
+        # ax.fill(points_x[:, i], points_y[:, i], alpha=0.7, c=colors[i], label=labels[i])
 
     plt.legend()
     plt.xlabel(f"UMAP 1")
