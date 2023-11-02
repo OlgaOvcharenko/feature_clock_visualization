@@ -115,7 +115,7 @@ def get_center(data):
 def get_min_max(data):
     return data["emb1"].min(), data["emb1"].max(), data["emb2"].min(), data["emb2"].max()
 
-def plot_central(data, angles_shift, angles, coefs, is_significant, labels, draw_clusters: bool = False):
+def plot_central(data, angles_shift, angles, coefs, is_significant, labels, draw_clusters: bool = False, windrose: bool = True):
     fig, ax = plt.subplots(1, figsize=(12, 8))
     colors = list(mcolors.TABLEAU_COLORS.keys())
     alpha = 0.4
@@ -152,23 +152,47 @@ def plot_central(data, angles_shift, angles, coefs, is_significant, labels, draw
         a_s = math.radians(a_s)
         x_add, y_add = math.cos(a_s) * radius, math.sin(a_s) * radius
         plt.plot((x_center, x_center+x_add), (y_center, y_center+y_add), c='gray', linestyle="--", alpha=0.7, linewidth=1)
+    
+    if not windrose:
+        arrows = []
+        for a, c, s in zip(angles, coefs_scaled, is_significant):
+            a = math.radians(a)
+            x_add, y_add = math.cos(a) * radius, math.sin(a) * radius
 
-    arrows = []
-    for a, c, s in zip(angles, coefs_scaled, is_significant):
-        a = math.radians(a)
-        x_add, y_add = math.cos(a) * radius, math.sin(a) * radius
+            # plot contributions
+            ind = abs(c).argsort(axis=None)[::-1]
+            x_add_coefs, y_add_coefs = math.cos(a) * c[ind], math.sin(a) * c[ind]
+            
+            for is_s, x_c, y_c, i in zip(s[ind], x_add_coefs, y_add_coefs, ind):
+                if is_s:
+                    col = colors[i]
+                    lbl = labels[i]
+                    arrows.append(plt.arrow(x_center, y_center, x_c, y_c, width=0.01, color=col, label=lbl))
 
-        # plot contributions
-        ind = abs(c).argsort(axis=None)[::-1]
-        x_add_coefs, y_add_coefs = math.cos(a) * c[ind], math.sin(a) * c[ind]
+        plt.legend(arrows, labels)
+
+    else:
+        points_x, points_y = [], []
+        for a, c in zip(angles, coefs_scaled):
+            a = math.radians(a)
+            x_add, y_add = math.cos(a) * radius, math.sin(a) * radius
+
+            x_add_coefs, y_add_coefs = math.cos(a) * c, math.sin(a) * c
+
+            points_x.append(x_center + x_add_coefs)
+            points_y.append(y_center + y_add_coefs)
         
-        for is_s, x_c, y_c, i in zip(s[ind], x_add_coefs, y_add_coefs, ind):
-            if is_s:
-                col = colors[i]
-                lbl = labels[i]
-                arrows.append(plt.arrow(x_center, y_center, x_c, y_c, width=0.1, color=col, label=lbl))
+        points_x = np.array(points_x)
+        points_y = np.array(points_y)
 
-    plt.legend(arrows, labels)
+        order_ix = np.argsort((abs(points_x).mean(axis=0) + abs(points_y).mean(axis=0)) / 2)[::-1]
+
+        for i in order_ix:
+            ax.plot(points_x[:, i], points_y[:, i], '-', c=colors[i], alpha=1, label=labels[i])
+            # ax.fill(points_x[:, i], points_y[:, i], alpha=0.7, c=colors[i])
+
+        plt.legend()
+
     plt.xlabel(f"UMAP 1")
     plt.ylabel(f"UMAP 2")
     plt.title("Malignant cells")
@@ -274,14 +298,19 @@ def try_scd():
 
     # make data with labels and clusters
     data = pd.DataFrame(standard_embedding, columns=["emb1", "emb2"])
+
+    for col in data.columns:
+        data[col] = (data[col] - data[col].mean()) / data[col].std()
+
+    for col in new_data.columns:
+        new_data[col] = (new_data[col] - new_data[col].mean()) / new_data[col].std()
+
+
     data["cluster"] = cluster_labels
     data["label"] = res_labels
 
-    print(data["cluster"].unique())
-    print(data["cluster"].nunique())
-
     # actual data
-    angles_shift = 1
+    angles_shift = 5
     angles = list(range(0, 180, angles_shift))  # FIXME fix angle
     projections = [project_line(data, angle, point_a=[0, 0], point_b=get_slope_from_angle(angle)) for angle in angles]
     projections = np.array(projections).T
@@ -289,13 +318,14 @@ def try_scd():
     plot_central_clock = True
     if plot_central_clock:
         coefs, _, is_significant = get_importance(new_data.to_numpy(), projections)
-        plot_central(data, 45, angles, coefs, is_significant, obs)
+        coefs = (coefs - coefs.mean()) / coefs.std()
+        plot_central(data, 45, angles, coefs, is_significant, obs, windrose=False)
 
     plot_small_clock = True
     if plot_small_clock:
         dist_clusters = data["cluster"].unique()
         dist_clusters.sort()
-        dist_clusters = dist_clusters[1:]
+        dist_clusters = dist_clusters[1:] # FIXME
         arrows_all = []
 
         fig, ax = get_plot(plt, data, True)
@@ -308,6 +338,7 @@ def try_scd():
             projections_cl = projections[ind[:, 0], :]
 
             coefs, _, is_significant = get_importance(new_data_cl.to_numpy(), projections_cl)
+            coefs = (coefs - coefs.mean()) / coefs.std()
             arrows = plot_small(fig, ax, data_cl, 45, angles, coefs, is_significant, obs)
             arrows_all.extend(arrows)
             
