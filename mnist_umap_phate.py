@@ -50,25 +50,7 @@ def draw_clusters(ax, data, alpha):
                 ax.fill(a, b, alpha=alpha, c=colors[i])
 
 def read_data(path):
-    return sp.read(path)  # anndata
-
-def plot_scd(data, projected_points, min_point, max_point):
-    fig, ax = plt.subplots(1, figsize=(12, 8))
-    
-    draw_clusters(ax, data)
-
-    sc = plt.scatter(data["emb1"], data["emb2"], c=data["label"], cmap="viridis", vmin=data["label"].min(), vmax=data["label"].max(), s=5, alpha=0.5)
-    fig.colorbar(sc)
-
-    # Global projection
-    plt.plot([min_point, max_point + 1], [min_point, max_point + 1], c="grey", alpha=0.4)
-    plt.scatter(projected_points[:, 0], projected_points[:, 1], c="black", s=1)
-
-    plt.xlabel(f"UMAP 1")
-    plt.ylabel(f"UMAP 2")
-    plt.title("Malignant cells")
-    plt.tight_layout()
-    plt.show()
+    return sp.read_h5ad(path)  
 
 def project_line(data, angle: float, point_a: list=[0, 0], point_b: list=[1, 1]):
     line = Line.from_points(point_a=point_a, point_b=point_b)
@@ -86,9 +68,6 @@ def get_slope_from_angle(angle: float):
    return [math.cos(math.radians(angle)) * 100, math.sin(math.radians(angle)) * 100]
 
 def rotate(point: list, angle: float):
-    # val = math.sqrt(math.pow(point[0], 2) + math.pow(point[1], 2))
-    # x_new = val if (point[1] >= 0 and point[0] >= 0) else -val
-    # y_new = 0
     x_new = point[0] * math.cos(math.radians(angle)) + point[1] * math.sin(math.radians(angle))
     y_new = point[1] * math.cos(math.radians(angle)) - point[0] * math.sin(math.radians(angle))
     return[x_new, y_new]
@@ -198,17 +177,6 @@ def plot_central(data, angles_shift, angles, coefs, is_significant, labels, draw
     plt.title("Malignant cells")
     plt.tight_layout()
     plt.show()
-
-def get_plot(plt, data, draw_hulls: bool = True):
-    fig, ax = plt.subplots(1, figsize=(12, 8))
-    alpha = 0.4
-
-    if draw_hulls:
-        draw_clusters(ax, data, alpha)
-    sc = plt.scatter(data["emb1"], data["emb2"], c=data["label"], cmap="viridis", 
-                     vmin=data["label"].min(), vmax=data["label"].max(), s=3, alpha=alpha)
-    fig.colorbar(sc)
-    return fig, ax
 
 def finish_plot():
     plt.xlabel(f"UMAP 1")
