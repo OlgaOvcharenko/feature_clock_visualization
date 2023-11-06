@@ -72,13 +72,13 @@ def project_line(data, angle: float, point_a: list=[0, 0], point_b: list=[1, 1])
 
 def get_plot(plt, data, draw_hulls: bool = True):
     fig, ax = plt.subplots(1, figsize=(12, 8))
-    alpha = 0.4
+    alpha = 0.2
 
     if draw_hulls:
         draw_clusters(ax, data, alpha)
-    sc = plt.scatter(data["emb1"], data["emb2"], c=data["label"], cmap="viridis", 
-                     vmin=data["label"].min(), vmax=data["label"].max(), s=3, alpha=alpha)
-    fig.colorbar(sc)
+    # c=data["label"], cmap="viridis",  vmin=data["label"].min(), vmax=data["label"].max(), 
+    sc = plt.scatter(data["emb1"], data["emb2"], color='black', s=3, alpha=alpha)
+    # fig.colorbar(sc)
     return fig, ax
 
 def get_slope_from_angle(angle: float):
@@ -129,8 +129,7 @@ def plot_all(data, col_label,label):
     fig, ax = plt.subplots(1, figsize=(12, 8))
     colors = list(mcolors.TABLEAU_COLORS.keys())
 
-    sc = plt.scatter(data["emb1"], data["emb2"], c=col_label, cmap="viridis", 
-                     vmin=col_label.min(), vmax=col_label.max(), s=3)
+    sc = plt.scatter(data["emb1"], data["emb2"], vmin=col_label.min(), vmax=col_label.max(), s=3)
     fig.colorbar(sc)
     plt.xlabel(f"UMAP 1")
     plt.ylabel(f"UMAP 2")
@@ -143,9 +142,8 @@ def plot_central(data, angles_shift, angles, coefs, is_significant, labels, draw
     colors = list(mcolors.TABLEAU_COLORS.keys())
     alpha = 0.2
 
-    sc = plt.scatter(data["emb1"], data["emb2"], c=data["label"], cmap="viridis", 
-                     vmin=data["label"].min(), vmax=data["label"].max(), s=3, alpha=alpha, zorder = 0)
-    fig.colorbar(sc)
+    sc = plt.scatter(data["emb1"], data["emb2"], color='black', s=3, alpha=alpha, zorder = 0)
+    # fig.colorbar(sc)
 
     x_center, y_center = get_center(data)
     # x_min, x_max, y_min, y_max = get_min_max(data)
@@ -186,11 +184,11 @@ def plot_central(data, angles_shift, angles, coefs, is_significant, labels, draw
                 x_add_coefs, y_add_coefs = math.cos(a) * c[ind], math.sin(a) * c[ind]
                 
                 for is_s, x_c, y_c, i in zip(s[ind], x_add_coefs, y_add_coefs, ind):
-                    if is_s:
-                        col = colors[i]
-                        lbl = labels[i]
-                        arrows.append(plt.arrow(x_center, y_center, x_c, y_c, width=0.01, color=col, label=lbl, zorder=15))
-
+                    # if is_s:
+                    col = colors[i]
+                    lbl = labels[i]
+                    arrows.append(plt.arrow(x_center, y_center, x_c, y_c, width=0.01, color=col, label=lbl, zorder=15))
+                
             plt.legend(arrows, labels)
         
         else:
@@ -391,16 +389,16 @@ def try_scd():
     #     plot_all(data, col, label)
 
     # actual data
-    angles_shift = 5
+    angles_shift = 30
     angles = list(range(0, 180, angles_shift))  # FIXME fix angle
     projections = [project_line(data, angle, point_a=[0, 0], point_b=get_slope_from_angle(angle)) for angle in angles]
     projections = np.array(projections).T
     
-    plot_central_clock = False
+    plot_central_clock = True
     if plot_central_clock:
         coefs, _, is_significant = get_importance(new_data.to_numpy(), projections, univar=True)
-        coefs = (coefs - coefs.mean()) / coefs.std()
-        plot_central(data, 45, angles, coefs, is_significant, obs, windrose=False)
+        # coefs = (coefs - coefs.mean()) / coefs.std()
+        plot_central(data, 45, angles, coefs, is_significant, obs, windrose=False, biggest_arrow=True)
 
     plot_small_clock = True
     if plot_small_clock:
@@ -421,8 +419,8 @@ def try_scd():
             projections_cl = projections[ind[:, 0], :]
 
             coefs, _, is_significant = get_importance(new_data_cl.to_numpy(), projections_cl, univar=True)
-            coefs = (coefs - coefs.mean()) / coefs.std()
-            arrows = plot_small(fig, ax, data_cl, 45, angles, coefs, is_significant, obs, scale_circle=scale, annotate=a)
+            # coefs = (coefs - coefs.mean()) / coefs.std()
+            arrows = plot_small(fig, ax, data_cl, 45, angles, coefs, is_significant, obs, scale_circle=scale, annotate=a ,biggest_arrow=True)
             arrows_all.extend(arrows)
             
         plt.legend(arrows_all, obs)
