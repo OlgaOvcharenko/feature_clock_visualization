@@ -1,3 +1,4 @@
+from sklearn.discriminant_analysis import StandardScaler
 import statsmodels.api as sm
 from matplotlib import pyplot as plt, patches
 import numpy as np
@@ -13,6 +14,8 @@ from skspatial.objects import Line
 import math
 import matplotlib.patheffects as pe
 from sklearn.manifold import TSNE
+from graph import Graph
+import warnings
 
 
 class NonLinearClock():
@@ -111,7 +114,7 @@ class NonLinearClock():
                                 point_a=[0, 0], 
                                 point_b=self._get_slope_from_angle(angle)) for angle in self.angles
             ]
-        self.projections = projections = np.array(projections).T
+        self.projections = np.array(projections).T
     
     def _get_importance(self, X, y, significance: float = 0.05, univar: bool = False):
         coefs, pvals, is_significant = [], [], []
@@ -134,20 +137,22 @@ class NonLinearClock():
                 coefs.append(np.array(lm.params))
                 pvals.append(pval)
                 is_significant.append(pval <= significance)
-            
         return np.array(coefs), np.array(pvals), np.array(is_significant)
     
     def _plot_big_clock(self, 
                        plot_title: str,
-                       standartize_data: bool = True,
+                       standartize_coef: bool = True,
                        univar_importance: bool = True,
                        feature_significance: float = 0.05,
                        biggest_arrow: bool = True,
                        save_path: str = ""):
         coefs, _, is_significant = self._get_importance(self.high_dim_data.to_numpy(), self.projections, univar=univar_importance, significance=feature_significance)
             
-        if standartize_data:
-            coefs = (coefs - coefs.mean()) / coefs.std()
+        if standartize_coef:
+            coefs = (coefs - coefs.mean(axis=0)) / coefs.std(axis=0)
+            if np.isnan(coefs).any():
+                coefs = np.nan_to_num(coefs)
+                warnings.warn("NaNs were introduced after standartizing coefficients and were replaced by 0.")
         
         self._plot_central(self.low_dim_data, 45, self.angles, coefs, is_significant, self.observations, windrose=False, biggest_arrow=biggest_arrow, plot_title=plot_title, save_path=save_path)
 
@@ -269,7 +274,7 @@ class NonLinearClock():
 
         # Add circles lines
         x_center, y_center = self._get_center(data)
-        radius = np.abs(coefs).max()
+        radius = np.abs(coefs).max() * 2 #scale
         c_min, c_max = self._get_cmin_cmax(coefs=coefs)
         num_circles = math.floor(radius / annotate) + 1
         coefs_scaled = coefs * (radius / max(abs(c_max), abs(c_min)))
@@ -311,12 +316,11 @@ class NonLinearClock():
     def _plot_small(self, fig, ax, data, angles_shift, angles, coefs, is_significant, labels, plot_title: str, biggest_arrow: bool = True, scale_circle: float = 1.0, annotate: float = 0.2):
         colors = list(mcolors.TABLEAU_COLORS.keys())
         x_center, y_center = self._get_center(data)
-
+        
         radius = np.abs(coefs).max() * scale_circle
         self._get_cmin_cmax(coefs)
 
         # Add circles lines
-        # annotate = 0.2
         c_min, c_max = self._get_cmin_cmax(coefs)
         num_circles = math.floor(radius / annotate) + 1
         coefs_scaled = coefs * (radius / max(abs(c_max), abs(c_min)))
@@ -330,7 +334,7 @@ class NonLinearClock():
                 # Plot contributions
                 ind = abs(c).argsort(axis=None)[::-1]
                 x_add_coefs, y_add_coefs = math.cos(a) * c[ind], math.sin(a) * c[ind]
-                
+
                 for is_s, x_c, y_c, i in zip(s[ind], x_add_coefs, y_add_coefs, ind):
                     if is_s:
                         col = colors[i]
@@ -358,7 +362,7 @@ class NonLinearClock():
 
         return arrows
 
-    def _plot_small_clock(self, standartize_data, univar_importance, feature_significance, biggest_arrow, plot_title, save_path):
+    def _plot_small_clock(self, standartize_coef, univar_importance, feature_significance, biggest_arrow, plot_title, save_path):
         dist_clusters = self.low_dim_data["cluster"].unique()
         dist_clusters.sort()
         dist_clusters = dist_clusters[1:] # FIXME
@@ -366,19 +370,27 @@ class NonLinearClock():
 
         fig, ax = self._get_plot(plt, self.low_dim_data, True)
 
-        scale_circle = [1.0, 0.25, 0.3]
+        # FIXME
+        scale_circle = [0.25, 0.25, 0.25]
         annotate = [0.2, 0.1, 0.1]
 
-        for a, scale, cl in zip(annotate, scale_circle, dist_clusters):
+        # for a, scale, cl in zip(annotate, scale_circle, dist_clusters):
+        for cl in dist_clusters:
+            a = 1.0
+            scale = 0.05
+
             ind = (self.low_dim_data["cluster"] == cl).values.reshape((self.low_dim_data.shape[0], 1))
 
             data_cl = self.low_dim_data[ind]
-            new_data_cl = self.low_dim_data[ind]
+            new_data_cl = self.high_dim_data[ind]
             projections_cl = self.projections[ind[:, 0], :]
 
             coefs, _, is_significant = self._get_importance(new_data_cl.to_numpy(), projections_cl, univar=univar_importance, significance=feature_significance)
-            if standartize_data:
-                coefs = (coefs - coefs.mean()) / coefs.std()
+            if standartize_coef:
+                coefs = (coefs - coefs.mean(axis=0)) / coefs.std(axis=0)
+                if np.isnan(coefs).any():
+                    coefs = np.nan_to_num(coefs)
+                    warnings.warn("NaNs were introduced after standartizing coefficients and were replaced by 0.")
             
             arrows = self._plot_small(fig, ax, data_cl, 45, self.angles, coefs, is_significant, self.observations, scale_circle=scale, annotate=a, biggest_arrow=biggest_arrow, plot_title=plot_title)
             arrows_all.extend(arrows)
@@ -394,22 +406,127 @@ class NonLinearClock():
         plt.savefig(save_path)
         plt.show()
 
+    def _get_cluster_centers(self, dist_clusters):
+        cl_means = dict()
+        for cl in dist_clusters:
+            cluster_ind = self.low_dim_data["cluster"] == cl
+            data_dim1 = self.low_dim_data["emb1"].loc[cluster_ind]
+            data_dim2 = self.low_dim_data["emb2"].loc[cluster_ind]
+            cl_means[cl] = np.array([data_dim1.mean(), data_dim2.mean()])
+        return cl_means
+
+    def _build_adj_matrix(self, cl_means):
+        adj_matrix = []
+        for val1 in cl_means.values():
+            adj_row = []
+            for val2 in cl_means.values():
+                dist = np.linalg.norm(val1-val2)
+                adj_row.append(dist)
+            adj_matrix.append(adj_row)
+        return adj_matrix
+
+    def _build_MST(self, n_clusters, adj_matrix):
+        grapf_cl = Graph(n_clusters)
+        grapf_cl.graph = adj_matrix
+        mst = grapf_cl.primMST()
+        return mst
+    
+    def _get_angle_to_x(self, points_a, points_b):
+        m1 = (points_a[1] - points_b[1]) / (points_a[0] - points_b[0])
+        y = min(points_a[1], points_b[1])
+        m2 = (y - y) / (points_a[0] - points_b[0])
+        return math.atan((m1 - m2) / (1 + (m1*m2)))
+    
+    def _plot_between(self, data, cl_means, mst, coefs, labels, angles, plot_title: str, save_path: str = ""):
+        fig, ax = plt.subplots(1, figsize=(12, 8))
+        colors = list(mcolors.TABLEAU_COLORS.keys())
+        alpha = 0.2
+
+        # Scale coefficients
+        radius = np.abs(coefs).max()
+        c_min, c_max = self._get_cmin_cmax(coefs=coefs)
+        coefs_scaled = coefs * (radius / max(abs(c_max), abs(c_min)))
+
+        # Scatter plot
+        sc = plt.scatter(data["emb1"], data["emb2"], color='black', s=3, alpha=alpha, zorder=0)
+        self._draw_clusters(ax, data, alpha)
+        
+        # Add lines
+        for val in mst:
+            p_a, p_b = cl_means[val[0]], cl_means[val[1]]
+            plt.plot((p_a[0], p_b[0]), (p_a[1], p_b[1]), c='gray', linestyle="--", alpha=0.7, linewidth=1, zorder=10)
+        
+        # Add arrows
+        arrows_ind = np.argmax(np.abs(coefs_scaled), axis=0)
+        arrows = []
+
+        for j in range(len(mst)):
+            for i in range(coefs_scaled.shape[1]):
+                a = math.radians(angles[j])
+
+                # Plot contributions
+                x_c, y_c = math.cos(a) * coefs_scaled[j, i], math.sin(a) * coefs_scaled[j, i]
+                col = colors[i]
+                lbl = labels[i]
+
+                arrows.append(plt.arrow(cl_means[mst[j][0]][0], cl_means[mst[j][0]][1], x_c, y_c, width=0.01, color=col, label=lbl, zorder=15))
+
+        plt.legend(arrows, labels)
+        self._finish_plot(plot_title=plot_title, save_path=save_path)
+    
+    
+    def _plot_between_clusters(self, standartize_coef, univar_importance, feature_significance, biggest_arrow, plot_title, save_path):
+        dist_clusters = self.low_dim_data["cluster"].unique()
+        dist_clusters.sort()
+        dist_clusters = dist_clusters[1:] if dist_clusters[0] == -1 else dist_clusters
+
+        cl_means = self._get_cluster_centers(dist_clusters)
+        adj_matrix = self._build_adj_matrix(cl_means)
+        mst = self._build_MST(len(dist_clusters), adj_matrix)
+
+        mst_proj, angles = [], []
+        for val in mst:
+            angle = math.degrees(self._get_angle_to_x(cl_means[val[0]], cl_means[val[1]]))
+            proj = self._project_line(self.low_dim_data, 
+                                angle, 
+                                point_a=cl_means[val[0]], 
+                                point_b=cl_means[val[1]])
+            mst_proj.append(proj)
+            angles.append(angle)
+
+        self.mst_proj = np.array(mst_proj).T
+        coefs, _, is_significant = self._get_importance(self.high_dim_data.to_numpy(), self.mst_proj, univar=univar_importance, significance=feature_significance)
+        
+        if standartize_coef:
+            coefs = (coefs - coefs.mean(axis=0)) / coefs.std(axis=0)
+            if np.isnan(coefs).any():
+                coefs = np.nan_to_num(coefs)
+                warnings.warn("NaNs were introduced after standartizing coefficients and were replaced by 0.")
+
+        self._plot_between(self.low_dim_data, cl_means, mst, coefs, self.observations, angles, plot_title=plot_title, save_path=save_path)
+
+
     def plot_clocks(self, 
                   plot_title: str,
                   plot_big_clock: bool = True,
                   plot_small_clock: bool = True,
+                  plot_between_cluster: bool = True,
                   standartize_data: bool = True, 
+                  standartize_coef: bool = True, 
                   biggest_arrow_method: bool = True, 
                   angle_shift: int = 5, 
                   univar_importance: bool = True,
                   feature_significance: float = 0.05,
                   save_path_big: str = "",
-                  save_path_small: str = ""):
+                  save_path_small: str = "",
+                  save_path_between: str = ""):
         self._prepare_data(standartize_data=standartize_data)
         self._create_angles_projections(angle_shift=angle_shift)
 
+        print(self.low_dim_data["cluster"].nunique())
+
         if plot_big_clock:
-            self._plot_big_clock(standartize_data=standartize_data, 
+            self._plot_big_clock(standartize_coef=standartize_coef, 
                                  univar_importance=univar_importance, 
                                  feature_significance=feature_significance, 
                                  biggest_arrow=biggest_arrow_method, 
@@ -417,9 +534,17 @@ class NonLinearClock():
                                  save_path=save_path_big)
 
         if plot_small_clock:
-            self._plot_small_clock(standartize_data=standartize_data, 
+            self._plot_small_clock(standartize_coef=standartize_coef, 
                                    univar_importance=univar_importance, 
                                    feature_significance=feature_significance, 
                                    biggest_arrow=biggest_arrow_method, 
                                    plot_title=plot_title, 
                                    save_path=save_path_small)
+        
+        if plot_between_cluster:
+            self._plot_between_clusters(standartize_coef=standartize_coef, 
+                                   univar_importance=univar_importance, 
+                                   feature_significance=feature_significance, 
+                                   biggest_arrow=biggest_arrow_method, 
+                                   plot_title=plot_title, 
+                                   save_path=save_path_between)
