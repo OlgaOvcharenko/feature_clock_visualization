@@ -1,6 +1,6 @@
 import numpy as np
 import scanpy as sp
-from plot import NonLinearClock
+from src.plot import NonLinearClock
 import scanpy.external as sce
 import phate
 

@@ -1,33 +1,59 @@
+import sys
+import matplotlib
+sys.path.append('src/')
+
 import numpy as np
 import scanpy as sp
-from plot import NonLinearClock
+from src.plot import NonLinearClock
 import scanpy.external as sce
 import phate
 import pandas as pd
+import scipy.stats as ss
+import matplotlib.pyplot as plt 
 
-def read_data(path):
-    return pd.read_csv(path, sep=";", header=0)
+np.random.seed(42)
+
+def create_gm(mean_stds: np.array):
+    xs, ys = [], []
+    for ix, val in enumerate(mean_stds):
+        x = np.random.multivariate_normal(val[0], val[1], val[2])
+        xs.extend(x)
+        ys.extend(np.full((val[2],), ix))
+
+    xs, ys = np.array(xs), np.array(ys)
+
+    # plt.scatter(xs[:, 0], xs[:, 1], c=ys, cmap=matplotlib.colors.ListedColormap(["red", "blue", "pink", "green"]))
+    # plt.axis('equal')
+    # plt.grid()
+    # plt.show()
+    return xs, ys
 
 def setup_data(method = "umap"):
-    file_name = '/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/E-GEOD-46817-query-results.csv'
-    X = read_data(file_name)
+    mean_stds_nrow = [
+        [[0, 0], [[6, -3], [-3, 3.5]], 200],
+        [[5, 25], [[11, 0], [0, 4]], 300],
+        [[30, -5], [[1, 0], [0, 1]], 500],
+        [[35, 40], [[2.5, 6], [6, 75]], 250],
+    ]
 
-    obs = [ 
-           "A2058",   "A375",   "C32",  "Malme3M",  "SKMEL28",  "SKMEL5",  "WM2664"
-           ]
+    X, labels = create_gm(mean_stds=mean_stds_nrow)
     
-    new_data = X[obs].dropna()
+    new_data = pd.DataFrame(X)
+    
     for col in new_data.columns:
         new_data[col] = (new_data[col] - \
            new_data[col].mean()) / new_data[col].std()
-
-
+    
     X_new = sp.AnnData(new_data)
 
     # compute umap
     sp.pp.neighbors(X_new)
-    if method == "umap":
-        sp.tl.umap(X_new, min_dist=10, spread=10)
+
+    if new_data.shape[1] <= 2:
+        standard_embedding = X
+
+    elif method == "umap":
+        sp.tl.umap(X_new, min_dist=0.01, spread=0)
 
         # get clusters
         standard_embedding = X_new.obsm['X_umap']
@@ -41,17 +67,12 @@ def setup_data(method = "umap"):
     elif method == "phate":
         sce.tl.phate(X_new, k=5, a=20, t=150)
         standard_embedding = X_new.obsm['X_phate']
+    
+    else:
+        raise Exception("Low dimensional data or dimensionality reduction method is not specified.")
 
-    # get labels
-    mes = np.stack((X_new.X[:, 0], X_new.X[:,1]))
-    npc = np.stack((X_new.X[:, 4], X_new.X[:, 5]))
-    ac, opc = X_new.X[:, 2], X_new.X[:, 3]
-    mes_max = np.max(mes, axis=0)
-    npc_max = np.max(npc, axis=0)
-    res_vect = np.stack((ac, opc, mes_max, npc_max))
-    res_labels = np.max(res_vect, axis=0)
 
-    return new_data, obs, standard_embedding, res_labels
+    return new_data, list(new_data.columns), standard_embedding, labels
 
 
 def test_umap():
@@ -136,8 +157,4 @@ def test_between_phate():
                           save_path_between="plots/new/gene_between_1_circle_phate.png"
                           )
 
-# test_umap()
-
 test_between_umap()
-# test_between_tsne()
-# test_between_phate()

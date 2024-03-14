@@ -14,14 +14,14 @@ from skspatial.objects import Line
 import math
 import matplotlib.patheffects as pe
 from sklearn.manifold import TSNE
-from graph import Graph
+from src.graph import Graph
 import warnings
 
 
 class NonLinearClock():
     def __init__(self, high_dim_data: np.array, 
                  observations: list, 
-                 low_dim_data: pd.DataFrame = None, 
+                 low_dim_data: np.ndarray = None, 
                  high_dim_labels: pd.DataFrame = None,
                  method: str = ""):
         

@@ -1,6 +1,6 @@
 import numpy as np
 import scanpy as sp
-from plot import NonLinearClock
+from src.plot import NonLinearClock
 import scanpy.external as sce
 import phate
 import pandas as pd
@@ -27,7 +27,7 @@ def setup_data(method = "umap"):
     # compute umap
     sp.pp.neighbors(X_new)
     if method == "umap":
-        sp.tl.umap(X_new, min_dist=0.01, spread=0)
+        sp.tl.umap(X_new, min_dist=10, spread=10)
 
         # get clusters
         standard_embedding = X_new.obsm['X_umap']
