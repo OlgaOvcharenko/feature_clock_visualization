@@ -93,7 +93,7 @@ def test_between():
 
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, "UMAP")
     plot_inst.plot_clocks(plot_title="Malignant cells", 
-                          plot_big_clock=True, 
+                          plot_big_clock=False, 
                           plot_small_clock=False,
                           plot_between_cluster=True,
                           standartize_data=True,

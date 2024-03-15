@@ -1,3 +1,4 @@
+import copy
 from sklearn.discriminant_analysis import StandardScaler
 import statsmodels.api as sm
 from matplotlib import pyplot as plt, patches
@@ -472,34 +473,55 @@ class NonLinearClock():
         fig, ax = plt.subplots(1, figsize=(12, 8))
         colors = list(mcolors.TABLEAU_COLORS.keys())
         alpha = 0.1
+        # annotate = 0.3
 
-        # Scale coefficients
-        radius = np.abs(coefs).max()
-        c_min, c_max = self._get_cmin_cmax(coefs=coefs)
-        coefs_scaled = coefs * (radius / max(abs(c_max), abs(c_min)))
+        # Neftel
+        scale_circle = [1, 1.5]
+        move_circle = [[0, 0], [0.7, 0]]
+        annotate = [0.3, 0.1]
 
         # Scatter plot
         sc = plt.scatter(data["emb1"], data["emb2"], color='black', s=3, alpha=alpha, zorder=0)
         self._draw_clusters(ax, data, alpha)
         
-        # Add lines
-        for val in mst:
+        # Add lines and clock
+        clock_centers = []
+        coefs_scaled = copy.deepcopy(coefs)
+        for i, val in enumerate(mst):
             p_a, p_b = cl_means[val[0]], cl_means[val[1]]
             plt.plot((p_a[0], p_b[0]), (p_a[1], p_b[1]), c='gray', linestyle="--", alpha=0.7, linewidth=1, zorder=10)
-        
+
+            # Add clock
+            x_center, y_center = np.mean((p_a[0], p_b[0])) + move_circle[i][0], np.mean((p_a[1], p_b[1])) + move_circle[i][1]
+            clock_centers.append([x_center, y_center])
+
+            radius = (math.dist(p_a, p_b) / 2) * scale_circle[i]
+            c_min, c_max = self._get_cmin_cmax(coefs=coefs[i])
+            num_circles = math.floor(radius / annotate[i]) + 1
+            self._add_circles_lines(num_circles, annotate[i], 90, x_center, y_center)
+
+            # num_circles - one circle per annotation
+            self._add_circles(ax, num_circles, annotate[i], x_center, y_center, radius, c_min, c_max)
+
+            coefs_scaled[i] = coefs_scaled[i] * (radius / max(abs(c_max), abs(c_min)))
+
         # Add arrows
         arrows = []
         for j in range(len(mst)):
             for i in abs(coefs_scaled[j]).argsort(axis=None)[::-1]:
+                # Add actual arrow
                 a = math.radians(angles[j])
 
+                x_center, y_center = clock_centers[mst[j][0]]
+                
                 if coefs_scaled[j, i] != 0:
                     # Plot contributions
                     x_c, y_c = math.cos(a) * coefs_scaled[j, i], math.sin(a) * coefs_scaled[j, i]
                     col = colors[i]
                     lbl = labels[i]
 
-                    arrows.append(plt.arrow(cl_means[mst[j][0]][0], cl_means[mst[j][0]][1], x_c, y_c, width=0.04, color=col, label=lbl, zorder=15))
+                    # arrows.append(plt.arrow(cl_means[mst[j][0]][0], cl_means[mst[j][0]][1], x_c, y_c, width=0.04, color=col, label=lbl, zorder=15))
+                    arrows.append(plt.arrow(x_center, y_center, x_c, y_c, width=0.03, color=col, label=lbl, zorder=15))
 
         plt.legend(arrows, labels)
         self._finish_plot(plot_title=plot_title, save_path=save_path)
