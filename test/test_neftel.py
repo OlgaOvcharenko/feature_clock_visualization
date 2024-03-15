@@ -93,12 +93,12 @@ def test_between():
 
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, "UMAP")
     plot_inst.plot_clocks(plot_title="Malignant cells", 
-                          plot_big_clock=True, 
+                          plot_big_clock=False, 
                           plot_small_clock=True,
-                          plot_between_cluster=True,
+                          plot_between_cluster=False,
                           standartize_data=True,
                           standartize_coef=True,
-                          biggest_arrow_method=False,
+                          biggest_arrow_method=True,
                           univar_importance=True,
                           save_path_big="plots/new/big_1_circle.png",
                           save_path_small="plots/new/small_1_circle.png",
@@ -173,7 +173,7 @@ def print_neftel_all():
 
 # test_umap()
 
-# test_between()
-print_neftel_all()
+test_between()
+# print_neftel_all()
 # test_between_tsne()
 # test_between_phate()

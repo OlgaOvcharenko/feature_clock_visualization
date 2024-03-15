@@ -23,8 +23,9 @@ class NonLinearClock():
                  observations: list, 
                  low_dim_data: np.ndarray = None, 
                  high_dim_labels: pd.DataFrame = None,
-                 cluster_labels: np.ndarray = None,
-                 method: str = ""):
+                 method: str = "",
+                 cluster_labels: np.ndarray = None
+                 ):
         
         self.high_dim_data = high_dim_data
         self.observations = observations
@@ -154,7 +155,8 @@ class NonLinearClock():
         coefs, _, is_significant = self._get_importance(self.high_dim_data.to_numpy(), self.projections, univar=univar_importance, significance=feature_significance)
         
         if standartize_coef:
-            coefs = (coefs - coefs.mean()) / coefs.std()  #FIXME scale globally
+            sign_coef = coefs / np.abs(coefs)
+            coefs = (coefs - coefs.mean() * sign_coef) / coefs.std()  #FIXME
             if np.isnan(coefs).any():
                 coefs = np.nan_to_num(coefs)
                 warnings.warn("NaNs were introduced after standartizing coefficients and were replaced by 0.")
@@ -314,14 +316,17 @@ class NonLinearClock():
         if draw_hulls:
             self._draw_clusters(ax, data, alpha)
         # c=data["label"], cmap="viridis",  vmin=data["label"].min(), vmax=data["label"].max(), 
-        sc = plt.scatter(data["emb1"], data["emb2"], color='black', s=3, alpha=alpha)
+        sc = plt.scatter(data["emb1"], data["emb2"], color='gray', s=3, alpha=alpha)
         # fig.colorbar(sc)
         return fig, ax
     
-    def _plot_small(self, fig, ax, data, angles_shift, angles, coefs, is_significant, labels, plot_title: str, biggest_arrow: bool = True, scale_circle: float = 1.0, annotate: float = 0.2):
+    def _plot_small(self, fig, ax, data, angles_shift, angles, coefs, is_significant, labels, plot_title: str, biggest_arrow: bool = True, scale_circle: float = 1.0, annotate: float = 0.2, move_circle: list = [0, 0]):
         colors = list(mcolors.TABLEAU_COLORS.keys())
         x_center, y_center = self._get_center(data)
-        
+
+        x_center += move_circle[0]
+        y_center += move_circle[1]
+
         radius = np.abs(coefs).max() * scale_circle
         self._get_cmin_cmax(coefs)
 
@@ -376,7 +381,9 @@ class NonLinearClock():
         fig, ax = self._get_plot(plt, self.low_dim_data, True)
 
         # FIXME
-        scale_circle = [0.25, 0.25, 0.25]
+        # Neftel
+        scale_circle = [1, 0.25, 0.25]
+        move_circle = [[0, 0], [0.3, 0.3], [-0.1, -0.4]]
         annotate = [0.2, 0.1, 0.1]
 
         #FIXME global normalization: first compute coefficients then normalize
@@ -394,9 +401,15 @@ class NonLinearClock():
             all_coeffs.append(coefs)
             all_is_significant.append(is_significant)
 
+        mean_coef = np.array(all_coeffs).mean()
+        std_coef = np.array(all_coeffs).std()
+
         for i, cl in enumerate(dist_clusters):
             a = 1.0
             scale = 0.05
+
+            scale = scale_circle[i]
+            a = annotate[i]
 
             ind = (self.low_dim_data["cluster"] == cl).values.reshape((self.low_dim_data.shape[0], 1))
 
@@ -405,12 +418,13 @@ class NonLinearClock():
             data_cl = self.low_dim_data[ind]
             
             if standartize_coef:
-                coefs = (coefs - np.array(all_coeffs).mean()) / np.array(all_coeffs).std() #FIXME
+                sign_coef = coefs / np.abs(coefs)
+                coefs = (coefs - mean_coef * sign_coef) / std_coef #FIXME
                 if np.isnan(coefs).any():
                     coefs = np.nan_to_num(coefs)
                     warnings.warn("NaNs were introduced after standartizing coefficients and were replaced by 0.")
             
-            arrows = self._plot_small(fig, ax, data_cl, 45, self.angles, coefs, is_significant, self.observations, scale_circle=scale, annotate=a, biggest_arrow=biggest_arrow, plot_title=plot_title)
+            arrows = self._plot_small(fig, ax, data_cl, 45, self.angles, coefs, is_significant, self.observations, scale_circle=scale, annotate=a, biggest_arrow=biggest_arrow, plot_title=plot_title, move_circle=move_circle[i])
             arrows_all.extend(arrows)
             
         plt.legend(arrows_all, self.observations)
@@ -516,7 +530,8 @@ class NonLinearClock():
         coefs, _, is_significant = self._get_importance(self.high_dim_data.to_numpy(), self.mst_proj, univar=univar_importance, significance=feature_significance)
         
         if standartize_coef:
-            coefs = (coefs - coefs.mean()) / coefs.std() #FIXME axis=0
+            sign_coef = coefs / np.abs(coefs)
+            coefs = (coefs - coefs.mean() * sign_coef) / coefs.std() #FIXME
             if np.isnan(coefs).any():
                 coefs = np.nan_to_num(coefs)
                 warnings.warn("NaNs were introduced after standartizing coefficients and were replaced by 0.")
