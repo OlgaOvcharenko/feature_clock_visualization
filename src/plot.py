@@ -238,7 +238,6 @@ class NonLinearClock():
     def _make_circles(self, ax, num_circles, annotate, x_center, y_center, radius, c_max, c_min):
         for i in list(range(1, num_circles))[::-1]:
             radius_circle = round(i * annotate, 1)
-
             if i == num_circles-1:
                 circle = patches.Circle((x_center, y_center), radius=radius_circle, edgecolor='gray', linewidth=1, linestyle="--", facecolor=(0.941, 0.973, 1.0, 0.5), fill=True, zorder=10) 
             else:
@@ -255,7 +254,6 @@ class NonLinearClock():
     def _add_circles(self, ax, num_circles, annotate, x_center, y_center, radius, c_min, c_max):
         for i in list(range(1, num_circles))[::-1]:
             radius_circle = round(i * annotate, 1)
-
             if i == num_circles-1:
                 circle = patches.Circle((x_center, y_center), radius=radius_circle, edgecolor='gray', linewidth=1, linestyle="--", facecolor=(0.941, 0.973, 1.0, 0.5), fill=True, zorder=10) 
             else:
@@ -293,6 +291,7 @@ class NonLinearClock():
         else:
             self._add_windrose(ax, coefs_scaled, radius, x_center, y_center, colors, labels)
         
+        # num_circles - one circle per annotation
         self._add_circles(ax, num_circles, annotate, x_center, y_center, radius, c_min, c_max)
 
         self._finish_plot(plot_title=plot_title, save_path=save_path)
@@ -311,7 +310,7 @@ class NonLinearClock():
     
     def _get_plot(self, plt, data, draw_hulls: bool = True):
         fig, ax = plt.subplots(1, figsize=(12, 8))
-        alpha = 0.2
+        alpha = 0.1
 
         if draw_hulls:
             self._draw_clusters(ax, data, alpha)
@@ -472,7 +471,7 @@ class NonLinearClock():
     def _plot_between(self, data, cl_means, mst, coefs, labels, angles, plot_title: str, save_path: str = ""):
         fig, ax = plt.subplots(1, figsize=(12, 8))
         colors = list(mcolors.TABLEAU_COLORS.keys())
-        alpha = 0.2
+        alpha = 0.1
 
         # Scale coefficients
         radius = np.abs(coefs).max()
@@ -489,19 +488,18 @@ class NonLinearClock():
             plt.plot((p_a[0], p_b[0]), (p_a[1], p_b[1]), c='gray', linestyle="--", alpha=0.7, linewidth=1, zorder=10)
         
         # Add arrows
-        arrows_ind = np.argmax(np.abs(coefs_scaled), axis=0)
         arrows = []
-
         for j in range(len(mst)):
-            for i in range(coefs_scaled.shape[1]):
+            for i in abs(coefs_scaled[j]).argsort(axis=None)[::-1]:
                 a = math.radians(angles[j])
 
-                # Plot contributions
-                x_c, y_c = math.cos(a) * coefs_scaled[j, i], math.sin(a) * coefs_scaled[j, i]
-                col = colors[i]
-                lbl = labels[i]
+                if coefs_scaled[j, i] != 0:
+                    # Plot contributions
+                    x_c, y_c = math.cos(a) * coefs_scaled[j, i], math.sin(a) * coefs_scaled[j, i]
+                    col = colors[i]
+                    lbl = labels[i]
 
-                arrows.append(plt.arrow(cl_means[mst[j][0]][0], cl_means[mst[j][0]][1], x_c, y_c, width=0.01, color=col, label=lbl, zorder=15))
+                    arrows.append(plt.arrow(cl_means[mst[j][0]][0], cl_means[mst[j][0]][1], x_c, y_c, width=0.04, color=col, label=lbl, zorder=15))
 
         plt.legend(arrows, labels)
         self._finish_plot(plot_title=plot_title, save_path=save_path)
@@ -528,13 +526,16 @@ class NonLinearClock():
 
         self.mst_proj = np.array(mst_proj).T
         coefs, _, is_significant = self._get_importance(self.high_dim_data.to_numpy(), self.mst_proj, univar=univar_importance, significance=feature_significance)
-        
+
         if standartize_coef:
             sign_coef = coefs / np.abs(coefs)
             coefs = (coefs - coefs.mean() * sign_coef) / coefs.std() #FIXME
             if np.isnan(coefs).any():
                 coefs = np.nan_to_num(coefs)
                 warnings.warn("NaNs were introduced after standartizing coefficients and were replaced by 0.")
+        
+        for c, is_s in zip(coefs, is_significant):
+            c[is_s == False] = 0
 
         self._plot_between(self.low_dim_data, cl_means, mst, coefs, self.observations, angles, plot_title=plot_title, save_path=save_path)
 
