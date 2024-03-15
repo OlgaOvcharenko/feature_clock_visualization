@@ -23,14 +23,19 @@ class NonLinearClock():
                  observations: list, 
                  low_dim_data: np.ndarray = None, 
                  high_dim_labels: pd.DataFrame = None,
+                 cluster_labels: np.ndarray = None,
                  method: str = ""):
         
         self.high_dim_data = high_dim_data
         self.observations = observations
         self.low_dim_data = pd.DataFrame(low_dim_data, columns=["emb1", "emb2"])
-            
-        self.cluster_labels = self._compute_HDBSCAN_hulls() \
-            if self.low_dim_data is not None else None
+        
+        if cluster_labels is not None:
+            self.cluster_labels = cluster_labels
+        elif self.low_dim_data is not None:
+            self.cluster_labels = self._compute_HDBSCAN_hulls()
+        else:
+            self.cluster_labels = None
         
         self.high_dim_labels = high_dim_labels
 
@@ -147,9 +152,9 @@ class NonLinearClock():
                        biggest_arrow: bool = True,
                        save_path: str = ""):
         coefs, _, is_significant = self._get_importance(self.high_dim_data.to_numpy(), self.projections, univar=univar_importance, significance=feature_significance)
-            
+        
         if standartize_coef:
-            coefs = (coefs - coefs.mean(axis=0)) / coefs.std(axis=0)
+            coefs = (coefs - coefs.mean()) / coefs.std()  #FIXME scale globally
             if np.isnan(coefs).any():
                 coefs = np.nan_to_num(coefs)
                 warnings.warn("NaNs were introduced after standartizing coefficients and were replaced by 0.")
@@ -374,11 +379,10 @@ class NonLinearClock():
         scale_circle = [0.25, 0.25, 0.25]
         annotate = [0.2, 0.1, 0.1]
 
+        #FIXME global normalization: first compute coefficients then normalize
         # for a, scale, cl in zip(annotate, scale_circle, dist_clusters):
+        all_coeffs, all_is_significant = [], []
         for cl in dist_clusters:
-            a = 1.0
-            scale = 0.05
-
             ind = (self.low_dim_data["cluster"] == cl).values.reshape((self.low_dim_data.shape[0], 1))
 
             data_cl = self.low_dim_data[ind]
@@ -386,8 +390,22 @@ class NonLinearClock():
             projections_cl = self.projections[ind[:, 0], :]
 
             coefs, _, is_significant = self._get_importance(new_data_cl.to_numpy(), projections_cl, univar=univar_importance, significance=feature_significance)
+            
+            all_coeffs.append(coefs)
+            all_is_significant.append(is_significant)
+
+        for i, cl in enumerate(dist_clusters):
+            a = 1.0
+            scale = 0.05
+
+            ind = (self.low_dim_data["cluster"] == cl).values.reshape((self.low_dim_data.shape[0], 1))
+
+            coefs = all_coeffs[i]
+            is_significant = all_is_significant[i]
+            data_cl = self.low_dim_data[ind]
+            
             if standartize_coef:
-                coefs = (coefs - coefs.mean(axis=0)) / coefs.std(axis=0)
+                coefs = (coefs - np.array(all_coeffs).mean()) / np.array(all_coeffs).std() #FIXME
                 if np.isnan(coefs).any():
                     coefs = np.nan_to_num(coefs)
                     warnings.warn("NaNs were introduced after standartizing coefficients and were replaced by 0.")
@@ -498,7 +516,7 @@ class NonLinearClock():
         coefs, _, is_significant = self._get_importance(self.high_dim_data.to_numpy(), self.mst_proj, univar=univar_importance, significance=feature_significance)
         
         if standartize_coef:
-            coefs = (coefs - coefs.mean(axis=0)) / coefs.std(axis=0)
+            coefs = (coefs - coefs.mean()) / coefs.std() #FIXME axis=0
             if np.isnan(coefs).any():
                 coefs = np.nan_to_num(coefs)
                 warnings.warn("NaNs were introduced after standartizing coefficients and were replaced by 0.")

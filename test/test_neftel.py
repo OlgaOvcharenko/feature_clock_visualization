@@ -1,3 +1,4 @@
+from matplotlib import pyplot as plt
 import numpy as np
 import scanpy as sp
 from src.plot import NonLinearClock
@@ -96,7 +97,7 @@ def test_between():
                           plot_small_clock=True,
                           plot_between_cluster=True,
                           standartize_data=True,
-                          standartize_coef=False,
+                          standartize_coef=True,
                           biggest_arrow_method=False,
                           univar_importance=True,
                           save_path_big="plots/new/big_1_circle.png",
@@ -138,9 +139,41 @@ def test_between_phate():
                           save_path_small="plots/new/small_1_circle_phate.png",
                           save_path_between="plots/new/between_1_circle_phate.png"
                           )
+    
+def print_neftel_all():
+    X_new, obs, standard_embedding, labels = setup_neftel_data(method="umap")
+    dpi = 1000
+    fig_size = (3.33, 3.33)
+    fig, axi = plt.subplots(
+        3,
+        3,
+        num=None,
+        figsize=fig_size,
+        dpi=dpi,
+        facecolor="w",
+        edgecolor="k",
+    )
+    for i, o in enumerate(obs):
+        axi[i % 3, i // 3].scatter(standard_embedding[:,0], standard_embedding[:,1],marker= '.',s=1.3, c=X_new[o], cmap="Spectral")
+        axi[i % 3, i // 3].set_yticks([])
+        axi[i % 3, i // 3].set_xticks([])
+        axi[i % 3, i // 3].yaxis.set_label_coords(x=-0.01, y=.5)
+        axi[i % 3, i // 3].xaxis.set_label_coords(x=0.5, y=-0.02)
+        axi[i % 3, i // 3].set_title(o, size=8, pad=-14)
+
+    axi[1, 0].set_ylabel("UMAP2", size=8)
+    axi[2, 1].set_xlabel("UMAP1", size=8)
+
+    plt.subplots_adjust(
+        left=0.05, right=0.95, top=0.95, bottom=0.05, #wspace=0.21, hspace=0.33
+    )
+
+    plt.savefig("plots/paper/plot_neftelAll.pdf")
+
 
 # test_umap()
 
-test_between()
+# test_between()
+print_neftel_all()
 # test_between_tsne()
 # test_between_phate()
