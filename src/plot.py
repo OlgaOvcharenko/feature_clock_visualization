@@ -188,6 +188,7 @@ class NonLinearClock:
         scale_circle: float = 1,
         move_circle: list = [0, 0],
         annotate: float = 0.3,
+        arrow_width: float = 0.1,
     ):
         coefs, _, is_significant = self._get_importance(
             self.high_dim_data.to_numpy(),
@@ -218,6 +219,7 @@ class NonLinearClock:
             scale_circle=scale_circle,
             move_circle=move_circle,
             annotate=annotate,
+            arrow_width=arrow_width,
         )
         return arrows, arrow_labels
 
@@ -264,6 +266,7 @@ class NonLinearClock:
         labels,
         x_center,
         y_center,
+        arrow_width,
     ):
         arrows = []
 
@@ -285,7 +288,7 @@ class NonLinearClock:
                                 y_center,
                                 x_c,
                                 y_c,
-                                width=0.7,
+                                width=arrow_width,
                                 color=col,
                                 label=lbl,
                                 zorder=15,
@@ -322,13 +325,11 @@ class NonLinearClock:
 
             return arrows, labels
 
-    def _add_windrose(
-        self, ax, coefs_scaled, radius, x_center, y_center, colors, labels
-    ):
+    def _add_windrose(self, ax, coefs_scaled, radius, x_center, y_center, labels):
         points_x, points_y = [], []
         for a, c in zip(self.angles, coefs_scaled):
             a = math.radians(a)
-            x_add, y_add = math.cos(a) * radius, math.sin(a) * radius
+            # x_add, y_add = math.cos(a) * radius, math.sin(a) * radius
             x_add_coefs, y_add_coefs = math.cos(a) * c, math.sin(a) * c
             points_x.append(x_center + x_add_coefs)
             points_y.append(y_center + y_add_coefs)
@@ -452,6 +453,7 @@ class NonLinearClock:
         scale_circle: float = 1,
         move_circle: list = [0, 0],
         annotate: float = 0.3,
+        arrow_width: float = 0.1,
     ):
         alpha = 0.2
 
@@ -477,11 +479,12 @@ class NonLinearClock:
                 labels,
                 x_center,
                 y_center,
+                arrow_width,
             )
 
         else:
             arrows, arrow_labels = self._add_windrose(
-                ax, coefs_scaled, radius, x_center, y_center, labels
+                ax, coefs_scaled, radius, x_center, y_center
             )
 
         # num_circles - one circle per annotation
@@ -522,6 +525,7 @@ class NonLinearClock:
         scale_circle: float = 1.0,
         annotate: float = 0.2,
         move_circle: list = [0, 0],
+        arrow_width: float = 0.01,
     ):
         x_center, y_center = self._get_center(data)
 
@@ -556,7 +560,7 @@ class NonLinearClock:
                                 y_center,
                                 x_c,
                                 y_c,
-                                width=0.01,
+                                width=arrow_width,
                                 color=col,
                                 label=lbl,
                                 zorder=15,
@@ -606,6 +610,7 @@ class NonLinearClock:
         scale_circle,
         move_circle,
         annotate,
+        arrow_width,
     ):
         dist_clusters = self.low_dim_data["cluster"].unique()
         dist_clusters.sort()
@@ -671,6 +676,7 @@ class NonLinearClock:
                 annotate=a,
                 biggest_arrow=biggest_arrow,
                 move_circle=move_circle[i],
+                arrow_width=arrow_width,
             )
             arrows_all.extend(arrows)
             arrow_labels_all.extend(arrow_labels)
@@ -721,13 +727,12 @@ class NonLinearClock:
         scale_circle,
         move_circle,
         annotate,
+        arrow_width,
     ):
         alpha = 0.1
 
         # Scatter plot
-        sc = ax.scatter(
-            data["emb1"], data["emb2"], color="gray", s=3, alpha=alpha, zorder=0
-        )
+        ax.scatter(data["emb1"], data["emb2"], color="gray", s=3, alpha=alpha, zorder=0)
         self._draw_clusters(ax, data, alpha + 0.1)
 
         # Add lines and clock
@@ -786,7 +791,7 @@ class NonLinearClock:
                         y_center,
                         x_c,
                         y_c,
-                        width=0.03,
+                        width=arrow_width,
                         color=col,
                         label=lbl,
                         zorder=15,
@@ -806,6 +811,7 @@ class NonLinearClock:
         scale_circle,
         move_circle,
         annotate,
+        arrow_width,
     ):
         dist_clusters = self.low_dim_data["cluster"].unique()
         dist_clusters.sort()
@@ -860,6 +866,7 @@ class NonLinearClock:
             scale_circle,
             move_circle,
             annotate,
+            arrow_width,
         )
 
         return arrows, labels
@@ -879,6 +886,7 @@ class NonLinearClock:
         scale_circle: float = 1,
         move_circle: list = [0, 0],
         annotate: float = 0.6,
+        arrow_width: float = 0.1,
     ):
         if not self.is_projected:
             self.is_projected = True
@@ -894,6 +902,7 @@ class NonLinearClock:
             scale_circle=scale_circle,
             move_circle=move_circle,
             annotate=annotate,
+            arrow_width=arrow_width,
         )
 
     def plot_local_clocks(
@@ -908,6 +917,7 @@ class NonLinearClock:
         scale_circles: list = [],
         move_circles: list = [],
         annotates: list = [],
+        arrow_width: float = 0.1,
     ):
         if not self.is_projected:
             self.is_projected = True
@@ -935,6 +945,7 @@ class NonLinearClock:
             scale_circle=scale_circles,
             move_circle=move_circles,
             annotate=annotates,
+            arrow_width=arrow_width,
         )
         return arrows_all, arrow_labels_all
 
@@ -949,6 +960,7 @@ class NonLinearClock:
         scale_circles: list = [],
         move_circles: list = [],
         annotates: list = [],
+        arrow_width: float = 0.03,
     ):
 
         if not self.is_projected:
@@ -976,6 +988,7 @@ class NonLinearClock:
             scale_circle=scale_circles,
             move_circle=move_circles,
             annotate=annotates,
+            arrow_width=arrow_width,
         )
 
         return arrows, labels

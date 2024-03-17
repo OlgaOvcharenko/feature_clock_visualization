@@ -171,7 +171,7 @@ def test_between_all():
         top=0.79,
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
-    plt.savefig("plots/paper/neftel_global.pdf")
+    plt.savefig("plots/paper/neftel/neftel_global.pdf")
 
     # Local
     fig, ax = plt.subplots(1, figsize=(3.33, 3.33))
@@ -184,6 +184,7 @@ def test_between_all():
         scale_circles=[1, 0.25, 0.25],
         move_circles=[[0, 0], [0.3, 0.3], [-0.1, -0.4]],
         annotates=[0.3, 0.3, 0.3],
+        arrow_width=0.01,
     )
     ax.legend(
         arrows,
@@ -211,7 +212,7 @@ def test_between_all():
         top=0.79,
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
-    plt.savefig("plots/paper/neftel_local.pdf")
+    plt.savefig("plots/paper/neftel/neftel_local.pdf")
 
     # Between
     fig, ax = plt.subplots(1, figsize=(3.33, 3.33))
@@ -223,6 +224,7 @@ def test_between_all():
         scale_circles=[1, 1.5],
         move_circles=[[0, 0], [0.7, 0]],
         annotates=[0.3, 0.2],
+        arrow_width=0.03,
     )
     ax.legend(
         arrows,
@@ -250,7 +252,7 @@ def test_between_all():
         top=0.79,
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
-    plt.savefig("plots/paper/neftel_between.pdf")
+    plt.savefig("plots/paper/neftel/neftel_between.pdf")
 
 
 test_between_all()
