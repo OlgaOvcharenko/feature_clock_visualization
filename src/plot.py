@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt, patches
 import numpy as np
 import matplotlib.pyplot as plt
 import umap
-import hdbscan
+from sklearn.cluster import HDBSCAN
 import phate
 from scipy.spatial import ConvexHull
 import numpy as np
@@ -81,7 +81,7 @@ class NonLinearClock:
         return self.low_dim_data
 
     def _compute_HDBSCAN_hulls(self):
-        hdb = hdbscan.HDBSCAN(min_samples=10, min_cluster_size=30)
+        hdb = HDBSCAN(min_samples=10, min_cluster_size=30)
         labels = hdb.fit_predict(self.low_dim_data)
         return labels
 
@@ -506,7 +506,7 @@ class NonLinearClock:
                     ax.fill(a, b, alpha=alpha, c="gray")
 
     def _get_plot(self, ax, data, draw_hulls: bool = True):
-        alpha = 0.1
+        alpha = 0.5
 
         if draw_hulls:
             self._draw_clusters(ax, data, alpha)
@@ -613,10 +613,11 @@ class NonLinearClock:
         arrow_width,
     ):
         dist_clusters = self.low_dim_data["cluster"].unique()
+        print(dist_clusters)
         dist_clusters.sort()
-        dist_clusters = dist_clusters[1:]  # FIXME
+        dist_clusters = dist_clusters[1:] if dist_clusters[0] == -1 else dist_clusters # FIXME
         arrows_all, arrow_labels_all = [], []
-
+        
         self._get_plot(ax, self.low_dim_data, True)
 
         all_coeffs, all_is_significant = [], []
@@ -643,7 +644,6 @@ class NonLinearClock:
         std_coef = np.array(all_coeffs).std()
 
         for i, cl in enumerate(dist_clusters):
-
             scale = scale_circle[i]
             a = annotate[i]
 
@@ -893,6 +893,7 @@ class NonLinearClock:
             self._prepare_data(standartize_data=standartize_data)
             self._create_angles_projections(angle_shift=angle_shift)
 
+        print(self.low_dim_data["cluster"].nunique())
         return self._plot_big_clock(
             ax=ax,
             standartize_coef=standartize_coef,
