@@ -506,7 +506,7 @@ class NonLinearClock:
                     ax.fill(a, b, alpha=alpha, c="gray")
 
     def _get_plot(self, ax, data, draw_hulls: bool = True):
-        alpha = 0.5
+        alpha = 0.2
 
         if draw_hulls:
             self._draw_clusters(ax, data, alpha)
@@ -615,9 +615,11 @@ class NonLinearClock:
         dist_clusters = self.low_dim_data["cluster"].unique()
         print(dist_clusters)
         dist_clusters.sort()
-        dist_clusters = dist_clusters[1:] if dist_clusters[0] == -1 else dist_clusters # FIXME
+        dist_clusters = (
+            dist_clusters[1:] if dist_clusters[0] == -1 else dist_clusters
+        )  # FIXME
         arrows_all, arrow_labels_all = [], []
-        
+
         self._get_plot(ax, self.low_dim_data, True)
 
         all_coeffs, all_is_significant = [], []
@@ -729,7 +731,7 @@ class NonLinearClock:
         annotate,
         arrow_width,
     ):
-        alpha = 0.1
+        alpha = 0.2
 
         # Scatter plot
         ax.scatter(data["emb1"], data["emb2"], color="gray", s=3, alpha=alpha, zorder=0)

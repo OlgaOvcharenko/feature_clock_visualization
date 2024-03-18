@@ -27,8 +27,12 @@ def setup_pima_data(method="tsne", drop_labels=True):
 
     # compute umap
     if method == "umap":
-        reducer = umap.UMAP(min_dist=0.5, n_neighbors=10, random_state=42)
-        standard_embedding = reducer.fit_transform(X)
+        reducer = umap.UMAP(min_dist=0.2, n_neighbors=30, random_state=42)
+        if not drop_labels:
+            K = X.drop(columns=["Outcome"], inplace=False)
+            standard_embedding = reducer.fit_transform(K)
+        else:
+            standard_embedding = reducer.fit_transform(X)
 
     elif method == "tsne":
         raise NotImplementedError()
@@ -86,11 +90,11 @@ def print_pima_all():
 def test_between_all():
     X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap")
 
-    fig, ax = plt.subplots(1, figsize=(3.33, 3.33))
+    fig, ax = plt.subplots(1, figsize=(3.33, 2.8))
     plt.tight_layout()
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters)
     arrows, arrow_labels = plot_inst.plot_global_clock(
-        standartize_data=True,
+        standartize_data=False,
         standartize_coef=True,
         biggest_arrow_method=True,
         univar_importance=False,
@@ -141,18 +145,18 @@ def test_between_all():
         annotates=[0.5, 0.5, 0.5],
         arrow_width=0.03,
     )
-    ax.legend(
-        arrows,
-        arrow_labels,
-        loc="lower center",
-        bbox_to_anchor=(0.5, 1.07),
-        fontsize=7,
-        ncol=4,
-        markerscale=0.6,
-        handlelength=1.5,
-        columnspacing=0.8,
-        handletextpad=0.5,
-    )
+    # ax.legend(
+    #     arrows,
+    #     arrow_labels,
+    #     loc="lower center",
+    #     bbox_to_anchor=(0.5, 1.07),
+    #     fontsize=7,
+    #     ncol=4,
+    #     markerscale=0.6,
+    #     handlelength=1.5,
+    #     columnspacing=0.8,
+    #     handletextpad=0.5,
+    # )
 
     ax.set_yticks([])
     ax.set_xticks([])
@@ -169,45 +173,45 @@ def test_between_all():
     )
     plt.savefig("plots/paper/pima/pima_local.pdf")
 
-    # # Between
-    # fig, ax = plt.subplots(1, figsize=(3.33, 3.33))
-    # arrows, arrow_labels = plot_inst.plot_between_clock(
-    #     standartize_data=True,
-    #     standartize_coef=True,
-    #     univar_importance=True,
-    #     ax=ax,
-    #     scale_circles=[1, 1.5],
-    #     move_circles=[[0, 0], [0.7, 0]],
-    #     annotates=[0.3, 0.2],
-    #     arrow_width=0.03,
-    # )
+    # Between
+    fig, ax = plt.subplots(1, figsize=(3.33, 2.8))
+    arrows, arrow_labels = plot_inst.plot_between_clock(
+        standartize_data=True,
+        standartize_coef=True,
+        univar_importance=True,
+        ax=ax,
+        scale_circles=[1],
+        move_circles=[[0, 0]],
+        annotates=[0.6],
+        arrow_width=0.05,
+    )
     # ax.legend(
     #     arrows,
     #     arrow_labels,
     #     loc="lower center",
     #     bbox_to_anchor=(0.5, 1.07),
     #     fontsize=7,
-    #     ncol=3,
+    #     ncol=4,
     #     markerscale=0.6,
     #     handlelength=1.5,
     #     columnspacing=0.8,
     #     handletextpad=0.5,
     # )
 
-    # ax.set_yticks([])
-    # ax.set_xticks([])
-    # ax.set_ylabel("UMAP2", size=8)
-    # ax.set_xlabel("UMAP1", size=8)
-    # ax.set_title("Malignant cells", size=8)
-    # ax.yaxis.set_label_coords(x=-0.01, y=0.5)
-    # ax.xaxis.set_label_coords(x=0.5, y=-0.02)
-    # plt.subplots_adjust(
-    #     left=0.05,
-    #     right=0.95,
-    #     top=0.79,
-    #     bottom=0.05,  # wspace=0.21, hspace=0.33
-    # )
-    # plt.savefig("plots/paper/pima/pima_between.pdf")
+    ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_ylabel("UMAP2", size=8)
+    ax.set_xlabel("UMAP1", size=8)
+    ax.set_title("Malignant cells", size=8)
+    ax.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax.xaxis.set_label_coords(x=0.5, y=-0.02)
+    plt.subplots_adjust(
+        left=0.05,
+        right=0.95,
+        top=0.79,
+        bottom=0.05,  # wspace=0.21, hspace=0.33
+    )
+    plt.savefig("plots/paper/pima/pima_between.pdf")
 
 # print_pima_all()
 test_between_all()
