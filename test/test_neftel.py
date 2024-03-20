@@ -91,7 +91,7 @@ def test_between_phate():
 def print_neftel_all():
     X_new, obs, standard_embedding, labels = setup_neftel_data(method="umap")
     dpi = 1000
-    fig_size = (3.33, 3.33)
+    fig_size = (3.2325, 2.9)
     fig, axi = plt.subplots(
         3,
         3,
@@ -102,13 +102,14 @@ def print_neftel_all():
         edgecolor="k",
     )
     for i, o in enumerate(obs):
-        axi[i % 3, i // 3].scatter(
+        im = axi[i % 3, i // 3].scatter(
             standard_embedding[:, 0],
             standard_embedding[:, 1],
             marker=".",
             s=1.3,
             c=X_new[o],
             cmap="Spectral",
+            # vmin=0, vmax=1
         )
         axi[i % 3, i // 3].set_yticks([])
         axi[i % 3, i // 3].set_xticks([])
@@ -121,12 +122,13 @@ def print_neftel_all():
 
     plt.subplots_adjust(
         left=0.05,
-        right=0.95,
+        right=1,
         top=0.95,
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
-
-    plt.savefig("plots/paper/plot_neftelAll.pdf")
+    cbar = fig.colorbar(im, ax=axi.ravel().tolist(), pad=0.1)
+    cbar.ax.tick_params(labelsize=7) 
+    plt.savefig("plots/paper/neftel/plot_neftelAll.pdf")
 
 
 def test_between_all():
@@ -254,5 +256,253 @@ def test_between_all():
     )
     plt.savefig("plots/paper/neftel/neftel_between.pdf")
 
+def test_all_in_row():
+    X_new, obs, standard_embedding, labels = setup_neftel_data(method="umap")
 
-test_between_all()
+    fig, axi = plt.subplots(1, 3, figsize=(7.125-0.66, 2.375))
+    plt.tight_layout()
+    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, "UMAP")
+    arrows, arrow_labels = plot_inst.plot_global_clock(
+        standartize_data=True,
+        standartize_coef=True,
+        biggest_arrow_method=True,
+        univar_importance=True,
+        ax=axi[0],
+        scale_circle=2,
+        move_circle=[0, 0],
+        annotate=0.6,
+        arrow_width=0.05
+    )
+
+    axi[0].set_yticks([])
+    axi[0].set_xticks([])
+    axi[0].set_ylabel("UMAP2", size=8)
+    axi[0].set_xlabel("UMAP1", size=8)
+    axi[0].set_title("Malignant cells", size=8)
+    axi[0].yaxis.set_label_coords(x=-0.01, y=0.5)
+    axi[0].xaxis.set_label_coords(x=0.5, y=-0.02)
+
+    # Local
+    arrows, arrow_labels = plot_inst.plot_local_clocks(
+        standartize_data=True,
+        standartize_coef=True,
+        biggest_arrow_method=True,
+        univar_importance=True,
+        ax=axi[1],
+        scale_circles=[1, 0.4, 0.25],
+        move_circles=[[-0.2, 0], [0.4, 0.3], [-0.1, -0.4]],
+        annotates=[0.5, 0.5, 0.3],
+        arrow_width=0.05
+    )
+
+    axi[1].set_yticks([])
+    axi[1].set_xticks([])
+    axi[1].set_ylabel("UMAP2", size=8)
+    axi[1].set_xlabel("UMAP1", size=8)
+    axi[1].set_title("Malignant cells", size=8)
+    axi[1].yaxis.set_label_coords(x=-0.01, y=0.5)
+    axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
+
+    # Between
+    arrows, arrow_labels = plot_inst.plot_between_clock(
+        standartize_data=True,
+        standartize_coef=True,
+        univar_importance=True,
+        ax=axi[2],
+        scale_circles=[1, 1.5],
+        move_circles=[[0, 0], [0.7, 0]],
+        annotates=[0.3, 0.2],
+        arrow_width=0.05
+    )
+    axi[2].legend(
+        arrows,
+        arrow_labels,
+        loc="lower center",
+        bbox_to_anchor=(-0.84, 1.12),
+        fontsize=7,
+        ncol=9,
+        markerscale=0.6,
+        handlelength=1.5,
+        columnspacing=0.8,
+        handletextpad=0.5,
+    )
+
+    axi[2].set_yticks([])
+    axi[2].set_xticks([])
+    axi[2].set_ylabel("UMAP2", size=8)
+    axi[2].set_xlabel("UMAP1", size=8)
+    axi[2].set_title("Malignant cells", size=8)
+    axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
+    axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
+    plt.subplots_adjust(
+        left=0.05,
+        right=0.95,
+        top=0.79,
+        bottom=0.07,  # wspace=0.21, hspace=0.33
+    )
+    plt.savefig("plots/paper/neftel/neftel_3.pdf")
+
+
+
+def test_experiment1():
+    X_new, obs, standard_embedding, labels = setup_neftel_data(method="umap")
+
+    fig, ax = plt.subplots(1, figsize=(3.4775/2, 3.4775/2))
+    plt.tight_layout()
+    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, "UMAP")
+    arrows, arrow_labels = plot_inst.plot_global_clock(
+        standartize_data=True,
+        standartize_coef=True,
+        biggest_arrow_method=False,
+        univar_importance=True,
+        ax=ax,
+        scale_circle=2,
+        move_circle=[0, 0],
+        annotate=0.9,
+        arrow_width=0.03,
+        angle_shift=5
+    )
+
+    ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_ylabel("UMAP2", size=8)
+    ax.set_xlabel("UMAP1", size=8)
+    # ax.set_title("Malignant cells", size=8)
+    ax.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax.xaxis.set_label_coords(x=0.5, y=-0.02)
+    plt.subplots_adjust(
+        left=0.08,
+        right=0.98,
+        top=0.95,
+        bottom=0.08,  # wspace=0.21, hspace=0.33
+    )
+    plt.savefig("plots/paper/neftel/neftel_all_only_clock.pdf")
+
+    fig, ax = plt.subplots(1, figsize=(3.4775/2, 3.4775/2))
+    plt.tight_layout()
+    arrows, arrow_labels = plot_inst.plot_global_clock(
+        standartize_data=True,
+        standartize_coef=True,
+        biggest_arrow_method=True,
+        univar_importance=True,
+        ax=ax,
+        scale_circle=2,
+        move_circle=[0, 0],
+        annotate=0.9,
+        arrow_width=0.05
+    )
+    
+    ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_ylabel("UMAP2", size=8)
+    ax.set_xlabel("UMAP1", size=8)
+    # ax.set_title("Malignant cells", size=8)
+    ax.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax.xaxis.set_label_coords(x=0.5, y=-0.02)
+    plt.subplots_adjust(
+        left=0.08,
+        right=0.98,
+        top=0.95,
+        bottom=0.08,  # wspace=0.21, hspace=0.33
+    )
+    plt.savefig("plots/paper/neftel/neftel_biggest_only_clock.pdf")
+
+
+def test_experiment2():
+    X_new, obs, standard_embedding, labels = setup_neftel_data(method="umap")
+
+    fig, ax = plt.subplots(1, figsize=(3.4775/2, 3.4775/2))
+    plt.tight_layout()
+    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, "UMAP")
+    arrows, arrow_labels = plot_inst.plot_global_clock(
+        standartize_data=True,
+        standartize_coef=True,
+        biggest_arrow_method=False,
+        univar_importance=True,
+        ax=ax,
+        scale_circle=2,
+        move_circle=[0, 0],
+        annotate=0.9,
+        arrow_width=0.01,
+        angle_shift=1
+    )
+
+    ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_ylabel("UMAP2", size=8)
+    ax.set_xlabel("UMAP1", size=8)
+    # ax.set_title("Malignant cells", size=8)
+    ax.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax.xaxis.set_label_coords(x=0.5, y=-0.02)
+    plt.subplots_adjust(
+        left=0.08,
+        right=0.98,
+        top=0.95,
+        bottom=0.08,  # wspace=0.21, hspace=0.33
+    )
+    plt.savefig("plots/paper/neftel/neftel_all_1_degree.pdf")
+    
+    fig, ax = plt.subplots(1, figsize=(3.4775/2, 3.4775/2))
+    plt.tight_layout()
+    arrows, arrow_labels = plot_inst.plot_global_clock(
+        standartize_data=True,
+        standartize_coef=True,
+        biggest_arrow_method=False,
+        univar_importance=True,
+        ax=ax,
+        scale_circle=2,
+        move_circle=[0, 0],
+        annotate=0.9,
+        arrow_width=0.01,
+        angle_shift=5
+    )
+
+    ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_ylabel("UMAP2", size=8)
+    ax.set_xlabel("UMAP1", size=8)
+    # ax.set_title("Malignant cells", size=8)
+    ax.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax.xaxis.set_label_coords(x=0.5, y=-0.02)
+    plt.subplots_adjust(
+        left=0.08,
+        right=0.98,
+        top=0.95,
+        bottom=0.08,  # wspace=0.21, hspace=0.33
+    )
+    plt.savefig("plots/paper/neftel/neftel_all_5_degree.pdf")
+
+    
+    arrows, arrow_labels = plot_inst.plot_global_clock(
+        standartize_data=True,
+        standartize_coef=True,
+        biggest_arrow_method=False,
+        univar_importance=True,
+        ax=ax,
+        scale_circle=2,
+        move_circle=[0, 0],
+        annotate=0.9,
+        arrow_width=0.01,
+        angle_shift=15
+    )
+
+    ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_ylabel("UMAP2", size=8)
+    ax.set_xlabel("UMAP1", size=8)
+    # ax.set_title("Malignant cells", size=8)
+    ax.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax.xaxis.set_label_coords(x=0.5, y=-0.02)
+    plt.subplots_adjust(
+        left=0.08,
+        right=0.98,
+        top=0.95,
+        bottom=0.08,  # wspace=0.21, hspace=0.33
+    )
+    plt.savefig("plots/paper/neftel/neftel_all_15_degree.pdf")
+
+
+# test_between_all()
+# test_all_in_row()
+# print_neftel_all()
+test_experiment2()

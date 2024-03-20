@@ -50,6 +50,8 @@ class NonLinearClock:
 
         self.method = method
 
+        self.shift = 0
+
         self.colors = dict()
         tmp_colors = list(mcolors.TABLEAU_COLORS.keys())
         for i, obs in enumerate(observations):
@@ -227,7 +229,7 @@ class NonLinearClock:
         return data["emb1"].mean(), data["emb2"].mean()
 
     def _add_circles_lines(
-        self, num_circles, annotate, angles_shift, x_center, y_center
+        self, ax, num_circles, annotate, angles_shift, x_center, y_center
     ):
         # Add circles
         for a_s in list(range(0, 360, angles_shift)):
@@ -236,7 +238,7 @@ class NonLinearClock:
                 math.cos(a_s) * (num_circles - 1) * annotate,
                 math.sin(a_s) * (num_circles - 1) * annotate,
             )
-            plt.plot(
+            ax.plot(
                 (x_center, x_center + x_add),
                 (y_center, y_center + y_add),
                 c="gray",
@@ -302,26 +304,26 @@ class NonLinearClock:
 
             for i in range(coefs_scaled.shape[1]):
                 a = math.radians(self.angles[arrows_ind[i]])
-
-                # Plot contributions
-                x_c, y_c = (
-                    math.cos(a) * coefs_scaled[arrows_ind[i], i],
-                    math.sin(a) * coefs_scaled[arrows_ind[i], i],
-                )
-                col = self.colors[self.observations[i]]
-                lbl = labels[i]
-                arrows.append(
-                    ax.arrow(
-                        x_center,
-                        y_center,
-                        x_c,
-                        y_c,
-                        width=0.01,
-                        color=col,
-                        label=lbl,
-                        zorder=15,
+                if is_significant[arrows_ind[i], i]:
+                    # Plot contributions
+                    x_c, y_c = (
+                        math.cos(a) * coefs_scaled[arrows_ind[i], i],
+                        math.sin(a) * coefs_scaled[arrows_ind[i], i],
                     )
-                )
+                    col = self.colors[self.observations[i]]
+                    lbl = labels[i]
+                    arrows.append(
+                        ax.arrow(
+                            x_center,
+                            y_center,
+                            x_c,
+                            y_c,
+                            width=arrow_width,
+                            color=col,
+                            label=lbl,
+                            zorder=15,
+                        )
+                    )
 
             return arrows, labels
 
@@ -455,10 +457,10 @@ class NonLinearClock:
         annotate: float = 0.3,
         arrow_width: float = 0.1,
     ):
-        alpha = 0.2
+        alpha = 0.1
 
         # Scatter plot
-        ax.scatter(data["emb1"], data["emb2"], color="gray", s=3, alpha=alpha, zorder=0)
+        ax.scatter(data["emb1"], data["emb2"], color="gray", s=2, alpha=alpha, zorder=0)
         # fig.colorbar(sc)
 
         # Add circles lines
@@ -468,7 +470,7 @@ class NonLinearClock:
         c_min, c_max = self._get_cmin_cmax(coefs=coefs)
         num_circles = math.floor(radius / annotate) + 1
         coefs_scaled = coefs * (radius / max(abs(c_max), abs(c_min)))
-        self._add_circles_lines(num_circles, annotate, angles_shift, x_center, y_center)
+        self._add_circles_lines(ax, num_circles, annotate, angles_shift, x_center, y_center)
 
         if not windrose:
             arrows, arrow_labels = self._add_not_windrose(
@@ -506,11 +508,11 @@ class NonLinearClock:
                     ax.fill(a, b, alpha=alpha, c="gray")
 
     def _get_plot(self, ax, data, draw_hulls: bool = True):
-        alpha = 0.2
+        alpha = 0.1
 
         if draw_hulls:
             self._draw_clusters(ax, data, alpha)
-        ax.scatter(data["emb1"], data["emb2"], color="gray", s=3, alpha=alpha)
+        ax.scatter(data["emb1"], data["emb2"], color="gray", s=2, alpha=alpha)
 
     def _plot_small(
         self,
@@ -539,7 +541,7 @@ class NonLinearClock:
         c_min, c_max = self._get_cmin_cmax(coefs)
         num_circles = math.floor(radius / annotate) + 1
         coefs_scaled = coefs * (radius / max(abs(c_max), abs(c_min)))
-        self._add_circles_lines(num_circles, annotate, angles_shift, x_center, y_center)
+        self._add_circles_lines(ax, num_circles, annotate, angles_shift, x_center, y_center)
 
         arrows = []
         if not biggest_arrow:
@@ -587,7 +589,7 @@ class NonLinearClock:
                         y_center,
                         x_c,
                         y_c,
-                        width=0.01,
+                        width=arrow_width,
                         color=col,
                         label=lbl,
                         zorder=15,
@@ -731,11 +733,11 @@ class NonLinearClock:
         annotate,
         arrow_width,
     ):
-        alpha = 0.2
+        alpha = 0.1
 
         # Scatter plot
-        ax.scatter(data["emb1"], data["emb2"], color="gray", s=3, alpha=alpha, zorder=0)
-        self._draw_clusters(ax, data, alpha + 0.1)
+        ax.scatter(data["emb1"], data["emb2"], color="gray", s=2, alpha=alpha, zorder=0)
+        self._draw_clusters(ax, data, alpha)
 
         # Add lines and clock
         clock_centers = []
@@ -762,7 +764,7 @@ class NonLinearClock:
             radius = (math.dist(p_a, p_b) / 2) * scale_circle[i]
             c_min, c_max = self._get_cmin_cmax(coefs=coefs[i])
             num_circles = math.floor(radius / annotate[i]) + 1
-            self._add_circles_lines(num_circles, annotate[i], 90, x_center, y_center)
+            self._add_circles_lines(ax, num_circles, annotate[i], 90, x_center, y_center)
 
             # num_circles - one circle per annotation
             self._add_circles(
@@ -890,12 +892,13 @@ class NonLinearClock:
         annotate: float = 0.6,
         arrow_width: float = 0.1,
     ):
-        if not self.is_projected:
+        if not self.is_projected or self.shift != angle_shift:
             self.is_projected = True
+            self.shift = angle_shift
             self._prepare_data(standartize_data=standartize_data)
             self._create_angles_projections(angle_shift=angle_shift)
 
-        print(self.low_dim_data["cluster"].nunique())
+        # print(self.low_dim_data["cluster"].nunique())
         return self._plot_big_clock(
             ax=ax,
             standartize_coef=standartize_coef,
@@ -922,8 +925,9 @@ class NonLinearClock:
         annotates: list = [],
         arrow_width: float = 0.1,
     ):
-        if not self.is_projected:
+        if not self.is_projected or self.shift != angle_shift:
             self.is_projected = True
+            self.shift = angle_shift
             self._prepare_data(standartize_data=standartize_data)
             self._create_angles_projections(angle_shift=angle_shift)
 
@@ -966,8 +970,9 @@ class NonLinearClock:
         arrow_width: float = 0.03,
     ):
 
-        if not self.is_projected:
+        if not self.is_projected or self.shift != angle_shift:
             self.is_projected = True
+            self.shift = angle_shift
             self._prepare_data(standartize_data=standartize_data)
             self._create_angles_projections(angle_shift=angle_shift)
 
