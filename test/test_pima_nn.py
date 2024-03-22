@@ -11,7 +11,7 @@ def read_data(path):
     return pd.read_csv(path, header=0)
 
 
-def setup_pima_data(method="tsne", drop_labels=True):
+def setup_pima_data(method="tsne", drop_labels=True, file: str=""):
     file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/diabetes.csv"
     X = read_data(file_name)
     X.rename(columns={"DiabetesPedigreeFunction": "Pedigree"}, inplace=True)
@@ -27,7 +27,7 @@ def setup_pima_data(method="tsne", drop_labels=True):
 
     # compute umap
     if method == "umap":
-        file_name2 = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_diabetes.csv"
+        file_name2 = file
         Y = read_data(file_name2)
         Y = Y.dropna()
 
@@ -46,8 +46,8 @@ def setup_pima_data(method="tsne", drop_labels=True):
 
     return X, obs, standard_embedding, labels, clusters
 
-def print_pima_all():
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap", drop_labels=False)
+def print_pima_all(file, dataset_i):
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap", drop_labels=False, file=file)
     dpi = 1000
     # fig_size = (2.375, 2.375)
     fig_size = (3.2325, 2.9)
@@ -77,10 +77,10 @@ def print_pima_all():
 
     axi[1, 0].set_ylabel("UMAP2", size=8)
     axi[2, 1].set_xlabel("UMAP1", size=8)
-
+    
     plt.subplots_adjust(
         left=0.05,
-        right=1,
+        right=0.95,
         top=0.95,
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
@@ -89,11 +89,11 @@ def print_pima_all():
     # for ax in axi:
     #     for a in ax:
     #         a.axis('off') 
-    plt.savefig("plots/paper/pima_network/plot_pimaAll_nn.pdf")
+    plt.savefig(f"plots/paper/pima_network/plot_pimaAll_nn_{dataset_i}.pdf")
 
 
-def test_between_all():
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap")
+def test_between_all_1():
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap", file="/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_1.csv")
 
     fig, ax = plt.subplots(1, figsize=(3.2325, 3.2325)) #(2.375, 2.375)
     plt.tight_layout()
@@ -132,7 +132,7 @@ def test_between_all():
         loc="lower center",
         bbox_to_anchor=(0.5, 1.09),
         fontsize=7,
-        ncol=2,
+        ncol=3,
         markerscale=0.6,
         handlelength=1.5,
         columnspacing=0.8,
@@ -143,7 +143,7 @@ def test_between_all():
     ax.set_xticks([])
     ax.set_ylabel("UMAP2", size=8)
     ax.set_xlabel("UMAP1", size=8)
-    ax.set_title("Hidden layer for the diabetis prediction", size=8)
+    ax.set_title("First hidden layer", size=8)
     ax.yaxis.set_label_coords(x=-0.01, y=0.5)
     ax.xaxis.set_label_coords(x=0.5, y=-0.02)
     plt.subplots_adjust(
@@ -152,8 +152,72 @@ def test_between_all():
         top=0.77,
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
-    plt.savefig("plots/paper/pima_network/pima_global_nn.pdf")
+    plt.savefig("plots/paper/pima_network/pima_global_nn_1.pdf")
+
+def test_between_all_2():
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap", file = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_2.csv")
+
+    fig, ax = plt.subplots(1, figsize=(3.2325, 3.2325)) #(2.375, 2.375)
+    plt.tight_layout()
+
+    sc = ax.scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.3)
+    
+    legend1 = ax.legend(
+        handles = sc.legend_elements()[0],
+        loc="upper center",
+        # bbox_to_anchor=(0.0, 0.0),
+        fontsize=7,
+        ncol=3,
+        markerscale=0.6,
+        handlelength=1.5,
+        columnspacing=0.8,
+        handletextpad=0.1,
+        labels=["No diabetes", "Diabetes"])
+    
+    ax.add_artist(legend1)
+
+    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters)
+    arrows, arrow_labels = plot_inst.plot_global_clock(
+        standartize_data=False,
+        standartize_coef=True,
+        biggest_arrow_method=True,
+        univar_importance=False,
+        ax=ax,
+        scale_circle=1,
+        move_circle=[0, 0],
+        annotate=0.6,
+        arrow_width=0.1
+    )
+    ax.legend(
+        arrows,
+        arrow_labels,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.09),
+        fontsize=7,
+        ncol=3,
+        markerscale=0.6,
+        handlelength=1.5,
+        columnspacing=0.8,
+        handletextpad=0.5,
+    )
+
+    ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_ylabel("UMAP2", size=8)
+    ax.set_xlabel("UMAP1", size=8)
+    ax.set_title("Second hidden layer", size=8)
+    ax.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax.xaxis.set_label_coords(x=0.5, y=-0.02)
+    plt.subplots_adjust(
+        left=0.05,
+        right=0.95,
+        top=0.8,
+        bottom=0.05,  # wspace=0.21, hspace=0.33
+    )
+    plt.savefig("plots/paper/pima_network/pima_global_nn_2.pdf")
 
 
-print_pima_all()
-test_between_all()
+print_pima_all("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_1.csv", 1)
+test_between_all_1()
+print_pima_all("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_2.csv", 2)
+test_between_all_2()

@@ -278,7 +278,7 @@ def test_all_in_row():
     axi[0].set_xticks([])
     axi[0].set_ylabel("UMAP2", size=8)
     axi[0].set_xlabel("UMAP1", size=8)
-    axi[0].set_title("Malignant cells", size=8)
+    axi[0].set_title("Global clock", size=8)
     axi[0].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[0].xaxis.set_label_coords(x=0.5, y=-0.02)
 
@@ -299,7 +299,7 @@ def test_all_in_row():
     axi[1].set_xticks([])
     axi[1].set_ylabel("UMAP2", size=8)
     axi[1].set_xlabel("UMAP1", size=8)
-    axi[1].set_title("Malignant cells", size=8)
+    axi[1].set_title("Local clock", size=8)
     axi[1].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
 
@@ -331,7 +331,7 @@ def test_all_in_row():
     axi[2].set_xticks([])
     axi[2].set_ylabel("UMAP2", size=8)
     axi[2].set_xlabel("UMAP1", size=8)
-    axi[2].set_title("Malignant cells", size=8)
+    axi[2].set_title("Inter-cluster clock", size=8)
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
     plt.subplots_adjust(
@@ -503,6 +503,6 @@ def test_experiment2():
 
 
 # test_between_all()
-# test_all_in_row()
+test_all_in_row()
 # print_neftel_all()
-test_experiment2()
+# test_experiment2()

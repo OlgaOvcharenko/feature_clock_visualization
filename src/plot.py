@@ -34,7 +34,8 @@ class NonLinearClock:
 
         self.high_dim_data = high_dim_data
         self.observations = observations
-        self.low_dim_data = pd.DataFrame(low_dim_data, columns=["emb1", "emb2"])
+        self.low_dim_data = pd.DataFrame(
+            low_dim_data, columns=["emb1", "emb2"])
 
         if cluster_labels is not None:
             self.cluster_labels = cluster_labels
@@ -53,8 +54,10 @@ class NonLinearClock:
         self.shift = 0
 
         self.colors = dict()
-        tmp_colors = list(mcolors.TABLEAU_COLORS.keys())
+        tmp_colors = list(mcolors.TABLEAU_COLORS.keys()
+                          if len(observations) <= 10 else mcolors.CSS4_COLORS.keys())
         for i, obs in enumerate(observations):
+            # print(obs)
             self.colors[obs] = tmp_colors[i]
 
         if (self.method == "" and self.low_dim_data is not None) or (
@@ -191,6 +194,8 @@ class NonLinearClock:
         move_circle: list = [0, 0],
         annotate: float = 0.3,
         arrow_width: float = 0.1,
+        plot_scatter: bool = True,
+        plot_top_k: int = 0
     ):
         coefs, _, is_significant = self._get_importance(
             self.high_dim_data.to_numpy(),
@@ -207,6 +212,18 @@ class NonLinearClock:
                 warnings.warn(
                     "NaNs were introduced after standartizing coefficients and were replaced by 0."
                 )
+        if plot_top_k != 0:
+            min_ix = list(np.argsort(np.argmax(np.abs(coefs), axis=0))[0:coefs.shape[1]-plot_top_k])
+            is_significant[:, min_ix] = False
+
+            if plot_top_k <= 10:
+                tmp_colors = list(mcolors.TABLEAU_COLORS.keys())
+                j=0
+                for i, obs in enumerate(self.observations):
+                    if i not in min_ix:
+                        print(obs)
+                        self.colors[obs] = tmp_colors[j]
+                        j += 1
 
         arrows, arrow_labels = self._plot_central(
             ax,
@@ -222,6 +239,7 @@ class NonLinearClock:
             move_circle=move_circle,
             annotate=annotate,
             arrow_width=arrow_width,
+            plot_scatter=plot_scatter
         )
         return arrows, arrow_labels
 
@@ -268,7 +286,7 @@ class NonLinearClock:
         labels,
         x_center,
         y_center,
-        arrow_width,
+        arrow_width
     ):
         arrows = []
 
@@ -278,29 +296,34 @@ class NonLinearClock:
 
                 # Plot contributions
                 ind = abs(c).argsort(axis=None)[::-1]
-                x_add_coefs, y_add_coefs = math.cos(a) * c[ind], math.sin(a) * c[ind]
+                x_add_coefs, y_add_coefs = math.cos(
+                    a) * c[ind], math.sin(a) * c[ind]
 
                 for is_s, x_c, y_c, i in zip(s[ind], x_add_coefs, y_add_coefs, ind):
-                    if is_s:
-                        col = self.colors[self.observations[i]]
-                        lbl = labels[i]
-                        arrows.append(
-                            ax.arrow(
-                                x_center,
-                                y_center,
-                                x_c,
-                                y_c,
-                                width=arrow_width,
-                                color=col,
-                                label=lbl,
-                                zorder=15,
-                            )
+                    # if is_s: does not make sense since we want to see circles
+                    col = self.colors[self.observations[i]]
+                    lbl = labels[i]
+                    arrows.append(
+                        ax.arrow(
+                            x_center,
+                            y_center,
+                            x_c,
+                            y_c,
+                            width=arrow_width,
+                            color=col,
+                            label=lbl,
+                            zorder=15,
                         )
+                    )
 
             return arrows, labels
 
         else:
             arrows_ind = np.argmax(np.abs(coefs_scaled), axis=0)
+
+            ind = abs(coefs_scaled).argsort(axis=0)[::-1]
+            print(ind)
+            print(arrows_ind)
 
             for i in range(coefs_scaled.shape[1]):
                 a = math.radians(self.angles[arrows_ind[i]])
@@ -456,21 +479,25 @@ class NonLinearClock:
         move_circle: list = [0, 0],
         annotate: float = 0.3,
         arrow_width: float = 0.1,
+        plot_scatter: bool = True
     ):
         alpha = 0.1
 
-        # Scatter plot
-        ax.scatter(data["emb1"], data["emb2"], color="gray", s=2, alpha=alpha, zorder=0)
-        # fig.colorbar(sc)
+        if plot_scatter:
+            # Scatter plot
+            ax.scatter(data["emb1"], data["emb2"],
+                       color="gray", s=2, alpha=alpha, zorder=0)
 
         # Add circles lines
         x_center, y_center = self._get_center(data)
-        x_center, y_center = x_center + move_circle[0], y_center + move_circle[1]
+        x_center, y_center = x_center + \
+            move_circle[0], y_center + move_circle[1]
         radius = np.abs(coefs).max() * scale_circle
         c_min, c_max = self._get_cmin_cmax(coefs=coefs)
         num_circles = math.floor(radius / annotate) + 1
         coefs_scaled = coefs * (radius / max(abs(c_max), abs(c_min)))
-        self._add_circles_lines(ax, num_circles, annotate, angles_shift, x_center, y_center)
+        self._add_circles_lines(ax, num_circles, annotate,
+                                angles_shift, x_center, y_center)
 
         if not windrose:
             arrows, arrow_labels = self._add_not_windrose(
@@ -481,7 +508,7 @@ class NonLinearClock:
                 labels,
                 x_center,
                 y_center,
-                arrow_width,
+                arrow_width
             )
 
         else:
@@ -507,12 +534,14 @@ class NonLinearClock:
                     ax.plot(a, b, "--", c="gray", alpha=alpha)
                     ax.fill(a, b, alpha=alpha, c="gray")
 
-    def _get_plot(self, ax, data, draw_hulls: bool = True):
+    def _get_plot(self, ax, data, draw_hulls: bool = True, plot_scatter: bool = True):
         alpha = 0.1
 
         if draw_hulls:
             self._draw_clusters(ax, data, alpha)
-        ax.scatter(data["emb1"], data["emb2"], color="gray", s=2, alpha=alpha)
+        if plot_scatter:
+            ax.scatter(data["emb1"], data["emb2"],
+                       color="gray", s=2, alpha=alpha)
 
     def _plot_small(
         self,
@@ -541,7 +570,8 @@ class NonLinearClock:
         c_min, c_max = self._get_cmin_cmax(coefs)
         num_circles = math.floor(radius / annotate) + 1
         coefs_scaled = coefs * (radius / max(abs(c_max), abs(c_min)))
-        self._add_circles_lines(ax, num_circles, annotate, angles_shift, x_center, y_center)
+        self._add_circles_lines(ax, num_circles, annotate,
+                                angles_shift, x_center, y_center)
 
         arrows = []
         if not biggest_arrow:
@@ -550,7 +580,8 @@ class NonLinearClock:
 
                 # Plot contributions
                 ind = abs(c).argsort(axis=None)[::-1]
-                x_add_coefs, y_add_coefs = math.cos(a) * c[ind], math.sin(a) * c[ind]
+                x_add_coefs, y_add_coefs = math.cos(
+                    a) * c[ind], math.sin(a) * c[ind]
 
                 for is_s, x_c, y_c, i in zip(s[ind], x_add_coefs, y_add_coefs, ind):
                     if is_s:
@@ -576,25 +607,26 @@ class NonLinearClock:
                 a = math.radians(angles[arrows_ind[i]])
 
                 # Plot contributions
-                x_c, y_c = (
-                    math.cos(a) * coefs_scaled[arrows_ind[i], i],
-                    math.sin(a) * coefs_scaled[arrows_ind[i], i],
-                )
-
-                col = self.colors[self.observations[i]]
-                lbl = labels[i]
-                arrows.append(
-                    ax.arrow(
-                        x_center,
-                        y_center,
-                        x_c,
-                        y_c,
-                        width=arrow_width,
-                        color=col,
-                        label=lbl,
-                        zorder=15,
+                if is_significant[arrows_ind[i], i]:
+                    x_c, y_c = (
+                        math.cos(a) * coefs_scaled[arrows_ind[i], i],
+                        math.sin(a) * coefs_scaled[arrows_ind[i], i],
                     )
-                )
+
+                    col = self.colors[self.observations[i]]
+                    lbl = labels[i]
+                    arrows.append(
+                        ax.arrow(
+                            x_center,
+                            y_center,
+                            x_c,
+                            y_c,
+                            width=arrow_width,
+                            color=col,
+                            label=lbl,
+                            zorder=15,
+                        )
+                    )
 
         self._add_circles(
             ax, num_circles, annotate, x_center, y_center, radius, c_min, c_max
@@ -613,16 +645,18 @@ class NonLinearClock:
         move_circle,
         annotate,
         arrow_width,
+        plot_scatter,
+        plot_hulls,
+        plot_top_k
     ):
         dist_clusters = self.low_dim_data["cluster"].unique()
-        print(dist_clusters)
-        dist_clusters.sort()
+        dist_clusters.sort() #FIXME
         dist_clusters = (
             dist_clusters[1:] if dist_clusters[0] == -1 else dist_clusters
-        )  # FIXME
+        )
         arrows_all, arrow_labels_all = [], []
 
-        self._get_plot(ax, self.low_dim_data, True)
+        self._get_plot(ax, self.low_dim_data, plot_hulls, plot_scatter)
 
         all_coeffs, all_is_significant = [], []
         for cl in dist_clusters:
@@ -640,6 +674,21 @@ class NonLinearClock:
                 univar=univar_importance,
                 significance=feature_significance,
             )
+
+            if plot_top_k != 0:
+                min_ix = list(np.argsort(np.argmax(coefs, axis=0))[0:coefs.shape[1]-plot_top_k])
+                is_significant[:, min_ix] = False
+
+                # FIXME
+                # if plot_top_k <= 10:
+                #     tmp_colors = list(mcolors.TABLEAU_COLORS.keys())
+                #     j=0
+                #     for i, obs in enumerate(self.observations):
+                #         if i not in min_ix:
+                #             print(obs)
+                #             self.colors[obs] = tmp_colors[j]
+                #             j += 1
+
 
             all_coeffs.append(coefs)
             all_is_significant.append(is_significant)
@@ -685,7 +734,6 @@ class NonLinearClock:
             arrows_all.extend(arrows)
             arrow_labels_all.extend(arrow_labels)
 
-        # plt.legend(arrows_all, self.observations)
         return arrows_all, self.observations
 
     def _get_cluster_centers(self, dist_clusters):
@@ -732,12 +780,18 @@ class NonLinearClock:
         move_circle,
         annotate,
         arrow_width,
+        plot_scatter,
+        plot_hulls
     ):
         alpha = 0.1
 
         # Scatter plot
-        ax.scatter(data["emb1"], data["emb2"], color="gray", s=2, alpha=alpha, zorder=0)
-        self._draw_clusters(ax, data, alpha)
+        if plot_scatter:
+            ax.scatter(data["emb1"], data["emb2"],
+                       color="gray", s=2, alpha=alpha, zorder=0)
+
+        if plot_hulls:
+            self._draw_clusters(ax, data, alpha)
 
         # Add lines and clock
         clock_centers = []
@@ -764,14 +818,16 @@ class NonLinearClock:
             radius = (math.dist(p_a, p_b) / 2) * scale_circle[i]
             c_min, c_max = self._get_cmin_cmax(coefs=coefs[i])
             num_circles = math.floor(radius / annotate[i]) + 1
-            self._add_circles_lines(ax, num_circles, annotate[i], 90, x_center, y_center)
+            self._add_circles_lines(
+                ax, num_circles, annotate[i], 90, x_center, y_center)
 
             # num_circles - one circle per annotation
             self._add_circles(
                 ax, num_circles, annotate[i], x_center, y_center, radius, c_min, c_max
             )
 
-            coefs_scaled[i] = coefs_scaled[i] * (radius / max(abs(c_max), abs(c_min)))
+            coefs_scaled[i] = coefs_scaled[i] * \
+                (radius / max(abs(c_max), abs(c_min)))
 
         # Add arrows
         arrows = {}
@@ -816,10 +872,13 @@ class NonLinearClock:
         move_circle,
         annotate,
         arrow_width,
+        plot_scatter,
+        plot_hulls
     ):
         dist_clusters = self.low_dim_data["cluster"].unique()
         dist_clusters.sort()
-        dist_clusters = dist_clusters[1:] if dist_clusters[0] == -1 else dist_clusters
+        dist_clusters = dist_clusters[1:] if dist_clusters[0] == - \
+            1 else dist_clusters
 
         cl_means = self._get_cluster_centers(dist_clusters)
         adj_matrix = self._build_adj_matrix(cl_means)
@@ -871,6 +930,8 @@ class NonLinearClock:
             move_circle,
             annotate,
             arrow_width,
+            plot_scatter,
+            plot_hulls
         )
 
         return arrows, labels
@@ -891,14 +952,27 @@ class NonLinearClock:
         move_circle: list = [0, 0],
         annotate: float = 0.6,
         arrow_width: float = 0.1,
+        plot_scatter: bool = True,
+        plot_top_k: int = 0
     ):
         if not self.is_projected or self.shift != angle_shift:
             self.is_projected = True
             self.shift = angle_shift
             self._prepare_data(standartize_data=standartize_data)
             self._create_angles_projections(angle_shift=angle_shift)
+        
+        if plot_top_k <= 0:
+            raise Exception(
+                f"Invalid value for plot_top_k: {plot_top_k} (0 - plot all, ncol > k > 0)."
+            )
 
-        # print(self.low_dim_data["cluster"].nunique())
+        if plot_top_k > self.high_dim_data.shape[1]:
+            raise Exception(
+                f"Invalid value for plot_top_k: {plot_top_k} (0 - plot all, ncol > k > 0). plot_top_k greater than umber of columns."
+            )
+
+        print(plot_top_k)
+
         return self._plot_big_clock(
             ax=ax,
             standartize_coef=standartize_coef,
@@ -909,6 +983,8 @@ class NonLinearClock:
             move_circle=move_circle,
             annotate=annotate,
             arrow_width=arrow_width,
+            plot_scatter=plot_scatter,
+            plot_top_k=plot_top_k
         )
 
     def plot_local_clocks(
@@ -924,6 +1000,9 @@ class NonLinearClock:
         move_circles: list = [],
         annotates: list = [],
         arrow_width: float = 0.1,
+        plot_scatter: bool = True,
+        plot_hulls: bool = True,
+        plot_top_k: int = 0
     ):
         if not self.is_projected or self.shift != angle_shift:
             self.is_projected = True
@@ -942,6 +1021,16 @@ class NonLinearClock:
                 scale_circles.append(1)
                 move_circles.append([0, 0])
                 annotates.append(0.3)
+        
+        if plot_top_k < 0:
+            raise Exception(
+                f"Invalid value for plot_top_k: {plot_top_k} (0 - plot all, ncol > k > 0)."
+            )
+
+        if plot_top_k > self.high_dim_data.shape[1]:
+            raise Exception(
+                f"Invalid value for plot_top_k: {plot_top_k} (0 - plot all, ncol > k > 0). plot_top_k greater than umber of columns."
+            )
 
         arrows_all, arrow_labels_all = self._plot_small_clock(
             ax=ax,
@@ -953,6 +1042,9 @@ class NonLinearClock:
             move_circle=move_circles,
             annotate=annotates,
             arrow_width=arrow_width,
+            plot_scatter=plot_scatter,
+            plot_hulls=plot_hulls,
+            plot_top_k=plot_top_k
         )
         return arrows_all, arrow_labels_all
 
@@ -968,6 +1060,9 @@ class NonLinearClock:
         move_circles: list = [],
         annotates: list = [],
         arrow_width: float = 0.03,
+        plot_scatter: bool = True,
+        plot_hulls: bool = True,
+        plot_top_k: int = 0
     ):
 
         if not self.is_projected or self.shift != angle_shift:
@@ -975,6 +1070,16 @@ class NonLinearClock:
             self.shift = angle_shift
             self._prepare_data(standartize_data=standartize_data)
             self._create_angles_projections(angle_shift=angle_shift)
+        
+        if plot_top_k <= 0:
+            raise Exception(
+                f"Invalid value for plot_top_k: {plot_top_k} (0 - plot all, ncol > k > 0)."
+            )
+
+        if plot_top_k > self.high_dim_data.shape[1]:
+            raise Exception(
+                f"Invalid value for plot_top_k: {plot_top_k} (0 - plot all, ncol > k > 0). plot_top_k greater than umber of columns."
+            )
 
         n_clusters = self.low_dim_data["cluster"].nunique() - 1
         if n_clusters != len(scale_circles) != len(move_circles) != len(annotates):
@@ -997,6 +1102,8 @@ class NonLinearClock:
             move_circle=move_circles,
             annotate=annotates,
             arrow_width=arrow_width,
+            plot_scatter=plot_scatter,
+            plot_hulls=plot_hulls,
         )
 
         return arrows, labels
