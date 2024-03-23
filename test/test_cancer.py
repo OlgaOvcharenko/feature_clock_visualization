@@ -47,13 +47,20 @@ def setup_cancer_data(method="tsne", drop_labels=True):
         raise NotImplementedError()
     
     # get clusters
-    clusters = HDBSCAN(min_samples=12).fit_predict(X)
-    # clusters = KMeans(n_clusters=3, n_init="auto", max_iter=1000).fit_predict(X)
+    # clusters = HDBSCAN(min_samples=12).fit_predict(X)
+    clusters = KMeans(n_clusters=2, n_init="auto", max_iter=1000, random_state=42).fit_predict(X)
 
     return X, obs, standard_embedding, labels, clusters
 
 
 def test_between_all_3():
+    colors = [
+        'tab:pink', 'darkorchid', 'tab:green', 'cornflowerblue', 'mediumslateblue', 'crimson', 
+        'tab:blue', 'tab:olive', 'coral', 'black', 'blueviolet', 'brown', 
+        'darkgoldenrod', 'tab:orange', 'darkgreen', 'darkgrey', 'darkkhaki', 'darkmagenta', 
+        'cadetblue', 'chartreuse', 'tab:purple', 'tab:cyan', 'tab:red', 'tab:brown', 'darkblue', 
+        'darkolivegreen', 'darkorange', 'lawngreen', 'darkred', "orangered"]
+
     X_new, obs, standard_embedding, labels, clusters = setup_cancer_data(method="umap")
 
     fig, axi = plt.subplots(1, 3, figsize=(7.125-0.66, 2.375))
@@ -75,7 +82,7 @@ def test_between_all_3():
     
     axi[0].add_artist(legend1)
 
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters)
+    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters, color_scheme=colors)
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -87,10 +94,8 @@ def test_between_all_3():
         annotate=1.0,
         arrow_width=0.1,
         plot_scatter=False,
-        plot_top_k=5 
+        plot_top_k=5
     )
-
-    print(len(arrows))
 
     axi[0].set_yticks([])
     axi[0].set_xticks([])
@@ -107,19 +112,36 @@ def test_between_all_3():
     )
 
     # Local
-    arrows, arrow_labels = plot_inst.plot_local_clocks(
+    arrows1, arrow_labels1 = plot_inst.plot_local_clocks(
         standartize_data=True,
         standartize_coef=True,
         biggest_arrow_method=True,
         univar_importance=False,
         ax=axi[1],
-        scale_circles=[0.5, 5],
-        move_circles=[[0, 0], [0, 0]],
-        annotates=[1.0, 5.0],
+        scale_circles=[1.1, 0.5],
+        move_circles=[[-0.4, 0], [0.5, 0]],
+        annotates=[1.0, 1.5],
         arrow_width=0.08,
         plot_top_k=5,
-        plot_hulls=True
+        plot_hulls=True,
+        plot_scatter=False
     )
+
+    sc2 = axi[1].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.3)
+    
+    legend2 = axi[1].legend(
+        handles = sc2.legend_elements()[0],
+        loc="upper center",
+        # bbox_to_anchor=(0.0, 0.0),
+        fontsize=7,
+        ncol=3,
+        markerscale=0.6,
+        handlelength=1.5,
+        columnspacing=0.8,
+        handletextpad=0.1,
+        labels=["Malignant", "Benign"])
+    
+    axi[1].add_artist(legend2)
 
     axi[1].set_yticks([])
     axi[1].set_xticks([])
@@ -128,44 +150,70 @@ def test_between_all_3():
     axi[1].set_title("Local clock", size=8)
     axi[1].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
-    print(len(arrows))
 
-    # # Between
-    # _, _ = plot_inst.plot_between_clock(
-    #     standartize_data=True,
-    #     standartize_coef=True,
-    #     univar_importance=True,
-    #     ax=axi[2],
-    #     scale_circles=[1.25],
-    #     move_circles=[[0, 0]],
-    #     annotates=[1.1],
-    #     arrow_width=0.08,
-    # )
-    # axi[2].legend(
-    #     arrows,
-    #     arrow_labels,
-    #     loc="lower center",
-    #     bbox_to_anchor=(-0.84, 1.12),
-    #     fontsize=7,
-    #     ncol=8,
-    #     markerscale=0.6,
-    #     handlelength=1.5,
-    #     columnspacing=0.8,
-    #     handletextpad=0.5,
-    # )
+    # Between
+    sc3 = axi[2].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.3)
+    
+    legend3 = axi[2].legend(
+        handles = sc3.legend_elements()[0],
+        loc="upper center",
+        # bbox_to_anchor=(0.0, 0.0),
+        fontsize=7,
+        ncol=3,
+        markerscale=0.6,
+        handlelength=1.5,
+        columnspacing=0.8,
+        handletextpad=0.1,
+        labels=["Malignant", "Benign"])
+    
+    axi[2].add_artist(legend3)
+    
+    arrows2, arrow_labels2 = plot_inst.plot_between_clock(
+        standartize_data=True,
+        standartize_coef=True,
+        univar_importance=True,
+        ax=axi[2],
+        scale_circles=[1.25],
+        move_circles=[[0, 0]],
+        annotates=[1.1],
+        arrow_width=0.08,
+        plot_top_k=5,
+        plot_scatter=False
+    )
 
-    # axi[2].set_yticks([])
-    # axi[2].set_xticks([])
-    # axi[2].set_ylabel("UMAP2", size=8)
-    # axi[2].set_xlabel("UMAP1", size=8)
-    # axi[2].set_title("Inter-cluster clock", size=8)
-    # axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
-    # axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
+    arrows_dict = {}
+    for i, val in enumerate(arrow_labels):
+        arrows_dict[val] = arrows[i]
+    for i, val in enumerate(arrow_labels1):
+        arrows_dict[val] = arrows1[i]
+    for i, val in enumerate(arrow_labels2):
+        arrows_dict[val] = arrows2[i]
+
+    axi[2].legend(
+        list(arrows_dict.values()),
+        list(arrows_dict.keys()),
+        loc="lower center",
+        bbox_to_anchor=(-0.84, 1.12),
+        fontsize=7,
+        ncol=5,
+        markerscale=0.6,
+        handlelength=1.5,
+        columnspacing=0.8,
+        handletextpad=0.5,
+    )
+
+    axi[2].set_yticks([])
+    axi[2].set_xticks([])
+    axi[2].set_ylabel("UMAP2", size=8)
+    axi[2].set_xlabel("UMAP1", size=8)
+    axi[2].set_title("Inter-cluster clock", size=8)
+    axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
+    axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
 
     plt.subplots_adjust(
-        left=0.05,
-        right=0.95,
-        top=0.79,
+        left=0.03,
+        right=0.99,
+        top=0.75,
         bottom=0.07,  # wspace=0.21, hspace=0.33
     )
     plt.savefig("plots/paper/cancer/cancer_3.pdf")
@@ -173,3 +221,6 @@ def test_between_all_3():
 # print_cancer_all()
 test_between_all_3()
 # teaser()
+# import matplotlib.colors as mcolors
+# print(list(mcolors.TABLEAU_COLORS.keys()))
+# print(list(mcolors.CSS4_COLORS.keys()))
