@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
-from src.plot import NonLinearClock
+from src.nonlinear_clock.plot import NonLinearClock
 import umap
 from sklearn.cluster import HDBSCAN
 from sklearn.cluster import KMeans
@@ -112,9 +112,14 @@ def test_between_all_1():
         handletextpad=0.1,
         labels=["No diabetes", "Diabetes"])
     
+    colors = [
+        'tab:pink', 'tab:green', 'tab:blue', 'tab:olive', 'tab:orange',
+        'tab:purple', 'tab:cyan', 'tab:red', 'tab:brown']
     ax.add_artist(legend1)
 
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters)
+    plot_inst = NonLinearClock(
+        X_new, obs, standard_embedding, labels, 
+        method="UMAP", cluster_labels=clusters, color_scheme=colors)
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -124,7 +129,7 @@ def test_between_all_1():
         scale_circle=1,
         move_circle=[0, 0],
         annotate=0.6,
-        arrow_width=0.1
+        arrow_width=0.1,
     )
     ax.legend(
         arrows,
@@ -176,7 +181,13 @@ def test_between_all_2():
     
     ax.add_artist(legend1)
 
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters)
+    colors = [
+        'tab:pink', 'tab:green', 'tab:blue', 'tab:olive', 'tab:orange',
+        'tab:purple', 'tab:cyan', 'tab:red', 'tab:brown']
+    
+    plot_inst = NonLinearClock(
+        X_new, obs, standard_embedding, labels, method="UMAP", 
+        cluster_labels=clusters, color_scheme=colors)
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,

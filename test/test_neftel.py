@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import scanpy as sp
-from src.plot import NonLinearClock
+from src.nonlinear_clock.plot import NonLinearClock
 import scanpy.external as sce
 import phate
 

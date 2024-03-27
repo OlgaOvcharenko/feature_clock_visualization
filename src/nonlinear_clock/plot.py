@@ -16,7 +16,7 @@ from skspatial.objects import Line
 import math
 import matplotlib.patheffects as pe
 from sklearn.manifold import TSNE
-from src.graph import Graph
+from src.nonlinear_clock.graph import Graph
 import warnings
 
 
@@ -68,6 +68,9 @@ class NonLinearClock:
             raise Exception(
                 "Low dimensional data or dimensionality reduction method is not specified."
             )
+
+        if cluster_labels is not None or self.low_dim_data is not None:
+            self._prepare_data(standartize_data=False)
 
     def compute_UMAP(self, *args):
         self.method = "UMAP"
@@ -720,7 +723,7 @@ class NonLinearClock:
                         arrows_dict[lbl] = arrow
             
             else:
-                warnings.warn("Cluster {i} has no significant features.")
+                warnings.warn(f"Cluster {i} has no significant features.")
 
 
         return list(arrows_dict.values()), list(arrows_dict.keys())
@@ -824,7 +827,7 @@ class NonLinearClock:
             for i in abs(coefs_scaled[j]).argsort(axis=None)[::-1]:
                 # Add actual arrow
                 a = math.radians(angles[j])
-                x_center, y_center = clock_centers[mst[j][0]]
+                x_center, y_center = clock_centers[min(mst[j][0], mst[j][1])]
 
                 if coefs_scaled[j, i] != 0:
                     # Plot contributions
@@ -834,7 +837,6 @@ class NonLinearClock:
                     )
                     lbl = labels[i]
                     col = self.colors[lbl]
-
                     arrow = ax.arrow(
                         x_center,
                         y_center,
@@ -958,7 +960,7 @@ class NonLinearClock:
             self._prepare_data(standartize_data=standartize_data)
             self._create_angles_projections(angle_shift=angle_shift)
         
-        if plot_top_k <= 0:
+        if plot_top_k < 0:
             raise Exception(
                 f"Invalid value for plot_top_k: {plot_top_k} (0 - plot all, ncol > k > 0)."
             )

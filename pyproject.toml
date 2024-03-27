@@ -1,0 +1,18 @@
+[project]
+name = "nonlinear_clock"
+version = "0.0.1"
+authors = [
+  { name="Olga Ovcharenko", email="ovcharenko.folga@gmail.com" },
+]
+description = "Nonlinear Clock, provides visualizations that eliminate the need for multiple plots to inspect the influence of original variables in the latent space. Nonlinear Clock enhances the explainability and compactness of visualizations of embedded data."
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: Apache License 2.0",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/OlgaOvcharenko/non_lin_visualization"
+Issues = "https://github.com/OlgaOvcharenko/non_lin_visualization/issues"
