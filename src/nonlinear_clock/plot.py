@@ -164,6 +164,19 @@ class NonLinearClock:
             for angle in self.angles
         ]
         self.projections = np.array(projections).T
+    
+    def _create_biggest_projections(self):
+        self.angles = [0, 90]
+        projections = [
+            self._project_line(
+                self.low_dim_data,
+                angle,
+                point_a=[0, 0],
+                point_b=self._get_slope_from_angle(angle),
+            )
+            for angle in self.angles
+        ]
+        self.projections = np.array(projections).T
 
     def _get_importance(self, X, y, significance: float = 0.05, univar: bool = False):
         coefs, pvals, is_significant = [], [], []
@@ -217,26 +230,53 @@ class NonLinearClock:
                 warnings.warn(
                     "NaNs were introduced after standartizing coefficients and were replaced by 0."
                 )
-        if plot_top_k != 0:
-            min_ix = list(np.argsort(np.max(np.abs(coefs * is_significant), axis=0))[0:coefs.shape[1]-plot_top_k])
-            is_significant[:, min_ix] = False
 
-        arrows, arrow_labels = self._plot_central(
-            ax,
-            self.low_dim_data,
-            45,
-            self.angles,
-            coefs,
-            is_significant,
-            self.observations,
-            windrose=False,
-            biggest_arrow=biggest_arrow,
-            scale_circle=scale_circle,
-            move_circle=move_circle,
-            annotate=annotate,
-            arrow_width=arrow_width,
-            plot_scatter=plot_scatter
-        )
+        if biggest_arrow:
+            is_significant = np.logical_and(is_significant[0], is_significant[1])
+            coefs_points = [[x, y] for x, y in zip(coefs[0], coefs[1])]
+            coefs_new = np.array([math.sqrt((x * x) + (y * y)) for x, y in zip(coefs[0], coefs[1])])
+
+            if plot_top_k != 0:    
+                min_ix = list(np.argsort(coefs_new)[0:coefs.shape[1]-plot_top_k])
+                is_significant[:, min_ix] = False
+
+            coefs = coefs_new
+
+            arrows, arrow_labels = self._plot_central(
+                ax,
+                self.low_dim_data,
+                45,
+                coefs,
+                is_significant,
+                self.observations,
+                biggest_arrow=biggest_arrow,
+                scale_circle=scale_circle,
+                move_circle=move_circle,
+                annotate=annotate,
+                arrow_width=arrow_width,
+                plot_scatter=plot_scatter,
+                points = coefs_points
+            )
+
+        else:
+            if plot_top_k != 0:
+                min_ix = list(np.argsort(np.max(np.abs(coefs * is_significant), axis=0))[0:coefs.shape[1]-plot_top_k])
+                is_significant[:, min_ix] = False
+
+            arrows, arrow_labels = self._plot_central(
+                ax,
+                self.low_dim_data,
+                45,
+                coefs,
+                is_significant,
+                self.observations,
+                biggest_arrow=biggest_arrow,
+                scale_circle=scale_circle,
+                move_circle=move_circle,
+                annotate=annotate,
+                arrow_width=arrow_width,
+                plot_scatter=plot_scatter
+            )
         return arrows, arrow_labels
 
     def _get_center(self, data):
@@ -272,11 +312,45 @@ class NonLinearClock:
         else:
             c_max = 0
         return c_min, c_max
-
-    def _add_not_windrose(
+    
+    def _add_biggest_contributions(
         self,
         ax,
-        biggest_arrow,
+        coefs_scaled,
+        is_significant,
+        labels,
+        x_center,
+        y_center,
+        arrow_width,
+        points
+    ):
+        arrows, labels_all = [], []
+        ix_col_by_len = np.argsort(coefs_scaled)[::-1]
+        
+        for i in ix_col_by_len:
+            if is_significant[i]:
+                # Plot contributions
+                col = self.colors[self.observations[i]]
+                lbl = labels[i]
+                arrows.append(
+                    ax.arrow(
+                        x_center,
+                        y_center,
+                        points[i][0],
+                        points[i][1],
+                        width=arrow_width,
+                        color=col,
+                        label=lbl,
+                        zorder=15,
+                    )
+                )
+                labels_all.append(lbl)
+
+        return arrows, labels_all
+
+    def _add_circle_contributions(
+        self,
+        ax,
         coefs_scaled,
         is_significant,
         labels,
@@ -285,90 +359,33 @@ class NonLinearClock:
         arrow_width
     ):
         arrows, labels_all = [], []
-
-        if not biggest_arrow:
-            for a, c, s in zip(self.angles, coefs_scaled, is_significant):
-                a = math.radians(a)
-
-                # Plot contributions
-                ind = abs(c).argsort(axis=None)[::-1]
-                x_add_coefs, y_add_coefs = math.cos(
-                    a) * c[ind], math.sin(a) * c[ind]
-
-                for is_s, x_c, y_c, i in zip(s[ind], x_add_coefs, y_add_coefs, ind):
-                    # if is_s: does not make sense since we want to see circles
-                    col = self.colors[self.observations[i]]
-                    lbl = labels[i]
-                    arrows.append(
-                        ax.arrow(
-                            x_center,
-                            y_center,
-                            x_c,
-                            y_c,
-                            width=arrow_width,
-                            color=col,
-                            label=lbl,
-                            zorder=15,
-                        )
-                    )
-                    
-            return arrows, labels
-
-        else:
-            arrows_ind = np.argmax(np.abs(coefs_scaled), axis=0)
-            ix_col_by_len = np.argsort([abs(coefs_scaled[val, i]) for i, val in enumerate(arrows_ind)])[::-1]
-
-            for i in ix_col_by_len:
-                a = math.radians(self.angles[arrows_ind[i]])
-                if is_significant[arrows_ind[i], i]:
-                    # Plot contributions
-                    x_c, y_c = (
-                        math.cos(a) * coefs_scaled[arrows_ind[i], i],
-                        math.sin(a) * coefs_scaled[arrows_ind[i], i],
-                    )
-                    col = self.colors[self.observations[i]]
-                    lbl = labels[i]
-                    arrows.append(
-                        ax.arrow(
-                            x_center,
-                            y_center,
-                            x_c,
-                            y_c,
-                            width=arrow_width,
-                            color=col,
-                            label=lbl,
-                            zorder=15,
-                        )
-                    )
-                    labels_all.append(lbl)
-
-            return arrows, labels_all
-
-    def _add_windrose(self, ax, coefs_scaled, radius, x_center, y_center, labels):
-        points_x, points_y = [], []
-        for a, c in zip(self.angles, coefs_scaled):
+        for a, c, s in zip(self.angles, coefs_scaled, is_significant):
             a = math.radians(a)
-            # x_add, y_add = math.cos(a) * radius, math.sin(a) * radius
-            x_add_coefs, y_add_coefs = math.cos(a) * c, math.sin(a) * c
-            points_x.append(x_center + x_add_coefs)
-            points_y.append(y_center + y_add_coefs)
 
-        points_x = np.array(points_x)
-        points_y = np.array(points_y)
-        order_ix = np.argsort(
-            (abs(points_x).mean(axis=0) + abs(points_y).mean(axis=0)) / 2
-        )[::-1]
-        for i in order_ix:
-            ax.plot(
-                points_x[:, i],
-                points_y[:, i],
-                "-",
-                c=self.colors[self.observations[i]],
-                alpha=1,
-                label=labels[i],
-            )
+            # Plot contributions
+            ind = abs(c).argsort(axis=None)[::-1]
+            x_add_coefs, y_add_coefs = math.cos(
+                a) * c[ind], math.sin(a) * c[ind]
 
-        ax.legend()
+            for is_s, x_c, y_c, i in zip(s[ind], x_add_coefs, y_add_coefs, ind):
+                # if is_s: does not make sense since we want to see circles
+                col = self.colors[self.observations[i]]
+                lbl = labels[i]
+                arrows.append(
+                    ax.arrow(
+                        x_center,
+                        y_center,
+                        x_c,
+                        y_c,
+                        width=arrow_width,
+                        color=col,
+                        label=lbl,
+                        zorder=15,
+                    )
+                )
+                labels_all.append(lbl)
+                
+        return arrows, labels_all
 
     def _make_circles(
         self, ax, num_circles, annotate, x_center, y_center, radius, c_max, c_min
@@ -463,17 +480,16 @@ class NonLinearClock:
         ax: matplotlib.axis.Axis,
         data,
         angles_shift,
-        angles,
         coefs,
         is_significant,
         labels,
-        windrose: bool = True,
         biggest_arrow: bool = True,
         scale_circle: float = 1,
         move_circle: list = [0, 0],
         annotate: float = 0.3,
         arrow_width: float = 0.1,
-        plot_scatter: bool = True
+        plot_scatter: bool = True,
+        points: list = []
     ):
         alpha = 0.1
 
@@ -492,11 +508,10 @@ class NonLinearClock:
         coefs_scaled = coefs * (radius / max(abs(c_max), abs(c_min)))
         self._add_circles_lines(ax, num_circles, annotate,
                                 angles_shift, x_center, y_center)
-
-        if not windrose:
-            arrows, arrow_labels = self._add_not_windrose(
+        
+        if not biggest_arrow:
+            arrows, arrow_labels = self._add_circle_contributions(
                 ax,
-                biggest_arrow,
                 coefs_scaled,
                 is_significant,
                 labels,
@@ -504,10 +519,22 @@ class NonLinearClock:
                 y_center,
                 arrow_width
             )
-
-        else:
-            arrows, arrow_labels = self._add_windrose(
-                ax, coefs_scaled, radius, x_center, y_center
+        else: 
+            if len(points) != len(labels):
+                raise Exception(f"Points for biggest arrow method are not computed.")
+            
+            points = [[point[0] * (radius / max(abs(c_max), abs(c_min))), 
+                       point[1] * (radius / max(abs(c_max), abs(c_min)))] 
+                       for point in points]
+            arrows, arrow_labels = self._add_biggest_contributions(
+                ax,
+                coefs_scaled,
+                is_significant,
+                labels,
+                x_center,
+                y_center,
+                arrow_width,
+                points=points
             )
 
         # num_circles - one circle per annotation
@@ -551,6 +578,7 @@ class NonLinearClock:
         annotate: float = 0.2,
         move_circle: list = [0, 0],
         arrow_width: float = 0.01,
+        points: list = []
     ):
         x_center, y_center = self._get_center(data)
 
@@ -574,8 +602,7 @@ class NonLinearClock:
 
                 # Plot contributions
                 ind = abs(c).argsort(axis=None)[::-1]
-                x_add_coefs, y_add_coefs = math.cos(
-                    a) * c[ind], math.sin(a) * c[ind]
+                x_add_coefs, y_add_coefs = math.cos(a) * c[ind], math.sin(a) * c[ind]
 
                 for is_s, x_c, y_c, i in zip(s[ind], x_add_coefs, y_add_coefs, ind):
                     if is_s:
@@ -595,27 +622,26 @@ class NonLinearClock:
                         )
 
         else:
-            arrows_ind = np.argmax(np.abs(coefs_scaled), axis=0)
-            ix_col_by_len = np.argsort([abs(coefs_scaled[val, i]) for i, val in enumerate(arrows_ind)])[::-1]
+            if len(points) != len(labels):
+                raise Exception(f"Points for biggest arrow method are not computed.")
+            
+            ix_col_by_len = np.argsort(coefs_scaled)[::-1]
+
+            points = [[point[0] * (radius / max(abs(c_max), abs(c_min))), 
+                       point[1] * (radius / max(abs(c_max), abs(c_min)))] 
+                       for point in points]
 
             for i in ix_col_by_len:
-                a = math.radians(angles[arrows_ind[i]])
-
                 # Plot contributions
-                if is_significant[arrows_ind[i], i]:
-                    x_c, y_c = (
-                        math.cos(a) * coefs_scaled[arrows_ind[i], i],
-                        math.sin(a) * coefs_scaled[arrows_ind[i], i],
-                    )
-
+                if is_significant[i]:
                     col = self.colors[self.observations[i]]
                     lbl = labels[i]
                     arrows.append(
                         ax.arrow(
                             x_center,
                             y_center,
-                            x_c,
-                            y_c,
+                            points[i][0],
+                            points[i][1],
                             width=arrow_width,
                             color=col,
                             label=lbl,
@@ -653,7 +679,7 @@ class NonLinearClock:
 
         self._get_plot(ax, self.low_dim_data, plot_hulls, plot_scatter)
 
-        all_coeffs, all_is_significant = [], []
+        all_coeffs, all_is_significant, all_points = [], [], []
         arrows_dict = {}
         for cl in dist_clusters:
             ind = (self.low_dim_data["cluster"] == cl).values.reshape(
@@ -671,9 +697,23 @@ class NonLinearClock:
                 significance=feature_significance,
             )
 
-            if plot_top_k != 0:
-                min_ix = list(np.argsort(np.max(np.abs(coefs * is_significant), axis=0))[0:coefs.shape[1]-plot_top_k])
-                is_significant[:, min_ix] = False
+            if biggest_arrow:
+                is_significant = np.logical_and(is_significant[0], is_significant[1])
+                coefs_points = [[x, y] for x, y in zip(coefs[0], coefs[1])]
+                coefs_new = np.array([math.sqrt((x * x) + (y * y)) for x, y in zip(coefs[0], coefs[1])])
+
+                if plot_top_k != 0:    
+                    min_ix = list(np.argsort(coefs_new)[0:coefs.shape[1]-plot_top_k])
+                    is_significant[:, min_ix] = False
+
+                coefs = coefs_new
+
+                all_points.append(coefs_points)
+
+            else:
+                if plot_top_k != 0:
+                    min_ix = list(np.argsort(np.max(np.abs(coefs * is_significant), axis=0))[0:coefs.shape[1]-plot_top_k])
+                    is_significant[:, min_ix] = False
 
             all_coeffs.append(coefs)
             all_is_significant.append(is_significant)
@@ -716,6 +756,7 @@ class NonLinearClock:
                     biggest_arrow=biggest_arrow,
                     move_circle=move_circle[i],
                     arrow_width=arrow_width,
+                    points=all_points[i] if len(all_points) > 0 else []
                 )
 
                 for arrow, lbl in zip(arrows, arrow_labels):
@@ -958,7 +999,11 @@ class NonLinearClock:
             self.is_projected = True
             self.shift = angle_shift
             self._prepare_data(standartize_data=standartize_data)
-            self._create_angles_projections(angle_shift=angle_shift)
+
+            if biggest_arrow_method:
+                self._create_biggest_projections()
+            else: 
+                self._create_angles_projections(angle_shift=angle_shift)
         
         if plot_top_k < 0:
             raise Exception(
@@ -1005,7 +1050,11 @@ class NonLinearClock:
             self.is_projected = True
             self.shift = angle_shift
             self._prepare_data(standartize_data=standartize_data)
-            self._create_angles_projections(angle_shift=angle_shift)
+
+            if biggest_arrow_method:
+                self._create_biggest_projections()
+            else: 
+                self._create_angles_projections(angle_shift=angle_shift)
 
         n_clusters = self.low_dim_data["cluster"].nunique()
         if n_clusters != len(scale_circles) != len(move_circles) != len(annotates):
