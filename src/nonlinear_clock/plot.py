@@ -18,7 +18,7 @@ import matplotlib.patheffects as pe
 from sklearn.manifold import TSNE
 from src.nonlinear_clock.graph import Graph
 import warnings
-
+from sklearn.preprocessing import StandardScaler
 
 class NonLinearClock:
     def __init__(
@@ -179,7 +179,7 @@ class NonLinearClock:
         self.projections = np.array(projections).T
 
     def _get_importance(self, X, y, significance: float = 0.05, univar: bool = False):
-        coefs, pvals, is_significant = [], [], []
+        coefs, pvals, is_significant, std_x, std_y = [], [], [], [], []
         for i in range(y.shape[1]):
             if univar:
                 coefs_a, pvals_a, is_significant_a = [], [], []
@@ -190,8 +190,12 @@ class NonLinearClock:
                     is_significant_a.append(lm.pvalues[0] <= significance)
 
                 coefs.append(np.array(coefs_a))
+                std_x.append(np.ones((len(coefs_a),)))
+                std_y.append(np.ones((len(coefs_a),)))
                 pvals.append(pvals_a)
                 is_significant.append(is_significant_a)
+
+                # FIXME add std X, y
 
             else:
                 lm = sm.OLS(y[:, i], X).fit()
@@ -199,7 +203,10 @@ class NonLinearClock:
                 coefs.append(np.array(lm.params))
                 pvals.append(pval)
                 is_significant.append(pval <= significance)
-        return np.array(coefs), np.array(pvals), np.array(is_significant)
+
+                std_x.append(X.std(axis=0))
+                std_y.append(y[:, i].std())
+        return np.array(coefs), np.array(pvals), np.array(is_significant), np.array(std_x), np.array(std_y)
 
     def _plot_big_clock(
         self,
@@ -215,7 +222,7 @@ class NonLinearClock:
         plot_scatter: bool = True,
         plot_top_k: int = 0
     ):
-        coefs, _, is_significant = self._get_importance(
+        coefs, _, is_significant, std_x, std_y = self._get_importance(
             self.high_dim_data.to_numpy(),
             self.projections,
             univar=univar_importance,
@@ -223,8 +230,7 @@ class NonLinearClock:
         )
 
         if standartize_coef:
-            sign_coef = coefs / np.abs(coefs)
-            coefs = (coefs - coefs.mean() * sign_coef) / coefs.std()  # FIXME
+            coefs = coefs / std_x  # FIXME
             if np.isnan(coefs).any():
                 coefs = np.nan_to_num(coefs)
                 warnings.warn(
@@ -232,10 +238,10 @@ class NonLinearClock:
                 )
 
         if biggest_arrow:
-            is_significant = np.logical_or(is_significant[0], True)
+            is_significant = np.logical_or(is_significant[0], is_significant[1])
             coefs_points = [[x, y] for x, y in zip(coefs[0], coefs[1])]
             coefs_new = np.array([math.sqrt((x * x) + (y * y)) for x, y in zip(coefs[0], coefs[1])])
-
+            
             if plot_top_k != 0:    
                 min_ix = list(np.argsort(coefs_new)[0:coefs.shape[1]-plot_top_k])
                 is_significant[:, min_ix] = False
@@ -463,8 +469,8 @@ class NonLinearClock:
 
             circle_an = math.radians(45)
             x_ann, y_ann = (
-                (x_center + math.cos(circle_an) * radius_circle) * ann_sign[0],
-                (y_center + math.sin(circle_an) * radius_circle) * ann_sign[1],
+                x_center + math.cos(circle_an) * radius_circle * ann_sign[0],
+                y_center + math.sin(circle_an) * radius_circle * ann_sign[1],
             )
             ax.annotate(
                 str(round(radius_circle / (radius / max(abs(c_max), abs(c_min))), 2)),
@@ -620,7 +626,7 @@ class NonLinearClock:
         coefs_scaled = coefs * (radius / max(abs(c_max), abs(c_min)))
         self._add_circles_lines(ax, num_circles, annotate,
                                 angles_shift, x_center, y_center)
-
+        
         arrows, labels_all = [], []
         ann_sign = [1, 1]
         if not biggest_arrow:
@@ -653,7 +659,6 @@ class NonLinearClock:
                 raise Exception(f"Points for biggest arrow method are not computed.")
             
             ix_col_by_len = np.argsort(coefs_scaled)[::-1]
-
             tmp_points = []
             counts = np.zeros((4,))
             for point in points:
@@ -728,7 +733,7 @@ class NonLinearClock:
 
         self._get_plot(ax, self.low_dim_data, plot_hulls, plot_scatter)
 
-        all_coeffs, all_is_significant, all_points = [], [], []
+        all_coeffs, all_is_significant, all_points, all_std_x = [], [], [], []
         arrows_dict = {}
         for cl in dist_clusters:
             ind = (self.low_dim_data["cluster"] == cl).values.reshape(
@@ -739,7 +744,7 @@ class NonLinearClock:
             new_data_cl = self.high_dim_data[ind]
             projections_cl = self.projections[ind[:, 0], :]
 
-            coefs, _, is_significant = self._get_importance(
+            coefs, _, is_significant, std_x, std_y = self._get_importance(
                 new_data_cl.to_numpy(),
                 projections_cl,
                 univar=univar_importance,
@@ -747,7 +752,7 @@ class NonLinearClock:
             )
 
             if biggest_arrow:
-                is_significant = np.logical_and(is_significant[0], is_significant[1])
+                is_significant = np.logical_or(is_significant[0], is_significant[1])
                 coefs_points = [[x, y] for x, y in zip(coefs[0], coefs[1])]
                 coefs_new = np.array([math.sqrt((x * x) + (y * y)) for x, y in zip(coefs[0], coefs[1])])
 
@@ -766,9 +771,7 @@ class NonLinearClock:
 
             all_coeffs.append(coefs)
             all_is_significant.append(is_significant)
-
-        mean_coef = np.array(all_coeffs).mean()
-        std_coef = np.array(all_coeffs).std()
+            all_std_x.append(std_x)
 
         for i, cl in enumerate(dist_clusters):
             scale = scale_circle[i]
@@ -781,10 +784,10 @@ class NonLinearClock:
             coefs = all_coeffs[i]
             is_significant = all_is_significant[i]
             data_cl = self.low_dim_data[ind]
+            std_coef = all_std_x[i][0]
 
             if standartize_coef:
-                sign_coef = coefs / np.abs(coefs)
-                coefs = (coefs - mean_coef * sign_coef) / std_coef  # FIXME
+                coefs = coefs / std_coef  # FIXME
                 if np.isnan(coefs).any():
                     coefs = np.nan_to_num(coefs)
                     warnings.warn(
@@ -981,7 +984,7 @@ class NonLinearClock:
             angles.append(angle)
 
         self.mst_proj = np.array(mst_proj).T
-        coefs, _, is_significant = self._get_importance(
+        coefs, _, is_significant, std_x, std_y = self._get_importance(
             self.high_dim_data.to_numpy(),
             self.mst_proj,
             univar=univar_importance,
@@ -996,8 +999,7 @@ class NonLinearClock:
                         is_significant[i, j] = False
 
         if standartize_coef:
-            sign_coef = coefs / np.abs(coefs)
-            coefs = (coefs - coefs.mean() * sign_coef) / coefs.std()  # FIXME
+            coefs = coefs / std_x
             if np.isnan(coefs).any():
                 coefs = np.nan_to_num(coefs)
                 warnings.warn(
