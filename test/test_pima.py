@@ -240,19 +240,19 @@ def test_between_all_3():
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=labels, color_scheme=colors)
     
     sc = axi[0].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
-    legend1 = axi[0].legend(
-        handles = sc.legend_elements()[0],
-        loc="upper center",
-        # bbox_to_anchor=(0.0, 0.0),
-        fontsize=7,
-        ncol=3,
-        markerscale=0.6,
-        handlelength=1.5,
-        columnspacing=0.8,
-        handletextpad=0.1,
-        labels=["Healthy", "Diabetis"],
-        alignment="left" )
-    axi[0].add_artist(legend1)
+    # legend1 = axi[0].legend(
+    #     handles = sc.legend_elements()[0],
+    #     loc="upper center",
+    #     # bbox_to_anchor=(0.0, 0.0),
+    #     fontsize=7,
+    #     ncol=3,
+    #     markerscale=0.6,
+    #     handlelength=1.5,
+    #     columnspacing=0.8,
+    #     handletextpad=0.1,
+    #     labels=["Healthy", "Diabetis"],
+    #     alignment="left" )
+    # axi[0].add_artist(legend1)
 
     arrows1, arrow_labels1 = plot_inst.plot_global_clock(
         standartize_data=False,
@@ -275,18 +275,18 @@ def test_between_all_3():
 
     # Local
     sc = axi[1].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
-    legend2 = axi[1].legend(
-        handles = sc.legend_elements()[0],
-        loc="upper center",
-        # bbox_to_anchor=(0.0, 0.0),
-        fontsize=7,
-        ncol=3,
-        markerscale=0.6,
-        handlelength=1.5,
-        columnspacing=0.8,
-        handletextpad=0.1,
-        labels=["Healthy", "Diabetis"])
-    axi[1].add_artist(legend2)
+    # legend2 = axi[1].legend(
+    #     handles = sc.legend_elements()[0],
+    #     loc="upper center",
+    #     # bbox_to_anchor=(0.0, 0.0),
+    #     fontsize=7,
+    #     ncol=3,
+    #     markerscale=0.6,
+    #     handlelength=1.5,
+    #     columnspacing=0.8,
+    #     handletextpad=0.1,
+    #     labels=["Healthy", "Diabetis"])
+    # axi[1].add_artist(legend2)
 
     arrows2, arrow_labels2 = plot_inst.plot_local_clocks(
         standartize_data=True,
@@ -312,18 +312,18 @@ def test_between_all_3():
 
     # Between
     sc = axi[2].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
-    legend3 = axi[2].legend(
-        handles = sc.legend_elements()[0],
-        loc="upper center",
-        # bbox_to_anchor=(0.0, 0.0),
-        fontsize=7,
-        ncol=3,
-        markerscale=0.6,
-        handlelength=1.5,
-        columnspacing=0.8,
-        handletextpad=0.1,
-        labels=["Healthy", "Diabetis"])
-    axi[2].add_artist(legend3)
+    # legend3 = axi[2].legend(
+    #     handles = sc.legend_elements()[0],
+    #     labels=["Healthy", "Diabetis"],
+    #     loc="upper center",
+    #     # bbox_to_anchor=(0.0, 0.0),
+    #     fontsize=7,
+    #     ncol=3,
+    #     markerscale=0.6,
+    #     handlelength=1.5,
+    #     columnspacing=0.8,
+    #     handletextpad=0.1,)
+    # axi[2].add_artist(legend3)
 
     arrows3, arrow_labels3 = plot_inst.plot_between_clock(
         standartize_data=True,
@@ -345,20 +345,38 @@ def test_between_all_3():
         arrows_dict[val] = arrows1[i]
     for i, val in enumerate(arrow_labels2):
         arrows_dict[val] = arrows2[i]
+    
+    hatches = [plt.plot([],marker="", ls="")[0]]*2 + list(arrows_dict.values()) + sc.legend_elements()[0]
+    labels = ["Factors:", "Labels:"] + list(arrows_dict.keys()) + ["Healthy", "Diabetis"]
 
-    axi[2].legend(
-        list(arrows_dict.values()),
-        list(arrows_dict.keys()),
+    hatches = [plt.plot([],marker="", ls="")[0]]*2 + \
+        [list(arrows_dict.values())[0]] + [sc.legend_elements()[0][0]] + \
+        [list(arrows_dict.values())[1]] + [sc.legend_elements()[0][1]] + \
+        list(arrows_dict.values())[2:]
+    
+    labels = ["Factors:", "Labels:"] + [list(arrows_dict.keys())[0]] + ["Healthy"] + \
+        [list(arrows_dict.keys())[1]] + ["Diabetis"] + \
+        list(arrows_dict.keys())[2:]
+
+
+    leg = axi[1].legend(
+        hatches,
+        labels,
         loc="lower center",
-        bbox_to_anchor=(-0.84, 1.12),
+        bbox_to_anchor=(0.5, 1.12),
         fontsize=7,
-        ncol=8,
+        ncol=9,
         markerscale=0.6,
-        handlelength=1.5,
+        handlelength=1.3,
         columnspacing=0.8,
         handletextpad=0.5,
         handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
+        # markerfirst=False 
     )
+
+    for vpack in leg._legend_handle_box.get_children()[:1]:
+        for hpack in vpack.get_children():
+            hpack.get_children()[0].set_width(0)
 
     axi[2].set_yticks([])
     axi[2].set_xticks([])
@@ -368,10 +386,12 @@ def test_between_all_3():
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
     plt.subplots_adjust(
-        left=0.05,
-        right=0.95,
-        top=0.79,
-        bottom=0.07,  # wspace=0.21, hspace=0.33
+        left=0.02,
+        right=0.98,
+        top=0.75,
+        bottom=0.06,  
+        wspace=0.1, 
+        # hspace=0.1
     )
     plt.savefig("plots/paper/pima/pima_3.pdf")
 
