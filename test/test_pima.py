@@ -266,17 +266,17 @@ def test_between_all_3():
 
     # Local
     # fig, ax = plt.subplots(1, figsize=(3.33, 3.33))
-    arrows, arrow_labels = plot_inst.plot_local_clocks(
-        standartize_data=True,
-        standartize_coef=True,
-        biggest_arrow_method=True,
-        univar_importance=False,
-        ax=axi[1],
-        scale_circles=[3, 1, 0.5],
-        move_circles=[[0, 0], [0, 0], [0, 0]],
-        annotates=[1.0, 1.0, 0.8],
-        arrow_width=0.08,
-    )
+    # arrows, arrow_labels = plot_inst.plot_local_clocks(
+    #     standartize_data=True,
+    #     standartize_coef=True,
+    #     biggest_arrow_method=True,
+    #     univar_importance=False,
+    #     ax=axi[1],
+    #     scale_circles=[3, 1, 0.5],
+    #     move_circles=[[0, 0], [0, 0], [0, 0]],
+    #     annotates=[1.0, 1.0, 0.8],
+    #     arrow_width=0.08,
+    # )
     # ax.legend(
     #     arrows,
     #     arrow_labels,
@@ -307,16 +307,16 @@ def test_between_all_3():
 
     # Between
     # fig, ax = plt.subplots(1, figsize=(3.33, 2.8))
-    _, _ = plot_inst.plot_between_clock(
-        standartize_data=True,
-        standartize_coef=True,
-        univar_importance=True,
-        ax=axi[2],
-        scale_circles=[1.25],
-        move_circles=[[0, 0]],
-        annotates=[1.1],
-        arrow_width=0.08,
-    )
+    # _, _ = plot_inst.plot_between_clock(
+    #     standartize_data=True,
+    #     standartize_coef=True,
+    #     univar_importance=True,
+    #     ax=axi[2],
+    #     scale_circles=[1.25],
+    #     move_circles=[[0, 0]],
+    #     annotates=[1.1],
+    #     arrow_width=0.08,
+    # )
     axi[2].legend(
         arrows,
         arrow_labels,
@@ -378,18 +378,18 @@ def teaser():
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
 
-    # axi.legend(
-    #     arrows,
-    #     arrow_labels,
-    #     loc="lower center",
-    #     bbox_to_anchor=(-0.84, 1.12),
-    #     fontsize=7,
-    #     ncol=8,
-    #     markerscale=0.6,
-    #     handlelength=1.5,
-    #     columnspacing=0.8,
-    #     handletextpad=0.5,
-    # )
+    axi.legend(
+        arrows,
+        arrow_labels,
+        loc="lower center",
+        bbox_to_anchor=(-0.84, 1.12),
+        fontsize=7,
+        ncol=8,
+        markerscale=0.6,
+        handlelength=1.5,
+        columnspacing=0.8,
+        handletextpad=0.5,
+    )
 
     # axi[0].set_yticks([])
     # axi[0].set_xticks([])

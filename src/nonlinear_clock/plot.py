@@ -232,7 +232,7 @@ class NonLinearClock:
                 )
 
         if biggest_arrow:
-            is_significant = np.logical_and(is_significant[0], is_significant[1])
+            is_significant = np.logical_or(is_significant[0], True)
             coefs_points = [[x, y] for x, y in zip(coefs[0], coefs[1])]
             coefs_new = np.array([math.sqrt((x * x) + (y * y)) for x, y in zip(coefs[0], coefs[1])])
 
@@ -432,7 +432,7 @@ class NonLinearClock:
             )
 
     def _add_circles(
-        self, ax, num_circles, annotate, x_center, y_center, radius, c_min, c_max
+        self, ax, num_circles, annotate, x_center, y_center, radius, c_min, c_max, ann_sign = [1, 1]
     ):
         for i in list(range(1, num_circles))[::-1]:
             radius_circle = round(i * annotate, 1)
@@ -463,8 +463,8 @@ class NonLinearClock:
 
             circle_an = math.radians(45)
             x_ann, y_ann = (
-                x_center + math.cos(circle_an) * radius_circle,
-                y_center + math.sin(circle_an) * radius_circle,
+                (x_center + math.cos(circle_an) * radius_circle) * ann_sign[0],
+                (y_center + math.sin(circle_an) * radius_circle) * ann_sign[1],
             )
             ax.annotate(
                 str(round(radius_circle / (radius / max(abs(c_max), abs(c_min))), 2)),
@@ -472,6 +472,7 @@ class NonLinearClock:
                 ha="right",
                 color="gray",
                 path_effects=[pe.withStroke(linewidth=2, foreground="white")],
+                fontsize=7,
                 zorder=20,
             )
 
@@ -509,6 +510,8 @@ class NonLinearClock:
         self._add_circles_lines(ax, num_circles, annotate,
                                 angles_shift, x_center, y_center)
         
+        ann_sign = [1, 1] # Chnage angle of the annotation
+        
         if not biggest_arrow:
             arrows, arrow_labels = self._add_circle_contributions(
                 ax,
@@ -523,9 +526,32 @@ class NonLinearClock:
             if len(points) != len(labels):
                 raise Exception(f"Points for biggest arrow method are not computed.")
             
-            points = [[point[0] * (radius / max(abs(c_max), abs(c_min))), 
-                       point[1] * (radius / max(abs(c_max), abs(c_min)))] 
-                       for point in points]
+            tmp_points = []
+            counts = np.zeros((4,))
+            for point in points:
+                new_x = point[0] * (radius / max(abs(c_max), abs(c_min)))
+                new_y = point[1] * (radius / max(abs(c_max), abs(c_min)))
+                tmp_points.append([new_x, new_y])
+
+                if new_x >= 0 and new_y >= 0:
+                    counts[0] += 1
+                elif new_x < 0 and new_y >= 0:
+                    counts[1] += 1
+                elif new_x < 0 and new_y < 0:
+                    counts[2] += 1
+                elif new_x >= 0 and new_y < 0:
+                    counts[3] += 1
+            points = copy.deepcopy(tmp_points)
+            
+            # Get quarter for annotation
+            tmp_quater_max = np.argmin(counts)
+            if tmp_quater_max == 1:
+                ann_sign = [-1, 1]
+            elif tmp_quater_max == 2:
+                ann_sign = [-1, -1]
+            elif tmp_quater_max == 3:
+                ann_sign = [1, -1]
+
             arrows, arrow_labels = self._add_biggest_contributions(
                 ax,
                 coefs_scaled,
@@ -539,7 +565,7 @@ class NonLinearClock:
 
         # num_circles - one circle per annotation
         self._add_circles(
-            ax, num_circles, annotate, x_center, y_center, radius, c_min, c_max
+            ax, num_circles, annotate, x_center, y_center, radius, c_min, c_max, ann_sign=ann_sign
         )
         return arrows, arrow_labels
 
@@ -596,6 +622,7 @@ class NonLinearClock:
                                 angles_shift, x_center, y_center)
 
         arrows, labels_all = [], []
+        ann_sign = [1, 1]
         if not biggest_arrow:
             for a, c, s in zip(angles, coefs_scaled, is_significant):
                 a = math.radians(a)
@@ -627,9 +654,31 @@ class NonLinearClock:
             
             ix_col_by_len = np.argsort(coefs_scaled)[::-1]
 
-            points = [[point[0] * (radius / max(abs(c_max), abs(c_min))), 
-                       point[1] * (radius / max(abs(c_max), abs(c_min)))] 
-                       for point in points]
+            tmp_points = []
+            counts = np.zeros((4,))
+            for point in points:
+                new_x = point[0] * (radius / max(abs(c_max), abs(c_min)))
+                new_y = point[1] * (radius / max(abs(c_max), abs(c_min)))
+                tmp_points.append([new_x, new_y])
+
+                if new_x >= 0 and new_y >= 0:
+                    counts[0] += 1
+                elif new_x < 0 and new_y >= 0:
+                    counts[1] += 1
+                elif new_x < 0 and new_y < 0:
+                    counts[2] += 1
+                elif new_x >= 0 and new_y < 0:
+                    counts[3] += 1
+            points = copy.deepcopy(tmp_points)
+            
+            # Get quarter for annotation
+            tmp_quater_max = np.argmin(counts)
+            if tmp_quater_max == 1:
+                ann_sign = [-1, 1]
+            elif tmp_quater_max == 2:
+                ann_sign = [-1, -1]
+            elif tmp_quater_max == 3:
+                ann_sign = [1, -1]
 
             for i in ix_col_by_len:
                 # Plot contributions
@@ -651,7 +700,7 @@ class NonLinearClock:
                     labels_all.append(lbl)
 
         self._add_circles(
-            ax, num_circles, annotate, x_center, y_center, radius, c_min, c_max
+            ax, num_circles, annotate, x_center, y_center, radius, c_min, c_max, ann_sign=ann_sign
         )
 
         return arrows, labels_all
