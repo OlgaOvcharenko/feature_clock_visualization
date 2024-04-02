@@ -1,9 +1,17 @@
-from matplotlib import pyplot as plt
+from matplotlib import gridspec, pyplot as plt
 import numpy as np
 import scanpy as sp
 from src.nonlinear_clock.plot import NonLinearClock
 import scanpy.external as sce
 import phate
+from matplotlib.legend_handler import HandlerPatch
+import matplotlib.patches as mpatches
+
+def make_legend_arrow(legend, orig_handle,
+                      xdescent, ydescent,
+                      width, height, fontsize):
+    p = mpatches.FancyArrow(0, 0.5*height, width, 0, length_includes_head=True, head_width=0.75*height )
+    return p
 
 
 def read_data(path):
@@ -502,7 +510,160 @@ def test_experiment2():
     plt.savefig("plots/paper/neftel/neftel_all_15_degree.pdf")
 
 
+def test_all_4_in_row():
+    X_new, obs, standard_embedding, labels = setup_neftel_data(method="umap")
+
+    # fig, axi = plt.subplots(1, 3, figsize=(7.125-0.66, 2.375))
+    # plt.tight_layout()
+
+    dpi = 1000
+    fig_size = ((7.125-0.17), ((7.125-0.17)/1.8)/1.618)
+
+    fig = plt.figure(constrained_layout=True, figsize=fig_size, dpi=dpi, facecolor="w",edgecolor="k",)
+    spec2 = gridspec.GridSpec(ncols=4, nrows=1, figure=fig, 
+                     left=0.02, right=1, top=0.82, bottom=0.06, wspace=0.15)
+    ax1 = fig.add_subplot(spec2[0])
+    ax2 = fig.add_subplot(spec2[1])
+    ax3 = fig.add_subplot(spec2[2])
+
+    spec23 = gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=spec2[3], wspace=0.05)
+    ax4_11 = fig.add_subplot(spec23[0, 0])
+    ax4_12 = fig.add_subplot(spec23[0, 1])
+    ax4_13 = fig.add_subplot(spec23[0, 2])
+    ax4_21 = fig.add_subplot(spec23[1, 0])
+    ax4_22 = fig.add_subplot(spec23[1, 1])
+    ax4_23 = fig.add_subplot(spec23[1, 2])
+    ax4_31 = fig.add_subplot(spec23[2, 0])
+    ax4_32 = fig.add_subplot(spec23[2, 1])
+    ax4_33 = fig.add_subplot(spec23[2, 2])
+
+
+    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, "UMAP")
+    arrows1, arrow_labels1 = plot_inst.plot_global_clock(
+        standartize_data=True,
+        standartize_coef=True,
+        biggest_arrow_method=True,
+        univar_importance=True,
+        ax=ax1,
+        scale_circle=2,
+        move_circle=[0, 0],
+        annotate=0.6,
+        arrow_width=0.05
+    )
+
+    ax1.set_yticks([])
+    ax1.set_xticks([])
+    ax1.set_ylabel("UMAP2", size=8)
+    ax1.set_xlabel("UMAP1", size=8)
+    ax1.set_title("Global clock", size=8)
+    ax1.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax1.xaxis.set_label_coords(x=0.5, y=-0.02)
+
+    # Local
+    arrows2, arrow_labels2 = plot_inst.plot_local_clocks(
+        standartize_data=True,
+        standartize_coef=True,
+        biggest_arrow_method=True,
+        univar_importance=True,
+        ax=ax2,
+        scale_circles=[1.5, 0.9],
+        move_circles=[[-0.6, 0.1], [0.6, -0.2]],
+        annotates=[0.5, 0.5],
+        arrow_width=0.05
+    )
+
+    ax2.set_yticks([])
+    ax2.set_xticks([])
+    ax2.set_ylabel("UMAP2", size=8)
+    ax2.set_xlabel("UMAP1", size=8)
+    ax2.set_title("Local clock", size=8)
+    ax2.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax2.xaxis.set_label_coords(x=0.5, y=-0.02)
+
+    # Between
+    arrows3, arrow_labels3 = plot_inst.plot_between_clock(
+        standartize_data=True,
+        standartize_coef=True,
+        univar_importance=True,
+        ax=ax3,
+        scale_circles=[1.5, 1.5],
+        move_circles=[[0, 0], [0.7, 0]],
+        annotates=[0.4, 0.2],
+        arrow_width=0.05
+    )
+
+    arrows_dict = {}
+    for i, val in enumerate(arrow_labels3):
+        arrows_dict[val] = arrows3[i]
+    for i, val in enumerate(arrow_labels1):
+        arrows_dict[val] = arrows1[i]
+    for i, val in enumerate(arrow_labels2):
+        arrows_dict[val] = arrows2[i]
+    
+    hatches = [plt.plot([],marker="", ls="")[0]] + list(arrows_dict.values())
+    labels = ["Factors:"] + list(arrows_dict.keys())
+
+    leg = ax3.legend(
+        hatches,
+        labels,
+        loc="lower center",
+        bbox_to_anchor=(-0.13, 1.1),
+        fontsize=7,
+        ncol=10,
+        markerscale=0.6,
+        handlelength=1.5,
+        columnspacing=0.8,
+        handletextpad=0.5,
+        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
+    )
+    for vpack in leg._legend_handle_box.get_children()[:1]:
+        for hpack in vpack.get_children():
+            hpack.get_children()[0].set_width(0)
+
+    ax3.set_yticks([])
+    ax3.set_xticks([])
+    ax3.set_ylabel("UMAP2", size=8)
+    ax3.set_xlabel("UMAP1", size=8)
+    ax3.set_title("Inter-cluster clock", size=8)
+    ax3.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax3.xaxis.set_label_coords(x=0.5, y=-0.02)
+
+    X_new, obs, standard_embedding, labels = setup_neftel_data(method="umap")
+    
+    for (i, o), axi in zip(enumerate(obs), [ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33]):
+        im = axi.scatter(
+            standard_embedding[:, 0],
+            standard_embedding[:, 1],
+            marker=".",
+            s=1.3,
+            c=X_new[o],
+            cmap="Spectral",
+            # vmin=0, vmax=1
+        )
+        axi.set_yticks([])
+        axi.set_xticks([])
+        # axi.yaxis.set_label_coords(x=-0.01, y=0.5)
+        # axi.xaxis.set_label_coords(x=0.5, y=-0.02)
+        
+        if o == "genes_expressed":
+            o = "genes_exp."
+        axi.set_title(o, size=5, pad=-14)
+
+    ax4_21.set_ylabel("UMAP2", size=8)
+    ax4_32.set_xlabel("UMAP1", size=8)
+
+    ax4_21.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax4_32.xaxis.set_label_coords(x=0.55, y=-0.07)
+
+    cbar = fig.colorbar(im, ax=[ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33], 
+                        pad=0.02, aspect=40)
+    cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
+    cbar.outline.set_visible(False)
+
+    plt.savefig("plots/paper/neftel/neftel_3.pdf")
+
+
 # test_between_all()
-test_all_in_row()
+test_all_4_in_row()
 # print_neftel_all()
 # test_experiment2()

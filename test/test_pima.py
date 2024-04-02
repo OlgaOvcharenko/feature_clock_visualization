@@ -346,8 +346,8 @@ def test_between_all_3():
     for i, val in enumerate(arrow_labels2):
         arrows_dict[val] = arrows2[i]
     
-    hatches = [plt.plot([],marker="", ls="")[0]]*2 + list(arrows_dict.values()) + sc.legend_elements()[0]
-    labels = ["Factors:", "Labels:"] + list(arrows_dict.keys()) + ["Healthy", "Diabetis"]
+    # hatches = [plt.plot([],marker="", ls="")[0]]*2 + list(arrows_dict.values()) + sc.legend_elements()[0]
+    # labels = ["Factors:", "Labels:"] + list(arrows_dict.keys()) + ["Healthy", "Diabetis"]
 
     hatches = [plt.plot([],marker="", ls="")[0]]*2 + \
         [list(arrows_dict.values())[0]] + [sc.legend_elements()[0][0]] + \

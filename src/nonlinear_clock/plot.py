@@ -61,7 +61,7 @@ class NonLinearClock:
         
         for i, obs in enumerate(observations):
             self.colors[obs] = color_scheme[i]
-
+        
         if (self.method == "" and self.low_dim_data is not None) or (
             len(self.method) > 0 and self.low_dim_data is None
         ):
@@ -243,8 +243,8 @@ class NonLinearClock:
             coefs_new = np.array([math.sqrt((x * x) + (y * y)) for x, y in zip(coefs[0], coefs[1])])
             
             if plot_top_k != 0:    
-                min_ix = list(np.argsort(coefs_new)[0:coefs.shape[1]-plot_top_k])
-                is_significant[:, min_ix] = False
+                min_ix = list(np.argsort(coefs_new)[0:len(coefs_new)-plot_top_k]) # FISME * is_significant
+                is_significant[min_ix] = False
 
             coefs = coefs_new
 
@@ -503,7 +503,7 @@ class NonLinearClock:
         if plot_scatter:
             # Scatter plot
             ax.scatter(data["emb1"], data["emb2"],
-                       color="gray", s=2, alpha=alpha, zorder=0)
+                       color="gray", s=1, alpha=alpha, zorder=0)
 
         # Add circles lines
         x_center, y_center = self._get_center(data)
@@ -629,6 +629,7 @@ class NonLinearClock:
         
         arrows, labels_all = [], []
         ann_sign = [1, 1]
+        
         if not biggest_arrow:
             for a, c, s in zip(angles, coefs_scaled, is_significant):
                 a = math.radians(a)
@@ -733,7 +734,7 @@ class NonLinearClock:
 
         self._get_plot(ax, self.low_dim_data, plot_hulls, plot_scatter)
 
-        all_coeffs, all_is_significant, all_points, all_std_x = [], [], [], []
+        all_coeffs, all_is_significant, all_points, all_std_x, all_std_y = [], [], [], [], []
         arrows_dict = {}
         for cl in dist_clusters:
             ind = (self.low_dim_data["cluster"] == cl).values.reshape(
@@ -757,11 +758,10 @@ class NonLinearClock:
                 coefs_new = np.array([math.sqrt((x * x) + (y * y)) for x, y in zip(coefs[0], coefs[1])])
 
                 if plot_top_k != 0:    
-                    min_ix = list(np.argsort(coefs_new)[0:coefs.shape[1]-plot_top_k])
-                    is_significant[:, min_ix] = False
+                    min_ix = list(np.argsort(coefs_new)[0:len(coefs_new)-plot_top_k])
+                    is_significant[min_ix] = False
 
                 coefs = coefs_new
-
                 all_points.append(coefs_points)
 
             else:
@@ -772,6 +772,7 @@ class NonLinearClock:
             all_coeffs.append(coefs)
             all_is_significant.append(is_significant)
             all_std_x.append(std_x)
+            all_std_y.append(std_y)
 
         for i, cl in enumerate(dist_clusters):
             scale = scale_circle[i]
@@ -785,7 +786,8 @@ class NonLinearClock:
             is_significant = all_is_significant[i]
             data_cl = self.low_dim_data[ind]
             std_coef = all_std_x[i][0]
-
+            std_coef_y = all_std_y[i][0]
+            
             if standartize_coef:
                 coefs = coefs / std_coef  # FIXME
                 if np.isnan(coefs).any():
@@ -793,7 +795,7 @@ class NonLinearClock:
                     warnings.warn(
                         "NaNs were introduced after standartizing coefficients and were replaced by 0."
                     )
-
+            
             if is_significant.sum() != 0:
                 arrows, arrow_labels = self._plot_small(
                     ax,
@@ -817,8 +819,7 @@ class NonLinearClock:
             
             else:
                 warnings.warn(f"Cluster {i} has no significant features.")
-
-
+                
         return list(arrows_dict.values()), list(arrows_dict.keys())
 
     def _get_cluster_centers(self, dist_clusters):
@@ -997,7 +998,9 @@ class NonLinearClock:
                 for j in range(is_significant.shape[1]):
                     if j not in min_ix[i]:
                         is_significant[i, j] = False
-
+        if is_significant.sum() == 0:
+            return [], []
+        
         if standartize_coef:
             coefs = coefs / std_x
             if np.isnan(coefs).any():

@@ -1,4 +1,6 @@
+import math
 from matplotlib import gridspec, pyplot as plt
+import matplotlib
 import numpy as np
 import pandas as pd
 from sklearn.discriminant_analysis import StandardScaler
@@ -33,7 +35,7 @@ def setup_iris_data(method="tsne", drop_labels=True):
     X.drop(columns={"Id"}, inplace=True)
     X = X.dropna()
 
-    X["Species"] = pd. factorize(X["Species"])[0]
+    X["Species"] = X.Species.map({"Iris-setosa":0, "Iris-versicolor":1, "Iris-virginica":2}).to_numpy() # pd. factorize(X["Species"])[0]
     labels = X["Species"]
     if drop_labels:
         X.drop(columns=["Species"], inplace=True)
@@ -535,24 +537,19 @@ def teaser():
 
 def test_pca_all_3():
     dpi = 1000
-    fig_size = ((7.125-0.17)/2, ((7.125-0.17)/3)/1.618)
-    fig, axi = plt.subplots(
-        1,
-        3,
-        num=None,
-        figsize=fig_size,
-        dpi=dpi,
-        facecolor="w",
-        edgecolor="k",
-    )
+    fig_size = ((7.125-0.17)/2, ((7.125-0.17)/2.8)/1.618)
 
-    fig = plt.figure(constrained_layout=True)
-    spec2 = gridspec.GridSpec(ncols=2, nrows=2, figure=fig2)
-    f_ax1 = fig.add_subplot(spec2[0, 0])
-    f_ax2 = fig.add_subplot(spec2[0, 1])
-    f_ax3 = fig.add_subplot(spec2[1, 0])
-    f_ax4 = fig.add_subplot(spec2[1, 1])
+    fig = plt.figure(constrained_layout=True, figsize=fig_size, dpi=dpi, facecolor="w",edgecolor="k",)
+    spec2 = gridspec.GridSpec(ncols=3, nrows=1, figure=fig, 
+                     left=0.04, right=0.99, top=0.72, bottom=0.08)
+    ax1 = fig.add_subplot(spec2[0])
+    ax3 = fig.add_subplot(spec2[2])
 
+    spec23 = gridspec.GridSpecFromSubplotSpec(2, 2, subplot_spec=spec2[1], wspace=0.05)
+    ax21 = fig.add_subplot(spec23[0, 0])
+    ax22 = fig.add_subplot(spec23[0, 1])
+    ax23 = fig.add_subplot(spec23[1, 0])
+    ax24 = fig.add_subplot(spec23[1, 1])
 
     df = pd.read_csv("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/Iris.csv")
     labels = df.Species.map({"Iris-setosa":0, "Iris-versicolor":1, "Iris-virginica":2}).to_numpy()
@@ -575,61 +572,110 @@ def test_pca_all_3():
 
     C = pca.components_
 
-    sc = axi[0].scatter(pcaT[:,0], pcaT[:,1], marker= '.', c=labels, cmap="tab10", alpha=0.2, zorder=0)
+    colormap = plt.cm.Dark2 #or any other colormap
+    normalize = matplotlib.colors.Normalize(vmin=-1, vmax=3)
 
-    colors = ["tab:purple", "tab:orange", "tab:green", "tab:red"]
+    sc = ax1.scatter(pcaT[:,0], pcaT[:,1], marker= '.', c=labels, cmap=colormap, norm=normalize, alpha=0.2, zorder=0)
+
+    colors = ["tab:cyan", "tab:red", "tab:blue", "tab:pink"]
     labels = ["SepalLen", "SepalWid", "PetalLen","PetalWid"]
 
     arrows_dict = {}
     for i in range(0, 4):
-        arrows_dict[labels[i][0:8]] = axi[0].arrow(-1, 0.5, (C[0][i]) * 2, (C[1][i]) * 2, 
+        arrows_dict[labels[i][0:8]] = ax1.arrow(-1, 0.5, (C[0][i]) * 2, (C[1][i]) * 2, 
                     color = colors[i], width = 0.06,
                     label = labels[i]
                     )
 
-    axi[0].set_yticks([])
-    axi[0].set_xticks([])
-    axi[0].set_ylabel("PCA2", size=8)
-    axi[0].set_xlabel("PCA1", size=8)
-    axi[0].yaxis.set_label_coords(x=-0.01, y=.5)
-    axi[0].xaxis.set_label_coords(x=0.5, y=-0.02)
+    ax1.set_yticks([])
+    ax1.set_xticks([])
+    ax1.set_ylabel("PCA2", size=8)
+    ax1.set_xlabel("PCA1", size=8)
+    ax1.yaxis.set_label_coords(x=-0.01, y=.5)
+    ax1.xaxis.set_label_coords(x=0.5, y=-0.02)
 
-    # # second plot
-    # X_new, obs, standard_embedding, labels, clusters = setup_iris_data(method="tsne", drop_labels=True)
-    # for i, o in enumerate(obs):
-    #     if o == "Species":
-    #         break
+    # second plot
+    X_new, obs, standard_embedding, labels, clusters = setup_iris_data(method="tsne", drop_labels=True)
+    standard_embedding[:,0], standard_embedding[:,1] = 1 * standard_embedding[:,0], 7 * standard_embedding[:,1]
+    for (i, o), axi in zip(enumerate(obs), [ax21, ax22, ax23, ax24]):
+        if o == "Species":
+            break
 
-    #     im = axi[i % 2, i // 2].scatter(
-    #         standard_embedding[:, 0],
-    #         standard_embedding[:, 1],
-    #         marker=".",
-    #         s=5,
-    #         c=X_new[o],
-    #         cmap="jet",
-    #     )
-    #     axi[i % 2, i // 2].set_yticks([])
-    #     axi[i % 2, i // 2].set_xticks([])
-    #     axi[i % 2, i // 2].yaxis.set_label_coords(x=-0.01, y=0.5)
-    #     axi[i % 2, i // 2].xaxis.set_label_coords(x=0.5, y=-0.02)
-    #     axi[i % 2, i // 2].set_title(o, size=8, pad=-14)
+        im = axi.scatter(
+            standard_embedding[:, 0],
+            standard_embedding[:, 1],
+            marker=".",
+            s=1,
+            c=X_new[o],
+            cmap="jet",
+            alpha=0.8
+        )
+        axi.set_yticks([])
+        axi.set_xticks([])
+        axi.yaxis.set_label_coords(x=-0.01, y=0.5)
+        axi.xaxis.set_label_coords(x=0.5, y=-0.02)
+        axi.set_title(o[0:3] + o[5:8], size=5, pad=-14)
 
-    # axi[1, 0].set_ylabel("t-SNE2", size=8)
-    # axi[1, 0].set_xlabel("t-SNE1", size=8)
+        # # axi.set_ylim(np.min(standard_embedding[:,0]), np.max(standard_embedding[:,0]))
+        # # axi.set_aspect('equal')
 
-    # plt.subplots_adjust(
-    #     left=0.05,
-    #     right=0.98,
-    #     top=0.95,
-    #     bottom=0.05,  # wspace=0.21, hspace=0.33
+        # xl, xu = -31.47527813911438, 17.232176065444946
+        # yl, yu = -13.430956748127937, 12.969043251872062
+
+        # ym = (yl - yu) /2
+        # xm = (xl - xu) / 2
+
+        # x_delta_from_mid = math.fabs(xm -xu)
+
+        # axi.set_xlim((-31.47527813911438, 17.232176065444946))
+        # axi.set_ylim((- x_delta_from_mid,  x_delta_from_mid))
+
+    # ax21.text(
+    #     0.03, 0.9,
+    #     o[0:3] + o[5:8],
+    #     size=5,
+    #     ha="left",
+    #     va="top",
+    #     transform=ax21.transAxes,
     # )
-    # cbar = fig.colorbar(im, ax=axi.ravel().tolist(), pad=0.1)
-    # cbar.ax.tick_params(labelsize=7) 
 
+    ax21.set_ylabel("t-SNE2", size=8)
+    ax23.set_xlabel("t-SNE1", size=8)
 
+    ax21.yaxis.set_label_coords(0, -0.15)
+    ax23.xaxis.set_label_coords(1.1, -0.04)
 
+    cbar = fig.colorbar(im, ax=[ax21, ax22, ax23, ax24], pad=0.02, ticks=[-1, 0, 1], aspect=40)
+    cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
+    cbar.outline.set_visible(False)
 
+    # third plot
+    ax3.set_yticks([])
+    ax3.set_xticks([])
+    ax3.set_ylabel("t-SNE2", size=8)
+    ax3.set_xlabel("t-SNE1", size=8)
+    ax3.yaxis.set_label_coords(x=-0.01, y=.5)
+    ax3.xaxis.set_label_coords(x=0.5, y=-0.02)
 
+    X_new, obs, standard_embedding, labels, clusters = setup_iris_data(method="tsne")
+
+    standard_embedding[:,0], standard_embedding[:,1] = 1 * standard_embedding[:,0], 7 * standard_embedding[:,1]
+
+    sc = ax3.scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap=colormap, norm=normalize, alpha=0.2, zorder=0, edgecolors='face')
+
+    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="tsne", cluster_labels=clusters, color_scheme=colors)
+    _, _ = plot_inst.plot_global_clock(
+        standartize_data=False,
+        standartize_coef=True,
+        biggest_arrow_method=True,
+        univar_importance=False,
+        ax=ax3,
+        scale_circle=1.5,
+        move_circle=[-2, 0],
+        annotate=8,
+        arrow_width=0.4,
+        plot_scatter=False
+    )
 
     hatches = [plt.plot([],marker="", ls="")[0]]*2 + \
         [list(arrows_dict.values())[0]] + [sc.legend_elements()[0][0]] + \
@@ -641,11 +687,11 @@ def test_pca_all_3():
         [list(arrows_dict.keys())[1]] + ["Versicolor"] + \
         [list(arrows_dict.keys())[2]] + ["Virginica"] + [list(arrows_dict.keys())[3]]
 
-    leg = axi[1].legend(
+    leg = ax22.legend(
         hatches,
         labels,
         loc="lower center",
-        bbox_to_anchor=(0.5, 1.0),
+        bbox_to_anchor=(0.25, 1.1),
         fontsize=7,
         ncol=5,
         markerscale=0.6,
@@ -658,9 +704,6 @@ def test_pca_all_3():
         for hpack in vpack.get_children():
             hpack.get_children()[0].set_width(0)
 
-    plt.subplots_adjust(
-        left=0.04, right=0.95, top=0.74, bottom=0.08, #wspace=0.21, hspace=0.33
-    )
     plt.savefig("plots/paper/iris/plot_biplot.pdf")
 
 # print_iris_all()
