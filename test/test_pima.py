@@ -330,9 +330,9 @@ def test_between_all_3():
         standartize_coef=True,
         univar_importance=False,
         ax=axi[2],
-        scale_circles=[3],
+        scale_circles=[4],
         move_circles=[[0, 0]],
-        annotates=[0.5],
+        annotates=[0.7],
         arrow_width=0.08,
         plot_scatter=False,
         plot_hulls=False

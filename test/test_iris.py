@@ -1,12 +1,21 @@
-from matplotlib import pyplot as plt
+from matplotlib import gridspec, pyplot as plt
 import numpy as np
 import pandas as pd
+from sklearn.discriminant_analysis import StandardScaler
 from src.nonlinear_clock.plot import NonLinearClock
 import umap
 from sklearn.cluster import HDBSCAN
 from sklearn.cluster import KMeans
 from sklearn import decomposition  # decomposition.PCA
 from sklearn import manifold 
+from matplotlib.legend_handler import HandlerPatch
+import matplotlib.patches as mpatches
+
+def make_legend_arrow(legend, orig_handle,
+                      xdescent, ydescent,
+                      width, height, fontsize):
+    p = mpatches.FancyArrow(0, 0.5*height, width, 0, length_includes_head=True, head_width=0.75*height )
+    return p
 
 
 def read_data(path):
@@ -524,10 +533,143 @@ def teaser():
     )
     plt.savefig("plots/paper/iris/iris_general_clock.pdf")
 
+def test_pca_all_3():
+    dpi = 1000
+    fig_size = ((7.125-0.17)/2, ((7.125-0.17)/3)/1.618)
+    fig, axi = plt.subplots(
+        1,
+        3,
+        num=None,
+        figsize=fig_size,
+        dpi=dpi,
+        facecolor="w",
+        edgecolor="k",
+    )
+
+    fig = plt.figure(constrained_layout=True)
+    spec2 = gridspec.GridSpec(ncols=2, nrows=2, figure=fig2)
+    f_ax1 = fig.add_subplot(spec2[0, 0])
+    f_ax2 = fig.add_subplot(spec2[0, 1])
+    f_ax3 = fig.add_subplot(spec2[1, 0])
+    f_ax4 = fig.add_subplot(spec2[1, 1])
+
+
+    df = pd.read_csv("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/Iris.csv")
+    labels = df.Species.map({"Iris-setosa":0, "Iris-versicolor":1, "Iris-virginica":2}).to_numpy()
+    
+    df.rename(columns={"SepalLengthCm": "SepalLength", 
+                      "SepalWidthCm": "SepalWidth", 
+                      "PetalLengthCm": "PetalLength", 
+                      "PetalWidthCm": "PetalWidth"}, inplace=True)
+    
+    df.drop(columns={"Id"}, inplace=True)
+    df = df.dropna()
+
+    X = df.drop("Species", axis=1).to_numpy()
+
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X) 
+
+    pca = decomposition.PCA(n_components=2)
+    pcaT = pca.fit_transform(X)
+
+    C = pca.components_
+
+    sc = axi[0].scatter(pcaT[:,0], pcaT[:,1], marker= '.', c=labels, cmap="tab10", alpha=0.2, zorder=0)
+
+    colors = ["tab:purple", "tab:orange", "tab:green", "tab:red"]
+    labels = ["SepalLen", "SepalWid", "PetalLen","PetalWid"]
+
+    arrows_dict = {}
+    for i in range(0, 4):
+        arrows_dict[labels[i][0:8]] = axi[0].arrow(-1, 0.5, (C[0][i]) * 2, (C[1][i]) * 2, 
+                    color = colors[i], width = 0.06,
+                    label = labels[i]
+                    )
+
+    axi[0].set_yticks([])
+    axi[0].set_xticks([])
+    axi[0].set_ylabel("PCA2", size=8)
+    axi[0].set_xlabel("PCA1", size=8)
+    axi[0].yaxis.set_label_coords(x=-0.01, y=.5)
+    axi[0].xaxis.set_label_coords(x=0.5, y=-0.02)
+
+    # # second plot
+    # X_new, obs, standard_embedding, labels, clusters = setup_iris_data(method="tsne", drop_labels=True)
+    # for i, o in enumerate(obs):
+    #     if o == "Species":
+    #         break
+
+    #     im = axi[i % 2, i // 2].scatter(
+    #         standard_embedding[:, 0],
+    #         standard_embedding[:, 1],
+    #         marker=".",
+    #         s=5,
+    #         c=X_new[o],
+    #         cmap="jet",
+    #     )
+    #     axi[i % 2, i // 2].set_yticks([])
+    #     axi[i % 2, i // 2].set_xticks([])
+    #     axi[i % 2, i // 2].yaxis.set_label_coords(x=-0.01, y=0.5)
+    #     axi[i % 2, i // 2].xaxis.set_label_coords(x=0.5, y=-0.02)
+    #     axi[i % 2, i // 2].set_title(o, size=8, pad=-14)
+
+    # axi[1, 0].set_ylabel("t-SNE2", size=8)
+    # axi[1, 0].set_xlabel("t-SNE1", size=8)
+
+    # plt.subplots_adjust(
+    #     left=0.05,
+    #     right=0.98,
+    #     top=0.95,
+    #     bottom=0.05,  # wspace=0.21, hspace=0.33
+    # )
+    # cbar = fig.colorbar(im, ax=axi.ravel().tolist(), pad=0.1)
+    # cbar.ax.tick_params(labelsize=7) 
+
+
+
+
+
+
+    hatches = [plt.plot([],marker="", ls="")[0]]*2 + \
+        [list(arrows_dict.values())[0]] + [sc.legend_elements()[0][0]] + \
+        [list(arrows_dict.values())[1]] + [sc.legend_elements()[0][1]] + \
+        [list(arrows_dict.values())[2]] + [sc.legend_elements()[0][2]] + \
+        [list(arrows_dict.values())[3]]
+    
+    labels = ["Factors:", "Labels:"] + [list(arrows_dict.keys())[0]] + ["Setosa"] + \
+        [list(arrows_dict.keys())[1]] + ["Versicolor"] + \
+        [list(arrows_dict.keys())[2]] + ["Virginica"] + [list(arrows_dict.keys())[3]]
+
+    leg = axi[1].legend(
+        hatches,
+        labels,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.0),
+        fontsize=7,
+        ncol=5,
+        markerscale=0.6,
+        handlelength=1.0,
+        columnspacing=0.8,
+        handletextpad=0.3,
+        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
+    )
+    for vpack in leg._legend_handle_box.get_children()[:1]:
+        for hpack in vpack.get_children():
+            hpack.get_children()[0].set_width(0)
+
+    plt.subplots_adjust(
+        left=0.04, right=0.95, top=0.74, bottom=0.08, #wspace=0.21, hspace=0.33
+    )
+    plt.savefig("plots/paper/iris/plot_biplot.pdf")
+
 # print_iris_all()
 # print_iris_pca()
 # test_pca()
 # test_between_all_3()
 # teaser()
     
-test_between_all()
+# test_between_all()
+    
+
+test_pca_all_3()
