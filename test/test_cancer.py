@@ -5,6 +5,15 @@ from src.nonlinear_clock.plot import NonLinearClock
 import umap
 from sklearn.cluster import HDBSCAN
 from sklearn.cluster import KMeans
+from matplotlib.legend_handler import HandlerPatch
+import matplotlib.patches as mpatches
+from sklearn import preprocessing
+
+def make_legend_arrow(legend, orig_handle,
+                      xdescent, ydescent,
+                      width, height, fontsize):
+    p = mpatches.FancyArrow(0, 0.5*height, width, 0, length_includes_head=True, head_width=0.75*height )
+    return p
 
 
 def read_data(path):
@@ -66,23 +75,9 @@ def test_between_all_3():
     fig, axi = plt.subplots(1, 3, figsize=(7.125-0.66, 2.375))
     plt.tight_layout()
 
-    sc = axi[0].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.3)
-    
-    legend1 = axi[0].legend(
-        handles = sc.legend_elements()[0],
-        loc="upper center",
-        # bbox_to_anchor=(0.0, 0.0),
-        fontsize=7,
-        ncol=3,
-        markerscale=0.6,
-        handlelength=1.5,
-        columnspacing=0.8,
-        handletextpad=0.1,
-        labels=["Malignant", "Benign"])
-    
-    axi[0].add_artist(legend1)
+    sc = axi[0].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
 
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters, color_scheme=colors)
+    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=labels, color_scheme=colors)
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -113,35 +108,21 @@ def test_between_all_3():
 
     # Local
     arrows1, arrow_labels1 = plot_inst.plot_local_clocks(
-        standartize_data=True,
+        standartize_data=False,
         standartize_coef=True,
         biggest_arrow_method=True,
         univar_importance=False,
         ax=axi[1],
-        scale_circles=[1.1, 0.5],
-        move_circles=[[-0.4, 0], [0.5, 0]],
-        annotates=[1.0, 1.5],
+        scale_circles=[1.0, 0.5],
+        move_circles=[[-0.4, 0], [1.5, 0]],
+        annotates=[1.5, 1.5],
         arrow_width=0.08,
         plot_top_k=5,
         plot_hulls=True,
         plot_scatter=False
     )
 
-    sc2 = axi[1].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.3)
-    
-    legend2 = axi[1].legend(
-        handles = sc2.legend_elements()[0],
-        loc="upper center",
-        # bbox_to_anchor=(0.0, 0.0),
-        fontsize=7,
-        ncol=3,
-        markerscale=0.6,
-        handlelength=1.5,
-        columnspacing=0.8,
-        handletextpad=0.1,
-        labels=["Malignant", "Benign"])
-    
-    axi[1].add_artist(legend2)
+    sc2 = axi[1].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
 
     axi[1].set_yticks([])
     axi[1].set_xticks([])
@@ -152,21 +133,7 @@ def test_between_all_3():
     axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
 
     # Between
-    sc3 = axi[2].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.3)
-    
-    legend3 = axi[2].legend(
-        handles = sc3.legend_elements()[0],
-        loc="upper center",
-        # bbox_to_anchor=(0.0, 0.0),
-        fontsize=7,
-        ncol=3,
-        markerscale=0.6,
-        handlelength=1.5,
-        columnspacing=0.8,
-        handletextpad=0.1,
-        labels=["Malignant", "Benign"])
-    
-    axi[2].add_artist(legend3)
+    sc3 = axi[2].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
     
     arrows2, arrow_labels2 = plot_inst.plot_between_clock(
         standartize_data=True,
@@ -189,17 +156,32 @@ def test_between_all_3():
     for i, val in enumerate(arrow_labels2):
         arrows_dict[val] = arrows2[i]
 
-    axi[2].legend(
-        list(arrows_dict.values()),
-        list(arrows_dict.keys()),
+    hatches = [plt.plot([],marker="", ls="")[0]]*3 + \
+        list(arrows_dict.values())[0:2] + [sc.legend_elements()[0][0]] + \
+        list(arrows_dict.values())[2:4] + [sc.legend_elements()[0][1]] + \
+        list(arrows_dict.values())[4:6] + [plt.plot([],marker="", ls="")[0]] + \
+        list(arrows_dict.values())[6:8] + [plt.plot([],marker="", ls="")[0]] + \
+        list(arrows_dict.values())[8:]  + [plt.plot([],marker="", ls="")[0]]
+    
+    labels = ["Factors:", " ","Labels:"] + \
+        list(arrows_dict.keys())[0:2] + ["Malignant"] + \
+        list(arrows_dict.keys())[2:4] + ["Benign"] + \
+        list(arrows_dict.keys())[4:6] + [" "] + \
+        list(arrows_dict.keys())[6:8] + [" "] + \
+        list(arrows_dict.keys())[8:]  + [" "]
+
+    leg = axi[2].legend(
+        hatches,
+        labels,
         loc="lower center",
         bbox_to_anchor=(-0.84, 1.12),
         fontsize=7,
-        ncol=5,
+        ncol=6,
         markerscale=0.6,
         handlelength=1.5,
         columnspacing=0.8,
         handletextpad=0.5,
+        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
     )
 
     axi[2].set_yticks([])
@@ -210,11 +192,16 @@ def test_between_all_3():
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
 
+    for vpack in leg._legend_handle_box.get_children()[:1]:
+        for hpack in vpack.get_children():
+            hpack.get_children()[0].set_width(0)
+
+
     plt.subplots_adjust(
-        left=0.03,
+        left=0.02,
         right=0.99,
-        top=0.75,
-        bottom=0.07,  # wspace=0.21, hspace=0.33
+        top=0.7,
+        bottom=0.06,  # wspace=0.21, hspace=0.33
     )
     plt.savefig("plots/paper/cancer/cancer_3.pdf")
 
