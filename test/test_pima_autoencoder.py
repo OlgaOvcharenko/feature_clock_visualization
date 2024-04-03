@@ -231,7 +231,7 @@ def test_between_all_2():
 
 
 def test_between_all_new():
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="", file = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/emb_1.csv")
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="", file = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/emb_1_e-5.csv")
 
     fig_size = ((7.125-0.17)/2, ((7.125-0.17)/2.5)/1.618)
 
@@ -256,7 +256,7 @@ def test_between_all_new():
     sc = ax1.scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
 
     colors = [
-        'tab:pink', 'tab:green', 'tab:blue', 'tab:olive', 'tab:orange',
+        'tab:pink', 'tab:green', 'tab:blue', 'tab:orange',
         'tab:purple', 'tab:cyan', 'tab:red', 'tab:brown']
     
     plot_inst = NonLinearClock(
@@ -268,9 +268,9 @@ def test_between_all_new():
         biggest_arrow_method=True,
         univar_importance=False,
         ax=ax1,
-        scale_circle=3,
-        move_circle=[0, 0],
-        annotate=2.5,
+        scale_circle=4,
+        move_circle=[7, 1],
+        annotate=1.8,
         arrow_width=0.1
     )
 
@@ -309,7 +309,7 @@ def test_between_all_new():
     # second plot
     axis_array = [ax2_11, ax2_12, ax2_13, ax2_21, ax2_22, ax2_23, ax2_31, ax2_32, ax2_33]
 
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="", drop_labels=False, file = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/emb_1.csv")
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="", drop_labels=False, file = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/emb_1_e-5.csv")
     standard_embedding[:,0], standard_embedding[:,1] = 1 * standard_embedding[:,0], 7 * standard_embedding[:,1]
     for (i, o), axi in zip(enumerate(obs), axis_array):
         if o == "Species":
