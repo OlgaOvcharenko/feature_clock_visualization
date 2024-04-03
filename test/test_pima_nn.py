@@ -5,6 +5,16 @@ from src.nonlinear_clock.plot import NonLinearClock
 import umap
 from sklearn.cluster import HDBSCAN
 from sklearn.cluster import KMeans
+from matplotlib.legend_handler import HandlerPatch
+import matplotlib.patches as mpatches
+
+def make_legend_arrow(legend, orig_handle,
+                      xdescent, ydescent,
+                      width, height, fontsize):
+    p = mpatches.FancyArrow(0, 0.5*height, width, 0, length_includes_head=True, head_width=0.75*height )
+    return p
+
+
 
 
 def read_data(path):
@@ -99,24 +109,10 @@ def test_between_all_1():
     plt.tight_layout()
 
     sc = ax.scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.3)
-    
-    legend1 = ax.legend(
-        handles = sc.legend_elements()[0],
-        loc="upper center",
-        # bbox_to_anchor=(0.0, 0.0),
-        fontsize=7,
-        ncol=3,
-        markerscale=0.6,
-        handlelength=1.5,
-        columnspacing=0.8,
-        handletextpad=0.1,
-        labels=["No diabetes", "Diabetes"])
-    
     colors = [
         'tab:pink', 'tab:green', 'tab:blue', 'tab:olive', 'tab:orange',
         'tab:purple', 'tab:cyan', 'tab:red', 'tab:brown']
-    ax.add_artist(legend1)
-
+    
     plot_inst = NonLinearClock(
         X_new, obs, standard_embedding, labels, 
         method="UMAP", cluster_labels=clusters, color_scheme=colors)
@@ -126,23 +122,31 @@ def test_between_all_1():
         biggest_arrow_method=True,
         univar_importance=False,
         ax=ax,
-        scale_circle=1,
+        scale_circle=2,
         move_circle=[0, 0],
         annotate=0.6,
         arrow_width=0.1,
     )
-    ax.legend(
-        arrows,
-        arrow_labels,
+
+    hatches = [plt.plot([],marker="", ls="")[0]]*4 + arrows[0:3] + [sc.legend_elements()[0][0]] + arrows[3:6] + [sc.legend_elements()[0][1]] + arrows[6:] + [plt.plot([],marker="", ls="")[0]]*2
+    labels = ["Factors:", " ", "", "Labels: "] + arrow_labels[0:3] + ["No diabetes"] + arrow_labels[3:6] + ["Diabetes"] + arrow_labels[6:] + [" ", " "]
+    leg = ax.legend(
+        hatches,
+        labels,
         loc="lower center",
         bbox_to_anchor=(0.5, 1.09),
         fontsize=7,
-        ncol=3,
+        ncol=4,
         markerscale=0.6,
         handlelength=1.5,
         columnspacing=0.8,
         handletextpad=0.5,
+        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
     )
+
+    for vpack in leg._legend_handle_box.get_children()[:1]:
+        for hpack in vpack.get_children():
+            hpack.get_children()[0].set_width(0)
 
     ax.set_yticks([])
     ax.set_xticks([])
@@ -153,8 +157,8 @@ def test_between_all_1():
     ax.xaxis.set_label_coords(x=0.5, y=-0.02)
     plt.subplots_adjust(
         left=0.05,
-        right=0.95,
-        top=0.77,
+        right=0.96,
+        top=0.73,
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
     plt.savefig("plots/paper/pima_network/pima_global_nn_1.pdf")
@@ -166,20 +170,6 @@ def test_between_all_2():
     plt.tight_layout()
 
     sc = ax.scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.3)
-    
-    legend1 = ax.legend(
-        handles = sc.legend_elements()[0],
-        loc="upper center",
-        # bbox_to_anchor=(0.0, 0.0),
-        fontsize=7,
-        ncol=3,
-        markerscale=0.6,
-        handlelength=1.5,
-        columnspacing=0.8,
-        handletextpad=0.1,
-        labels=["No diabetes", "Diabetes"])
-    
-    ax.add_artist(legend1)
 
     colors = [
         'tab:pink', 'tab:green', 'tab:blue', 'tab:olive', 'tab:orange',
@@ -194,14 +184,16 @@ def test_between_all_2():
         biggest_arrow_method=True,
         univar_importance=False,
         ax=ax,
-        scale_circle=1,
+        scale_circle=3,
         move_circle=[0, 0],
-        annotate=0.6,
+        annotate=0.9,
         arrow_width=0.1
     )
-    ax.legend(
-        arrows,
-        arrow_labels,
+
+    hatches = [plt.plot([],marker="", ls="")[0]]*3 + arrows[0:2] + [sc.legend_elements()[0][0]] + arrows[2:] + [sc.legend_elements()[0][1]]
+    labels = ["Factors:", " ", "Labels: "] + arrow_labels[0:2] + ["No diabetes"] + arrow_labels[2:] + ["Diabetes"]
+    leg = ax.legend(
+        hatches, labels,
         loc="lower center",
         bbox_to_anchor=(0.5, 1.09),
         fontsize=7,
@@ -210,7 +202,12 @@ def test_between_all_2():
         handlelength=1.5,
         columnspacing=0.8,
         handletextpad=0.5,
+        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
     )
+
+    for vpack in leg._legend_handle_box.get_children()[:1]:
+        for hpack in vpack.get_children():
+            hpack.get_children()[0].set_width(0)
 
     ax.set_yticks([])
     ax.set_xticks([])
@@ -221,14 +218,14 @@ def test_between_all_2():
     ax.xaxis.set_label_coords(x=0.5, y=-0.02)
     plt.subplots_adjust(
         left=0.05,
-        right=0.95,
-        top=0.8,
+        right=0.99,
+        top=0.77,
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
     plt.savefig("plots/paper/pima_network/pima_global_nn_2.pdf")
 
 
-print_pima_all("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_1.csv", 1)
+# print_pima_all("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_1.csv", 1)
 test_between_all_1()
-print_pima_all("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_2.csv", 2)
+# print_pima_all("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_2.csv", 2)
 test_between_all_2()

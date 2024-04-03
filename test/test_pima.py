@@ -70,7 +70,8 @@ def print_pima_all():
         facecolor="w",
         edgecolor="k",
     )
-    for i, o in enumerate(obs):
+    names = {'SkinThickness': 'a', 'Insulin': 'd', 'BMI': 'g', 'Age': 'b', 'Pregnancies': 'e', "Pedigree": "h", 'BloodPressure': 'c', 'Glucose': 'f', "Outcome": "i"}
+    for i, o in enumerate(list(names.keys())):
         im = axi[i % 3, i // 3].scatter(
             standard_embedding[:, 0],
             standard_embedding[:, 1],
@@ -83,10 +84,10 @@ def print_pima_all():
         axi[i % 3, i // 3].set_xticks([])
         axi[i % 3, i // 3].yaxis.set_label_coords(x=-0.01, y=0.5)
         axi[i % 3, i // 3].xaxis.set_label_coords(x=0.5, y=-0.02)
-        axi[i % 3, i // 3].set_title(o, size=8, pad=-14)
+        axi[i % 3, i // 3].set_title(names[o], size=8, pad=-14)
 
-    axi[1, 0].set_ylabel("UMAP2", size=8)
-    axi[2, 1].set_xlabel("UMAP1", size=8)
+    # axi[1, 0].set_ylabel("UMAP2", size=8)
+    # axi[2, 1].set_xlabel("UMAP1", size=8)
 
     plt.subplots_adjust(
         left=0.05,
@@ -94,11 +95,11 @@ def print_pima_all():
         top=0.95,
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
-    cbar = fig.colorbar(im, ax=axi.ravel().tolist(), pad=0.1)
-    cbar.ax.tick_params(labelsize=7) 
-    # for ax in axi:
-    #     for a in ax:
-    #         a.axis('off') 
+    # cbar = fig.colorbar(im, ax=axi.ravel().tolist(), pad=0.1)
+    # cbar.ax.tick_params(labelsize=7) 
+    for ax in axi:
+        for a in ax:
+            a.axis('off') 
     plt.savefig("plots/paper/pima/plot_pimaAll_teaser.pdf")
 
 
@@ -235,7 +236,7 @@ def test_between_all_3():
         'tab:pink', 'tab:green', 'tab:blue', 'tab:orange',
         'tab:purple', 'tab:cyan', 'tab:red', 'tab:brown', 'tab:olive']
 
-    fig, axi = plt.subplots(1, 3, figsize=(7.125-0.66, 2.375))
+    fig, axi = plt.subplots(1, 3, figsize=((7.125-0.17), ((7.125-0.17)/1.8)/1.618))
     plt.tight_layout()
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=labels, color_scheme=colors)
     
@@ -408,10 +409,10 @@ def teaser():
         biggest_arrow_method=True,
         univar_importance=False,
         ax=axi,
-        scale_circle=1.2,
+        scale_circle=2,
         move_circle=[0, 0],
-        annotate=1.0,
-        arrow_width=0.08
+        annotate=0.8,
+        arrow_width=0.08,
     )
 
     axi.set_yticks([])
@@ -421,24 +422,25 @@ def teaser():
     # axi[1].set_title("Diabetis", size=8)
     # axi[1].yaxis.set_label_coords(x=-0.01, y=0.5)
     # axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
-    plt.subplots_adjust(
-        left=0.05,
-        right=0.95,
-        top=0.79,
-        bottom=0.05,  # wspace=0.21, hspace=0.33
-    )
 
-    axi.legend(
+    
+    names_dict = {}
+    letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
+    for a, l in zip(arrow_labels, letters):
+        names_dict[a] = l
+    print(names_dict)
+    leg = axi.legend(
         arrows,
-        arrow_labels,
+        letters,
         loc="lower center",
-        bbox_to_anchor=(-0.84, 1.12),
+        bbox_to_anchor=(0.5, 0.88),
         fontsize=7,
         ncol=8,
         markerscale=0.6,
         handlelength=1.5,
         columnspacing=0.8,
         handletextpad=0.5,
+       handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
     )
 
     # axi[0].set_yticks([])
@@ -450,10 +452,10 @@ def teaser():
     # axi[0].xaxis.set_label_coords(x=0.5, y=-0.02)
     axi.axis('off')
     plt.subplots_adjust(
-        left=0.0,
-        right=0.95,
-        top=0.95,
-        bottom=0.1,  # wspace=0.21, hspace=0.33
+        left=0.01,
+        right=0.99,
+        top=0.98,
+        bottom=0.01,  # wspace=0.21, hspace=0.33
     )
     plt.savefig("plots/paper/pima/pima_general_clock.pdf")
 

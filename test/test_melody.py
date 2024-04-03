@@ -5,6 +5,15 @@ from src.nonlinear_clock.plot import NonLinearClock
 import umap
 from sklearn.cluster import HDBSCAN
 from sklearn.cluster import KMeans
+from matplotlib.legend_handler import HandlerPatch
+import matplotlib.patches as mpatches
+
+def make_legend_arrow(legend, orig_handle,
+                      xdescent, ydescent,
+                      width, height, fontsize):
+    p = mpatches.FancyArrow(0, 0.5*height, width, 0, length_includes_head=True, head_width=0.75*height )
+    return p
+
 
 
 def read_data(path):
@@ -228,7 +237,7 @@ def test_between_all_3():
         'tab:pink', 'tab:green', 'tab:blue', 'tab:red', 'tab:orange',
         'tab:purple', 'tab:cyan', 'tab:olive', 'tab:brown']
 
-    fig, axi = plt.subplots(1, 3, figsize=(7.125-0.66, 2.375))
+    fig, axi = plt.subplots(1, 3, figsize=((7.125-0.17), ((7.125-0.17)/1.8)/1.618))
     plt.tight_layout()
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters, color_scheme=colors)
     print(plot_inst.get_num_clusters())
@@ -274,14 +283,14 @@ def test_between_all_3():
     # Local
     # fig, ax = plt.subplots(1, figsize=(3.33, 3.33))
     arrows2, arrow_labels2 = plot_inst.plot_local_clocks(
-        standartize_data=True,
-        standartize_coef=True,
+        standartize_data=False,
+        standartize_coef=False,
         biggest_arrow_method=True,
         univar_importance=False,
         ax=axi[1],
-        scale_circles=[3, 2, 2.5, 2, 2, 10],
-        move_circles=[[0, 0], [0, 0], [2, 0], [0, 0], [0, 0], [0, 0]],
-        annotates=[0.6, 0.01, 0.8, 0.01, 0.01, 0.01],
+        scale_circles=[1, 1, 1, 1, 1, 1],
+        move_circles=[[-1, 0], [2, 0], [3, 0], [1, 0], [1, 0], [1, 0]],
+        annotates=[1, 1,1, 1, 1, 0.1],
         arrow_width=0.08,
     )
 
@@ -294,7 +303,7 @@ def test_between_all_3():
     axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
 
     arrows3, arrow_labels3 = plot_inst.plot_between_clock(
-        standartize_data=True,
+        standartize_data=False,
         standartize_coef=True,
         univar_importance=True,
         ax=axi[2],
@@ -312,9 +321,12 @@ def test_between_all_3():
     for i, val in enumerate(arrow_labels2):
         arrows_dict[val] = arrows2[i]
 
-    axi[2].legend(
-        list(arrows_dict.values()),
-        list(arrows_dict.keys()),
+    hatches = [plt.plot([],marker="", ls="")[0]] + list(arrows_dict.values())
+    labels = ["Factors:"] + list(arrows_dict.keys())
+
+    leg = axi[2].legend(
+        hatches,
+        labels,
         loc="lower center",
         bbox_to_anchor=(-0.84, 1.12),
         fontsize=7,
@@ -323,7 +335,11 @@ def test_between_all_3():
         handlelength=1.5,
         columnspacing=0.8,
         handletextpad=0.5,
+        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
     )
+    for vpack in leg._legend_handle_box.get_children()[:1]:
+        for hpack in vpack.get_children():
+            hpack.get_children()[0].set_width(0)
 
     axi[2].set_yticks([])
     axi[2].set_xticks([])
