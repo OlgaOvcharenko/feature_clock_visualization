@@ -30,22 +30,26 @@ def setup_support_data(method="tsne", drop_labels=True):
     X = read_data(file_name)
 
     X.drop(columns=["id"], inplace=True)
-    X['sfdm2'] = X['sfdm2'].dropna()
+
+    X.drop(columns=["hospdead"], inplace=True)
 
     for c in X.columns:
-        if c in ['sex', 'dzgroup', 'dzclass', 'income', 'race', 'ca', 'dnr', 'sfdm2']:
+        if c in ['sex', 'dzgroup', 'dzclass', 'income', 'race', 'ca', 'dnr']:
             X[c] = X[c].fillna(X[c].mode())
+        elif c == 'sfdm2':
+            pass
         else: 
             X[c] = X[c].fillna(X[c].mean())
 
-    for c in ['sex', 'dzgroup', 'dzclass', 'income', 'race', 'ca', 'dnr', 'sfdm2']:
+    for c in ['sex', 'dzgroup', 'dzclass', 'income', 'race', 'ca', 'dnr']:
         X[c], _ = pd.factorize(X[c])
-
-    X = X[X.sfdm2 != -1]
+    
+    X['sfdm2'] = X['sfdm2'].map({"no(M2 and SIP pres)": 0, "adl>=4 (>=5 if sur)": 1, "SIP>=30": 2, "Coma or Intub": 4, "<2 mo. follow-up": 3})
     X = X[X.sfdm2 != 4]
+    X = X.dropna(subset=['sfdm2'])
     
     labels = X["sfdm2"]
-    
+
     if drop_labels:
         X.drop(columns=["sfdm2"], inplace=True)
     obs = list(X.columns)
@@ -122,21 +126,26 @@ def test_between_all_3():
     tab20 = [
         '#1f77b4', 
         '#ff7f0e', 
-        '#2ca02c', '#98df8a', 
         '#d62728', '#ff9896', 
         '#9467bd', 'navy', 
         '#8c564b', 'dimgray', 
         '#e377c2', 'darkolivegreen', 
-        '#bcbd22', 'teal', 
-        '#17becf', '#9edae5']
+        '#bcbd22', 
+        '#17becf', "chartreuse"]
 
     
     X_new, obs, standard_embedding, labels, clusters = setup_support_data(method="tsne")
 
     i = 0
     for k in range(len(obs)): 
-        if obs[k] in ['surv2m', 'avtisst', 'surv6m', 'hospdead', 'd.time', 'dzclass', 'dnrday', 'death', 'sps', 'dnr', 'slos', 'adlsc', 'prg2m', 'prg6m', 'num.co']:
+        if obs[k] in ['surv2m', 'surv6m', 'avtisst', 'dzclass', 'aps', 'death', 'sps', 'dnr', 'adlsc', 'prg6m', 'prg2m', 'd.time', 'num.co']:
             colors[k] = tab20[i]
+            if  obs[k] == "surv6m":
+                colors[k] = "darkred"
+            if  obs[k] == "num.co":
+                colors[k] = "orangered"
+            if obs[k] == "adlsc":
+                colors[k] = "peru"
             i += 1
 
     # print(np.unique(labels, return_counts=True))
@@ -147,13 +156,13 @@ def test_between_all_3():
     # print(sc.legend_elements())
 
     scs = []
-    for val, i in zip([0, 1, 3, 2, 4], [0, 5, 2, 1, 4]):
-        sc = axi[0].scatter(standard_embedding[labels == val,0], standard_embedding[labels == val,1], marker= '.', c=matplotlib.colormaps["Accent"].colors[i], zorder=0, alpha=0.3)
+    # for val, i in zip([0, 1, 2, 3], [0, 5, 2, 1]):
+    for val, i in zip([0, 3, 1, 2], [0, 2, 5, 1]):
+        sc = axi[0].scatter(standard_embedding[labels == val,0], standard_embedding[labels == val,1], marker= '.', color=matplotlib.colormaps["Accent"].colors[i], alpha=0.3)
         scs.append(sc)
-        axi[1].scatter(standard_embedding[labels == val,0], standard_embedding[labels == val,1], marker= '.', c=matplotlib.colormaps["Accent"].colors[i], zorder=0, alpha=0.3)
-        axi[2].scatter(standard_embedding[labels == val,0], standard_embedding[labels == val,1], marker= '.', c=matplotlib.colormaps["Accent"].colors[i], zorder=0, alpha=0.3)
+        axi[1].scatter(standard_embedding[labels == val,0], standard_embedding[labels == val,1], marker= '.', color=matplotlib.colormaps["Accent"].colors[i], alpha=0.3)
+        axi[2].scatter(standard_embedding[labels == val,0], standard_embedding[labels == val,1], marker= '.', color=matplotlib.colormaps["Accent"].colors[i], alpha=0.3)
 
-    labels[labels == 4] = -1
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=labels, color_scheme=colors)
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
@@ -190,9 +199,10 @@ def test_between_all_3():
         biggest_arrow_method=True,
         univar_importance=False,
         ax=axi[1],
-        scale_circles=[5, 3, 2, 2, 2],
-        move_circles=[[1.3, 0], [-1.2, 0], [0, -1], [0, 1], [0, 0]],
-        annotates=[0.5, 0.5, 0.5, 0.5, 1],
+        scale_circles=[2.2, 2, 2.5, 0.2],
+        # move_circles=[[-1.5, 0.3], [0, 1.5], [2.3, -1], [-0.8, -0.2]],
+        move_circles=[[-1.8, 0.3], [-0.8, 0], [2.5, -0.8], [-0.0, 0]],
+        annotates=[0.4, 0.4, 0.4, 0.4],
         arrow_width=0.08,
         plot_top_k=5,
         plot_hulls=False,
@@ -217,9 +227,10 @@ def test_between_all_3():
         standartize_coef=False,
         univar_importance=False,
         ax=axi[2],
-        scale_circles=[6, 5, 2.5],
-        move_circles=[[-0.6, -0.5], [0.15, 0.3], [1.1, 0.9]],
-        annotates=[0.3, 0.5, 0.5],
+        scale_circles=[6, 10, 0],
+        # move_circles=[[1.8, 1.1], [0.1, -0.8], [0.0, 0.0]],
+        move_circles=[[0.7, -1.5], [0.4, 1.3], [0, 0]],
+        annotates=[0.5, 0.5, 0.5],
         arrow_width=0.08,
         plot_top_k=5,
         plot_scatter=False,
@@ -234,13 +245,13 @@ def test_between_all_3():
     for i, val in enumerate(arrow_labels2):
         arrows_dict[val] = arrows2[i]
 
-    print(list(arrows_dict.keys()))
+    print(len(list(arrows_dict.keys())))
     
     hatches = [plt.plot([],marker="", ls="")[0]]*3 + \
         list(arrows_dict.values())[0:2]   + [scs[0]] + \
-        list(arrows_dict.values())[2:4]   + [scs[1]] + \
-        list(arrows_dict.values())[4:6]   + [scs[2]] + \
-        list(arrows_dict.values())[6:8]   + [scs[3]] + \
+        list(arrows_dict.values())[2:4]   + [scs[3]] + \
+        list(arrows_dict.values())[4:6]   + [scs[1]] + \
+        list(arrows_dict.values())[6:8]   + [scs[2]] + \
         list(arrows_dict.values())[8:10]  + [plt.plot([],marker="", ls="")[0]] + \
         list(arrows_dict.values())[10:12] + [plt.plot([],marker="", ls="")[0]] + \
         list(arrows_dict.values())[12:14] + [plt.plot([],marker="", ls="")[0]] + \

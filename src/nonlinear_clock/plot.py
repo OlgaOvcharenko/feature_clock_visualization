@@ -895,7 +895,7 @@ class NonLinearClock:
         grapf_cl = Graph(n_clusters)
         grapf_cl.graph = adj_matrix
         mst = grapf_cl.primMST()
-        # print(mst)
+        print(f"MST constructed for the inter-cluster clock ([[node1, node2, distance], ...]): \n {mst}")
         return mst
 
     def _get_angle_to_x(self, points_a, points_b):

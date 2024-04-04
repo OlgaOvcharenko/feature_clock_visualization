@@ -57,6 +57,9 @@ def setup_pima_data(method="tsne", drop_labels=True, file: str=""):
     elif method == "phate":
         raise NotImplementedError()
     
+    # for i in range(standard_embedding.shape[1]):
+    #     standard_embedding[:, i] = (standard_embedding[:, i] - standard_embedding[:, i].mean()) / standard_embedding[:, i].std()
+    
     # get clusters
     clusters = HDBSCAN(min_samples=12).fit_predict(X)
     # clusters = KMeans(n_clusters=3, n_init="auto", max_iter=1000).fit_predict(X)
