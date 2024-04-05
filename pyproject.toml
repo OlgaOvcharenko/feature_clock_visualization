@@ -1,10 +1,10 @@
 [project]
-name = "nonlinear_clock"
+name = "feature_clock"
 version = "0.0.1"
 authors = [
   { name="Olga Ovcharenko", email="ovcharenko.folga@gmail.com" },
 ]
-description = "Nonlinear Clock, provides visualizations that eliminate the need for multiple plots to inspect the influence of original variables in the latent space. Nonlinear Clock enhances the explainability and compactness of visualizations of embedded data."
+description = "Feature Clock, provides visualizations that eliminate the need for multiple plots to inspect the influence of original variables in the latent space. Feature Clock enhances the explainability and compactness of visualizations of embedded data."
 readme = "README.md"
 requires-python = ">=3.11"
 classifiers = [
