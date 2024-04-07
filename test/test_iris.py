@@ -4,7 +4,7 @@ import matplotlib
 import numpy as np
 import pandas as pd
 from sklearn.discriminant_analysis import StandardScaler
-from src.nonlinear_clock.plot import NonLinearClock
+from src.feature_clock.plot import NonLinearClock
 import umap
 from sklearn.cluster import HDBSCAN
 from sklearn.cluster import KMeans
@@ -25,7 +25,7 @@ def read_data(path):
 
 
 def setup_iris_data(method="tsne", drop_labels=True):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/Iris.csv"
+    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/Iris.csv"
     X = read_data(file_name)
     X.rename(columns={"SepalLengthCm": "SepalLength", 
                       "SepalWidthCm": "SepalWidth", 
@@ -136,7 +136,7 @@ def test_pca():
         edgecolor="k",
     )
 
-    df = pd.read_csv("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/Iris.csv")
+    df = pd.read_csv("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/Iris.csv")
     labels = df.Species.map({"Iris-setosa":0, "Iris-versicolor":1, "Iris-virginica":2}).to_numpy()
     
     df.rename(columns={"SepalLengthCm": "SepalLength", 
@@ -551,7 +551,7 @@ def test_pca_all_3():
     ax23 = fig.add_subplot(spec23[1, 0])
     ax24 = fig.add_subplot(spec23[1, 1])
 
-    df = pd.read_csv("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/Iris.csv")
+    df = pd.read_csv("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/Iris.csv")
     labels = df.Species.map({"Iris-setosa":0, "Iris-versicolor":1, "Iris-virginica":2}).to_numpy()
     
     df.rename(columns={"SepalLengthCm": "SepalLength", 

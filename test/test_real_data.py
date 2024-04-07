@@ -1,6 +1,6 @@
 import numpy as np
 import scanpy as sp
-from src.nonlinear_clock.plot import NonLinearClock
+from src.feature_clock.plot import NonLinearClock
 import scanpy.external as sce
 import phate
 import pandas as pd
@@ -9,7 +9,7 @@ def read_data(path):
     return pd.read_csv(path, sep=";", header=0)
 
 def setup_data(method = "umap"):
-    file_name = '/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/E-GEOD-46817-query-results.csv'
+    file_name = '/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/E-GEOD-46817-query-results.csv'
     X = read_data(file_name)
 
     obs = [ 

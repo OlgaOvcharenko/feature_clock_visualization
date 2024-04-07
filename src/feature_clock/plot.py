@@ -16,7 +16,7 @@ from skspatial.objects import Line
 import math
 import matplotlib.patheffects as pe
 from sklearn.manifold import TSNE
-from src.nonlinear_clock.graph import Graph
+from src.feature_clock.graph import Graph
 import warnings
 from sklearn.preprocessing import StandardScaler
 

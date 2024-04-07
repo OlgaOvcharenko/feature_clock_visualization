@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
-from src.nonlinear_clock.plot import NonLinearClock
+from src.feature_clock.plot import NonLinearClock
 import umap
 from sklearn.cluster import HDBSCAN
 from sklearn.cluster import KMeans
@@ -21,7 +21,7 @@ def read_data(path):
 
 
 def setup_melody_data(method="tsne", drop_labels=True):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/melody.csv"
+    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/melody.csv"
     X = read_data(file_name)
     # X.rename(columns={"DiabetesPedigreeFunction": "Pedigree"}, inplace=True)
     # X.drop(columns=["Genre"], inplace=True)
@@ -35,7 +35,7 @@ def setup_melody_data(method="tsne", drop_labels=True):
 
     for col in X.columns:
         X[col] = (X[col] - X[col].mean()) / X[col].std()
-
+    
     # compute umap
     if method == "umap":
         reducer = umap.UMAP(random_state=42)
@@ -240,7 +240,18 @@ def test_between_all_3():
     fig, axi = plt.subplots(1, 3, figsize=((7.125-0.17), ((7.125-0.17)/1.8)/1.618))
     plt.tight_layout()
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters, color_scheme=colors)
-    print(plot_inst.get_num_clusters())
+    # print(plot_inst.get_num_clusters())
+
+    sc0 = axi[0].scatter(
+        standard_embedding[:, 0],
+        standard_embedding[:, 1],
+        marker=".",
+        c=labels,
+        cmap="jet",
+        alpha=0.05,
+        # s=1
+    )
+    
     arrows1, arrow_labels1 = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -250,7 +261,8 @@ def test_between_all_3():
         scale_circle=2.5,
         move_circle=[0, 0],
         annotate=1.5,
-        arrow_width=0.08
+        arrow_width=0.08,
+        plot_scatter=False
     )
     # ax.legend(
     #     arrows,
@@ -272,16 +284,25 @@ def test_between_all_3():
     axi[0].set_title("Global clock", size=8)
     axi[0].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[0].xaxis.set_label_coords(x=0.5, y=-0.02)
-    plt.subplots_adjust(
-        left=0.05,
-        right=0.95,
-        top=0.79,
-        bottom=0.05,  # wspace=0.21, hspace=0.33
-    )
-    plt.savefig("plots/paper/melody/melody_global.pdf")
+    # plt.subplots_adjust(
+    #     left=0.05,
+    #     right=0.95,
+    #     top=0.79,
+    #     bottom=0.05,  # wspace=0.21, hspace=0.33
+    # )
+    # plt.savefig("plots/paper/melody/melody_global.pdf")
 
     # Local
     # fig, ax = plt.subplots(1, figsize=(3.33, 3.33))
+    sc1 = axi[1].scatter(
+        standard_embedding[:, 0],
+        standard_embedding[:, 1],
+        marker=".",
+        c=labels,
+        cmap="jet",
+        alpha=0.05,
+        # s=1
+    )
     arrows2, arrow_labels2 = plot_inst.plot_local_clocks(
         standartize_data=False,
         standartize_coef=False,
@@ -292,6 +313,7 @@ def test_between_all_3():
         move_circles=[[-1, 0], [2, 0], [3, 0], [1, 0], [1, 0], [1, 0]],
         annotates=[1, 1,1, 1, 1, 0.1],
         arrow_width=0.08,
+        plot_scatter=False
     )
 
     axi[1].set_yticks([])
@@ -302,6 +324,16 @@ def test_between_all_3():
     axi[1].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
 
+    sc2 = axi[2].scatter(
+        standard_embedding[:, 0],
+        standard_embedding[:, 1],
+        marker=".",
+        c=labels,
+        cmap="jet",
+        alpha=0.05,
+        # s=3
+    )
+
     arrows3, arrow_labels3 = plot_inst.plot_between_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -311,6 +343,7 @@ def test_between_all_3():
         move_circles=[[0, 0], [1, 0], [0, 0]],
         annotates=[1.0, 1.0, 1.0],
         arrow_width=0.08,
+        plot_scatter=False
     )
 
     arrows_dict = {}
@@ -348,11 +381,17 @@ def test_between_all_3():
     axi[2].set_title("Inter-cluster clock", size=8)
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
+
+    cbar = fig.colorbar(sc2, ax=axi[2]) # ticks=[100, 50, 0]
+    cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
+    cbar.solids.set(alpha=1)
+    cbar.outline.set_visible(False)
+
     plt.subplots_adjust(
-        left=0.05,
-        right=0.95,
+        left=0.02,
+        right=1,
         top=0.79,
-        bottom=0.07,  # wspace=0.21, hspace=0.33
+        bottom=0.06,  # wspace=0.21, hspace=0.33
     )
     plt.savefig("plots/paper/melody/melody_3.pdf")
 

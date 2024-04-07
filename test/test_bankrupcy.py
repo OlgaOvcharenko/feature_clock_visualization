@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
-from src.nonlinear_clock.plot import NonLinearClock
+from src.feature_clock.plot import NonLinearClock
 import umap
 from sklearn.cluster import HDBSCAN
 from sklearn.cluster import KMeans
@@ -12,7 +12,7 @@ def read_data(path):
 
 
 def setup_bankrupcy_data(method="tsne", drop_labels=True):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/bankrupcy.csv"
+    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/bankrupcy.csv"
     X = read_data(file_name)
 
     names = dict()

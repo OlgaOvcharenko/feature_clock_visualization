@@ -2,7 +2,7 @@ from matplotlib import pyplot as plt
 from matplotlib.legend_handler import HandlerPatch
 import numpy as np
 import pandas as pd
-from src.nonlinear_clock.plot import NonLinearClock
+from src.feature_clock.plot import NonLinearClock
 import umap
 from sklearn.cluster import HDBSCAN
 from sklearn.cluster import KMeans
@@ -22,7 +22,7 @@ def read_data(path):
 
 
 def setup_pima_data(method="tsne", drop_labels=True):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/diabetes.csv"
+    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/diabetes.csv"
     X = read_data(file_name)
     X.rename(columns={"DiabetesPedigreeFunction": "Pedigree"}, inplace=True)
     X = X.dropna()

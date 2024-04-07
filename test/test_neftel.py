@@ -1,7 +1,7 @@
 from matplotlib import gridspec, pyplot as plt
 import numpy as np
 import scanpy as sp
-from src.nonlinear_clock.plot import NonLinearClock
+from src.feature_clock.plot import NonLinearClock
 import scanpy.external as sce
 import phate
 from matplotlib.legend_handler import HandlerPatch
@@ -19,7 +19,7 @@ def read_data(path):
 
 
 def setup_neftel_data(method="tsne"):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/neftel_malignant.h5ad"
+    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/neftel_malignant.h5ad"
     X = read_data(file_name)
 
     obs = [

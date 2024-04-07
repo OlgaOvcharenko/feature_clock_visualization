@@ -1,7 +1,7 @@
 from matplotlib import gridspec, pyplot as plt
 import numpy as np
 import pandas as pd
-from src.nonlinear_clock.plot import NonLinearClock
+from src.feature_clock.plot import NonLinearClock
 import umap
 from sklearn.cluster import HDBSCAN
 from sklearn.cluster import KMeans
@@ -22,7 +22,7 @@ def read_data(path):
 
 
 def setup_pima_data(method="tsne", drop_labels=True, file: str=""):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/diabetes.csv"
+    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/diabetes.csv"
     X = read_data(file_name)
     X.rename(columns={"DiabetesPedigreeFunction": "Pedigree"}, inplace=True)
     X = X.dropna()
@@ -113,7 +113,7 @@ def print_pima_all(file, dataset_i):
 
 
 def test_between_all_2():
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="", file = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_2_2out.csv")
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="", file = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_2_2out.csv")
 
     fig_size = ((7.125-0.17)/2, ((7.125-0.17)/2.5)/1.618)
 
@@ -160,7 +160,7 @@ def test_between_all_2():
         [sc.legend_elements()[0][0]] + arrows[3:6] + \
         [sc.legend_elements()[0][1]] + arrows[6:] + [plt.plot([],marker="", ls="")[0]]*2
     labels = ["Factors:", " ", " ", "Labels: "] + arrow_labels[0:3] + \
-        ["No diabetes"] + arrow_labels[3:6] + \
+        ["Healthy"] + arrow_labels[3:6] + \
         ["Diabetes"] + arrow_labels[6:] + [" ", " "]
     leg = ax1.legend(
         hatches, labels,
@@ -191,7 +191,7 @@ def test_between_all_2():
     # second plot
     axis_array = [ax2_11, ax2_12, ax2_13, ax2_21, ax2_22, ax2_23, ax2_31, ax2_32, ax2_33]
 
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="", drop_labels=False, file = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_2_2out.csv")
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="", drop_labels=False, file = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_2_2out.csv")
     standard_embedding[:,0], standard_embedding[:,1] = 1 * standard_embedding[:,0], 7 * standard_embedding[:,1]
     for (i, o), axi in zip(enumerate(obs), axis_array):
         if o == "Species":
@@ -214,6 +214,8 @@ def test_between_all_2():
             o = "SkinThick."
         elif o == "BloodPressure":
             o = "BloodPr."
+        elif o == "Outcome":
+            o = "Labels"
         axi.set_title(o, size=5, pad=-9)
 
     ax2_21.set_ylabel("Dim2", size=8)
@@ -231,5 +233,5 @@ def test_between_all_2():
     plt.savefig("plots/paper/pima_network/pima_global_nn_last_2out.pdf")
 
 
-# print_pima_all("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/non_lin_visualization/data/latent_space_2.csv", 2)
+# print_pima_all("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_2.csv", 2)
 test_between_all_2()

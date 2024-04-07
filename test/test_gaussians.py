@@ -4,7 +4,7 @@ sys.path.append('src/')
 
 import numpy as np
 import scanpy as sp
-from src.nonlinear_clock.plot import NonLinearClock
+from src.feature_clock.plot import NonLinearClock
 import scanpy.external as sce
 import phate
 import pandas as pd
