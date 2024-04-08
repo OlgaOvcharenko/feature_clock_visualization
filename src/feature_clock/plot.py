@@ -458,6 +458,7 @@ class NonLinearClock:
         c_min,
         c_max,
         ann_sign=[1, 1],
+        clock_label = ""
     ):
         for i in list(range(1, num_circles))[::-1]:
             radius_circle = round(i * annotate, 1)
@@ -471,6 +472,22 @@ class NonLinearClock:
                     facecolor=(0.941, 0.973, 1.0, 0.5),
                     fill=True,
                     zorder=10,
+                )
+
+                circle_an = math.radians(90)
+                x_ann, y_ann = (
+                    x_center + math.cos(circle_an) * radius_circle * 1.2,
+                    y_center + math.sin(circle_an) * radius_circle * 1.2,
+                )
+
+                ax.annotate(
+                    clock_label,
+                    xy=(x_ann, y_ann),
+                    ha="right",
+                    color="gray",
+                    path_effects=[pe.withStroke(linewidth=2, foreground="white")],
+                    fontsize=7,
+                    zorder=20,
                 )
             else:
                 circle = patches.Circle(
@@ -638,6 +655,7 @@ class NonLinearClock:
         move_circle: list = [0, 0],
         arrow_width: float = 0.01,
         points: list = [],
+        clock_label: str = ""
     ):
         x_center, y_center = self._get_center(data)
 
@@ -743,6 +761,7 @@ class NonLinearClock:
             c_min,
             c_max,
             ann_sign=ann_sign,
+            clock_label=clock_label
         )
 
         return arrows, labels_all
@@ -761,6 +780,7 @@ class NonLinearClock:
         plot_scatter,
         plot_hulls,
         plot_top_k,
+        clocks_labels
     ):
         dist_clusters = self.low_dim_data["cluster"].unique()
         dist_clusters.sort()
@@ -861,6 +881,7 @@ class NonLinearClock:
                     move_circle=move_circle[i],
                     arrow_width=arrow_width,
                     points=all_points[i] if len(all_points) > 0 else [],
+                    clock_label=clocks_labels[i] if len(clocks_labels) == len(dist_clusters) else ""
                 )
 
                 for arrow, lbl in zip(arrows, arrow_labels):
@@ -1152,6 +1173,7 @@ class NonLinearClock:
         plot_scatter: bool = True,
         plot_hulls: bool = True,
         plot_top_k: int = 0,
+        clocks_labels: list = [],
     ):
         if not self.is_projected or self.shift != angle_shift:
             self.is_projected = True
@@ -1198,6 +1220,7 @@ class NonLinearClock:
             plot_scatter=plot_scatter,
             plot_hulls=plot_hulls,
             plot_top_k=plot_top_k,
+            clocks_labels=clocks_labels
         )
         return arrows_all, arrow_labels_all
 
