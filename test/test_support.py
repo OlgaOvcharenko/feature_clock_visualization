@@ -28,7 +28,6 @@ def read_data(path):
 def setup_support_data(method="tsne", drop_labels=True):
     file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/support2.csv"
     X = read_data(file_name)
-
     X.drop(columns=["id"], inplace=True)
 
     X.drop(columns=["death", "sfdm2", "d.time", "surv2m", "surv6m"], inplace=True)
@@ -69,7 +68,9 @@ def setup_support_data(method="tsne", drop_labels=True):
         'scoma':'Coma score',
         'sps':'Physiology score',
         'hday':'Study enter',
-        'dnr':'Rescuscitate order'
+        'dnr':'Rescuscitate order',
+        'charges':'Charges',
+        'age': 'Age'
     }, inplace=True)
     
     obs = list(X.columns)
@@ -526,7 +527,7 @@ def test_between_all_3():
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
 
     # fourth plot
-    # X_new, obs, standard_embedding, labels, clusters = setup_support_data(method="tsne", drop_labels=True)
+    X_new, obs, standard_embedding, labels, clusters = setup_support_data(method="tsne", drop_labels=True)
 
     standard_embedding[:,0], standard_embedding[:,1] = 5 * standard_embedding[:,0], 1 * standard_embedding[:,1]
     for (i, o), axi_i in zip(enumerate(arrow_labels), [ax21, ax22, ax23, ax24]):
@@ -840,8 +841,6 @@ def test_local_hdbscan():
             elif obs[k] == 'Cost/charges ratio':
                 colors[k] = "#ff7f0e"
             else:
-                print(obs[k])
-                print(tab20[i])
                 colors[k] = tab20[i]
                 i += 1
     fig_size = ((7.125-0.17)/2, ((7.125-0.17)/2.3)/1.618)
@@ -856,6 +855,7 @@ def test_local_hdbscan():
     ax12 = fig.add_subplot(spec23[0, 1])
     ax13 = fig.add_subplot(spec23[0, 2])
     ax21 = fig.add_subplot(spec23[1, 0])
+    ax23 = fig.add_subplot(spec23[1, 1])
     ax22 = fig.add_subplot(spec23[1, 2])
 
     scs = []
@@ -872,7 +872,7 @@ def test_local_hdbscan():
                             color=matplotlib.colormaps["Paired"].colors[i], alpha=0.2, s=13)
         scs.append(sc)
 
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters, color_scheme=colors)
+    plot_inst = NonLinearClock(X_new, obs, standard_embedding, clusters, method="UMAP", cluster_labels=clusters, color_scheme=colors)
 
     # Local
     arrows1, arrow_labels1 = plot_inst.plot_local_clocks(
@@ -881,11 +881,11 @@ def test_local_hdbscan():
         biggest_arrow_method=True,
         univar_importance=False,
         ax=ax1,
-        scale_circles=[2.5, 2],
+        scale_circles=[2.5, 15],
         move_circles=[[0, 0], [0, 0]],
         clocks_labels = ["0", "1"],
         clocks_labels_angles = [45, 315],
-        annotates=[0.7, 0.5],
+        annotates=[0.5, 0.5],
         arrow_width=0.08,
         plot_top_k=4,
         plot_hulls=False,
@@ -906,7 +906,7 @@ def test_local_hdbscan():
         standartize_coef=False,
         univar_importance=False,
         ax=ax2,
-        scale_circles=[1.3],
+        scale_circles=[1],
         move_circles=[[0, 0]],
         annotates=[0.5],
         arrow_width=0.08,
@@ -937,15 +937,19 @@ def test_local_hdbscan():
     tmp = dict_keys[-2]
     dict_keys[-2] = dict_keys[-1]
     dict_keys[-1] = tmp
+
+    print(dict_keys)
+    print(len(dict_keys))
     
     hatches = [plt.plot([],marker="", ls="")[0]]*3 + \
         dict_vals[0:2]  + [scs[1]] + \
         dict_vals[2:4]  + [scs[2]] + \
-        dict_vals[4:]  + [plt.plot([],marker="", ls="")[0], scs[0]]
-    labels = ["Factors:", " ", "Labels (HDBSCAN):"] + \
+        dict_vals[4:6]  + [scs[0]]
+    
+    labels = ["Factors:", " ", "Labels:"] + \
         dict_keys[0:2] + ["0"] + \
         dict_keys[2:4] + ["1"] + \
-        dict_keys[4:] + [" ", "No class"] 
+        dict_keys[4:6] + ["No class"] 
         
     leg = ax12.legend(
         hatches,
@@ -969,7 +973,7 @@ def test_local_hdbscan():
 
     # fourth plot
     standard_embedding[:,0], standard_embedding[:,1] = 20 * standard_embedding[:,0], 1 * standard_embedding[:,1]
-    for (i, o), axi_i in zip(enumerate(arrow_labels1), [ax11, ax12, ax13, ax21, ax22]):
+    for (i, o), axi_i in zip(enumerate(dict_keys), [ax11, ax12, ax13, ax21, ax22, ax23]):
         im = axi_i.scatter(
             standard_embedding[:, 0],
             standard_embedding[:, 1],
@@ -987,7 +991,9 @@ def test_local_hdbscan():
             'ADL family':'ADL fam.', 
             'ADL patient':'ADL pat.', 
             'Dementia':'Dem.',
-            'Diabetes':'Diab.'
+            'Diabetes':'Diab.',
+            'Charges': 'Charges',
+            'Study enter':'Study e.'
         }
 
         axi_i.set_title(names[o], size=5, pad=-14)
@@ -998,7 +1004,7 @@ def test_local_hdbscan():
     ax21.yaxis.set_label_coords(0, 1.15)
     ax22.xaxis.set_label_coords(-0.5, -0.04)
 
-    cbar = fig.colorbar(im, ax=[ax11, ax12, ax13, ax21, ax22], pad=0.03, aspect=40)
+    cbar = fig.colorbar(im, ax=[ax11, ax12, ax13, ax21, ax22, ax23], pad=0.03, aspect=40)
     cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
     cbar.outline.set_visible(False)
 

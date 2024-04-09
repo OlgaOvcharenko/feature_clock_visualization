@@ -186,6 +186,18 @@ class NonLinearClock:
 
     def _get_importance(self, X, y, significance: float = 0.05, univar: bool = False):
         coefs, pvals, is_significant, std_x, std_y = [], [], [], [], []
+        
+        remove_cols = []
+        for j in range(X.shape[1]):
+            val1 = X[0, j] 
+            for i in range(X.shape[0]):
+                if X[i, j] != val1:
+                    break
+                if i == X.shape[0]-1 and X[i, j] == val1:
+                    remove_cols.append(j)
+        for k in remove_cols:
+            X = np.delete(X, k, 1)
+
         for i in range(y.shape[1]):
             if univar:
                 coefs_a, pvals_a, is_significant_a = [], [], []
@@ -201,17 +213,28 @@ class NonLinearClock:
                 pvals.append(pvals_a)
                 is_significant.append(is_significant_a)
 
-                # FIXME add std X, y
-
             else:
-                lm = sm.OLS(y[:, i], X).fit()
-                pval = np.array(lm.pvalues)
-                coefs.append(np.array(lm.params))
+                # lm = sm.OLS(y[:, i], X).fit()
+                lm = sm.OLS(y[:, i], np.c_[np.ones(X.shape[0]), X]).fit()
+                
+                coefs_tmp = lm.params[1:]
+                pvals_tmp = lm.pvalues[1:]
+                x_std_tmp = X.std(axis=0)
+                
+                for k in remove_cols:
+                    coefs_tmp = np.insert(coefs_tmp, k, 0)
+                    pvals_tmp = np.insert(pvals_tmp, k, 0)
+                    x_std_tmp = np.insert(x_std_tmp, k, 1)
+                    
+                coefs.append(np.array(coefs_tmp))
+
+                pval = np.array(pvals_tmp)
                 pvals.append(pval)
                 is_significant.append(pval <= significance)
 
-                std_x.append(X.std(axis=0))
+                std_x.append(np.array(x_std_tmp))
                 std_y.append(y[:, i].std())
+
         return (
             np.array(coefs),
             np.array(pvals),
@@ -855,6 +878,7 @@ class NonLinearClock:
                 (self.low_dim_data.shape[0], 1)
             )
 
+
             data_cl = self.low_dim_data[ind]
             new_data_cl = self.high_dim_data[ind]
             projections_cl = self.projections[ind[:, 0], :]
@@ -1020,6 +1044,7 @@ class NonLinearClock:
                 np.mean((p_a[0], p_b[0])) + move_circle[i][0],
                 np.mean((p_a[1], p_b[1])) + move_circle[i][1],
             )
+            
             clock_centers.append([x_center, y_center])
 
             radius = (math.dist(p_a, p_b) / 2) * scale_circle[i]
@@ -1038,19 +1063,21 @@ class NonLinearClock:
 
             coefs_scaled[i] = coefs_scaled[i] * (radius / max(abs(c_max), abs(c_min)))
 
+            if val[0] > val[1] and p_a[0] < p_b[0]:
+                coefs_scaled[i] = coefs_scaled[i] * (-1)
+            elif val[0] < val[1] and p_a[0] > p_b[0]:
+                coefs_scaled[i] = coefs_scaled[i] * (-1)
+
         # Add arrows
         arrows = {}
         for j in range(len(mst)):
             for i in abs(coefs_scaled[j]).argsort(axis=None)[::-1]:
                 # Add actual arrow
-                # if min(mst[j][0], mst[j][1])
-
                 a = math.radians(angles[j])
                 x_center, y_center = clock_centers[min(mst[j][0], mst[j][1])]
 
                 if coefs_scaled[j, i] != 0:
                     # Plot contributions
-                    print(coefs_scaled[j, i])
                     x_c, y_c = (
                         math.cos(a) * coefs_scaled[j, i],
                         math.sin(a) * coefs_scaled[j, i],
