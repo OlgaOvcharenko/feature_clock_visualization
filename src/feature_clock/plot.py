@@ -19,6 +19,8 @@ from sklearn.manifold import TSNE
 from src.feature_clock.graph import Graph
 import warnings
 from sklearn.preprocessing import StandardScaler
+from scipy.stats import norm
+from sklearn.linear_model import LogisticRegression, LogisticRegressionCV
 
 
 class NonLinearClock:
@@ -217,6 +219,53 @@ class NonLinearClock:
             np.array(std_x),
             np.array(std_y),
         )
+    
+    def _logit_pvalue(self, model, x):
+        """ Calculate z-scores for scikit-learn LogisticRegression.
+        parameters:
+            model: fitted sklearn.linear_model.LogisticRegression with intercept and large C
+            x:     matrix on which the model was fit
+        This function uses asymtptics for maximum likelihood estimates.
+        """
+        p = model.predict_proba(x)
+        n = len(p)
+        m = len(model.coef_[0])
+        coefs = np.array(model.coef_[0])
+        x_full = np.matrix(np.array(x))
+        ans = np.zeros((m, m))
+        for i in range(n):
+            ans = ans + np.dot(np.transpose(x_full[i, :]), x_full[i, :]) * p[i,1] * p[i, 0]
+        vcov = np.linalg.inv(np.matrix(ans))
+        se = np.sqrt(np.diag(vcov))
+        t =  coefs/se  
+        p = (1 - norm.cdf(abs(t))) * 2
+        return p
+
+
+    def _get_importance_between(self, X, mst, significance: float = 0.05, univar: bool = False):
+        coefs, pvals, is_significant, std_x, std_y = [], [], [], [], []
+
+        for val in mst:
+            ix = np.logical_or((self.cluster_labels == val[0]), (self.cluster_labels == val[1]))
+            X_i = X[ix]
+            y = self.cluster_labels[np.logical_or((self.cluster_labels == val[0]), (self.cluster_labels == val[1]))]
+            lm = LogisticRegressionCV(cv=5, fit_intercept=False, penalty="l2").fit(X_i, y)
+
+            pval = np.array(self._logit_pvalue(lm, X_i))
+            coefs.append(np.array(lm.coef_[0]))
+            pvals.append(pval)
+            is_significant.append(pval <= significance)
+
+            std_x.append(X_i.std(axis=0))
+            std_y.append(y.std())
+        
+        return (
+            np.array(coefs),
+            np.array(pvals),
+            np.array(is_significant),
+            np.array(std_x),
+            np.array(std_y),
+        )
 
     def _plot_big_clock(
         self,
@@ -256,8 +305,9 @@ class NonLinearClock:
 
             if plot_top_k != 0:
                 min_ix = list(
-                    np.argsort(coefs_new)[0 : len(coefs_new) - plot_top_k]
+                    np.argsort(np.abs(coefs_new) * is_significant)[0 : len(coefs_new) - plot_top_k]
                 )  # FISME * is_significant
+
                 is_significant[min_ix] = False
 
             coefs = coefs_new
@@ -458,7 +508,8 @@ class NonLinearClock:
         c_min,
         c_max,
         ann_sign=[1, 1],
-        clock_label = ""
+        clock_label="",
+        clock_label_angle=270
     ):
         for i in list(range(1, num_circles))[::-1]:
             radius_circle = round(i * annotate, 1)
@@ -474,7 +525,7 @@ class NonLinearClock:
                     zorder=10,
                 )
 
-                circle_an = math.radians(90)
+                circle_an = math.radians(clock_label_angle)
                 x_ann, y_ann = (
                     x_center + math.cos(circle_an) * radius_circle * 1.2,
                     y_center + math.sin(circle_an) * radius_circle * 1.2,
@@ -483,11 +534,11 @@ class NonLinearClock:
                 ax.annotate(
                     clock_label,
                     xy=(x_ann, y_ann),
-                    ha="right",
+                    ha="center",
                     color="gray",
                     path_effects=[pe.withStroke(linewidth=2, foreground="white")],
                     fontsize=7,
-                    zorder=20,
+                    zorder=20
                 )
             else:
                 circle = patches.Circle(
@@ -655,7 +706,8 @@ class NonLinearClock:
         move_circle: list = [0, 0],
         arrow_width: float = 0.01,
         points: list = [],
-        clock_label: str = ""
+        clock_label: str = "",
+        clocks_label_angle: float = 270
     ):
         x_center, y_center = self._get_center(data)
 
@@ -761,7 +813,8 @@ class NonLinearClock:
             c_min,
             c_max,
             ann_sign=ann_sign,
-            clock_label=clock_label
+            clock_label=clock_label,
+            clock_label_angle=clocks_label_angle
         )
 
         return arrows, labels_all
@@ -780,7 +833,8 @@ class NonLinearClock:
         plot_scatter,
         plot_hulls,
         plot_top_k,
-        clocks_labels
+        clocks_labels,
+        clocks_labels_angles
     ):
         dist_clusters = self.low_dim_data["cluster"].unique()
         dist_clusters.sort()
@@ -821,7 +875,7 @@ class NonLinearClock:
 
                 if plot_top_k != 0:
                     min_ix = list(
-                        np.argsort(coefs_new)[0 : len(coefs_new) - plot_top_k]
+                        np.argsort(np.abs(coefs_new))[0 : len(coefs_new) - plot_top_k]
                     )
                     is_significant[min_ix] = False
 
@@ -881,7 +935,8 @@ class NonLinearClock:
                     move_circle=move_circle[i],
                     arrow_width=arrow_width,
                     points=all_points[i] if len(all_points) > 0 else [],
-                    clock_label=clocks_labels[i] if len(clocks_labels) == len(dist_clusters) else ""
+                    clock_label=clocks_labels[i] if len(clocks_labels) == len(dist_clusters) else "",
+                    clocks_label_angle=clocks_labels_angles[i] if len(clocks_labels_angles) == len(dist_clusters) else 270
                 )
 
                 for arrow, lbl in zip(arrows, arrow_labels):
@@ -940,6 +995,8 @@ class NonLinearClock:
         arrow_width,
         plot_scatter,
         plot_hulls,
+        clocks_labels,
+        clocks_labels_angles
     ):
         alpha = 0.1
 
@@ -958,17 +1015,6 @@ class NonLinearClock:
         for i, val in enumerate(mst):
             p_a, p_b = cl_means[val[0]], cl_means[val[1]]
 
-            # FIXME
-            # ax.plot(
-            #     (p_a[0], p_b[0]),
-            #     (p_a[1], p_b[1]),
-            #     c="gray",
-            #     linestyle="--",
-            #     alpha=0.7,
-            #     linewidth=1,
-            #     zorder=10,
-            # )
-
             # Add clock
             x_center, y_center = (
                 np.mean((p_a[0], p_b[0])) + move_circle[i][0],
@@ -985,7 +1031,9 @@ class NonLinearClock:
 
             # num_circles - one circle per annotation
             self._add_circles(
-                ax, num_circles, annotate[i], x_center, y_center, radius, c_min, c_max
+                ax, num_circles, annotate[i], x_center, y_center, radius, c_min, c_max, 
+                clock_label=f"{clocks_labels[val[0]]} "+ u"\u21FE" f" {clocks_labels[val[1]]}" if len(clocks_labels) > 1 else f"{val[0]}"+ u"\u21FE" f"{val[1]}",
+                clock_label_angle=clocks_labels_angles[i] if len(clocks_labels_angles) == len(mst) else 270
             )
 
             coefs_scaled[i] = coefs_scaled[i] * (radius / max(abs(c_max), abs(c_min)))
@@ -995,11 +1043,14 @@ class NonLinearClock:
         for j in range(len(mst)):
             for i in abs(coefs_scaled[j]).argsort(axis=None)[::-1]:
                 # Add actual arrow
+                # if min(mst[j][0], mst[j][1])
+
                 a = math.radians(angles[j])
                 x_center, y_center = clock_centers[min(mst[j][0], mst[j][1])]
 
                 if coefs_scaled[j, i] != 0:
                     # Plot contributions
+                    print(coefs_scaled[j, i])
                     x_c, y_c = (
                         math.cos(a) * coefs_scaled[j, i],
                         math.sin(a) * coefs_scaled[j, i],
@@ -1035,6 +1086,8 @@ class NonLinearClock:
         plot_scatter,
         plot_hulls,
         plot_top_k,
+        clocks_labels,
+        clocks_labels_angles
     ):
         dist_clusters = self.low_dim_data["cluster"].unique()
         dist_clusters.sort()
@@ -1049,30 +1102,28 @@ class NonLinearClock:
             angle = math.degrees(
                 self._get_angle_to_x(cl_means[val[0]], cl_means[val[1]])
             )
-            proj = self._project_line(
-                self.low_dim_data,
-                angle,
-                point_a=cl_means[val[0]],
-                point_b=cl_means[val[1]],
-            )
-            mst_proj.append(proj)
             angles.append(angle)
 
         self.mst_proj = np.array(mst_proj).T
-        coefs, _, is_significant, std_x, std_y = self._get_importance(
+        coefs, _, is_significant, std_x, std_y = self._get_importance_between(
             self.high_dim_data.to_numpy(),
-            self.mst_proj,
+            mst,
             univar=univar_importance,
             significance=feature_significance,
         )
 
         if plot_top_k != 0:
-            min_ix = np.argsort(coefs * is_significant, axis=1)[::-1][:, 0:plot_top_k]
+            # print(coefs)
+            min_ix = np.argsort(np.abs(coefs) * is_significant, axis=1)[:, 0 : len(coefs) - plot_top_k-1]
+            # print(min_ix)
             for i in range(is_significant.shape[0]):
                 for j in range(is_significant.shape[1]):
-                    if j not in min_ix[i]:
+                    if j in min_ix[i]:
                         is_significant[i, j] = False
         if is_significant.sum() == 0:
+            warnings.warn(
+                    "no significant features."
+                )
             return [], []
 
         if standartize_coef:
@@ -1100,6 +1151,8 @@ class NonLinearClock:
             arrow_width,
             plot_scatter,
             plot_hulls,
+            clocks_labels,
+            clocks_labels_angles
         )
 
         return arrows, labels
@@ -1174,6 +1227,7 @@ class NonLinearClock:
         plot_hulls: bool = True,
         plot_top_k: int = 0,
         clocks_labels: list = [],
+        clocks_labels_angles: list = [],
     ):
         if not self.is_projected or self.shift != angle_shift:
             self.is_projected = True
@@ -1220,7 +1274,8 @@ class NonLinearClock:
             plot_scatter=plot_scatter,
             plot_hulls=plot_hulls,
             plot_top_k=plot_top_k,
-            clocks_labels=clocks_labels
+            clocks_labels=clocks_labels,
+            clocks_labels_angles=clocks_labels_angles
         )
         return arrows_all, arrow_labels_all
 
@@ -1239,13 +1294,15 @@ class NonLinearClock:
         plot_scatter: bool = True,
         plot_hulls: bool = True,
         plot_top_k: int = 0,
+        clocks_labels: list = [],
+        clocks_labels_angles: list = [],
     ):
 
         if not self.is_projected or self.shift != angle_shift:
             self.is_projected = True
             self.shift = angle_shift
             self._prepare_data(standartize_data=standartize_data)
-            self._create_angles_projections(angle_shift=angle_shift)
+            # self._create_angles_projections(angle_shift=angle_shift)
 
         if plot_top_k < 0:
             raise Exception(
@@ -1281,6 +1338,8 @@ class NonLinearClock:
             plot_scatter=plot_scatter,
             plot_hulls=plot_hulls,
             plot_top_k=plot_top_k,
+            clocks_labels=clocks_labels,
+            clocks_labels_angles = clocks_labels_angles
         )
 
         return arrows, labels
