@@ -98,7 +98,7 @@ class NonLinearClock:
 
     def _compute_HDBSCAN_hulls(self):
         hdb = HDBSCAN(min_samples=10, min_cluster_size=30)
-        labels = hdb.fit_predict(self.low_dim_data)
+        labels = hdb.fit_predict(self.high_dim_data)
         return labels
 
     def _standartize_data(self):
@@ -252,9 +252,9 @@ class NonLinearClock:
         """
         p = model.predict_proba(x)
         n = len(p)
-        m = len(model.coef_[0])
-        coefs = np.array(model.coef_[0])
-        x_full = np.matrix(np.array(x))
+        m = len(model.coef_[0]) + 1
+        coefs = np.concatenate([model.intercept_, model.coef_[0]])
+        x_full = np.matrix(np.insert(np.array(x), 0, 1, axis = 1))
         ans = np.zeros((m, m))
         for i in range(n):
             ans = ans + np.dot(np.transpose(x_full[i, :]), x_full[i, :]) * p[i,1] * p[i, 0]
@@ -272,16 +272,22 @@ class NonLinearClock:
             ix = np.logical_or((self.cluster_labels == val[0]), (self.cluster_labels == val[1]))
             X_i = X[ix]
             y = self.cluster_labels[np.logical_or((self.cluster_labels == val[0]), (self.cluster_labels == val[1]))]
-            lm = LogisticRegressionCV(cv=5, fit_intercept=False, penalty="l2").fit(X_i, y)
+            lm = LogisticRegressionCV(cv=5, fit_intercept=True, penalty="l2").fit(X_i, y)
 
-            pval = np.array(self._logit_pvalue(lm, X_i))
+            pval = np.array(self._logit_pvalue(lm, X_i)[1:])
             coefs.append(np.array(lm.coef_[0]))
             pvals.append(pval)
             is_significant.append(pval <= significance)
 
             std_x.append(X_i.std(axis=0))
             std_y.append(y.std())
-        
+
+            # for i, val in enumerate(self.observations):
+            #     print(val)
+            #     print(lm.coef_[0][i])
+            #     print(pval[i])
+            #     print(pval[i] <= significance)
+
         return (
             np.array(coefs),
             np.array(pvals),
@@ -695,6 +701,7 @@ class NonLinearClock:
         return arrows, arrow_labels
 
     def _draw_clusters(self, ax, data, alpha):
+        print(data["cluster"].unique())
         for i in data["cluster"].unique():
             if i >= 0:
                 points = data[data["cluster"] == i]
@@ -708,7 +715,7 @@ class NonLinearClock:
 
     def _get_plot(self, ax, data, draw_hulls: bool = True, plot_scatter: bool = True):
         alpha = 0.1
-
+        print(draw_hulls)
         if draw_hulls:
             self._draw_clusters(ax, data, alpha)
         if plot_scatter:
@@ -1344,7 +1351,7 @@ class NonLinearClock:
         n_clusters = self.low_dim_data["cluster"].nunique() - 1
         if n_clusters != len(scale_circles) != len(move_circles) != len(annotates):
             raise Exception(
-                f"Length of annotates, move_circles, scale_circles should be equal number of clusters {n_clusters}."
+                f"Length of annotates, move_circles, scale_circles should be equal number of edges {n_clusters}."
             )
 
         if len(scale_circles) == len(move_circles) == len(annotates) == 0:

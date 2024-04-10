@@ -153,7 +153,7 @@ def test_between_all_2():
         scale_circle=2,
         move_circle=[0, 2],
         annotate=2.0,
-        arrow_width=0.1
+        arrow_width=0.15
     )
 
     hatches = [plt.plot([],marker="", ls="")[0]]*4 + arrows[0:3] + \
@@ -178,6 +178,8 @@ def test_between_all_2():
     for vpack in leg._legend_handle_box.get_children()[:1]:
         for hpack in vpack.get_children():
             hpack.get_children()[0].set_width(0)
+    for lh in leg.legendHandles: 
+        lh.set_alpha(1)
 
     ax1.set_yticks([])
     ax1.set_xticks([])

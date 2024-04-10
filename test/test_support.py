@@ -988,12 +988,12 @@ def test_local_hdbscan():
 
         names = {
             'Disease':'Dis.', 
-            'ADL family':'ADL fam.', 
-            'ADL patient':'ADL pat.', 
+            'ADL family':'ADL f.', 
+            'ADL patient':'ADL p.', 
             'Dementia':'Dem.',
             'Diabetes':'Diab.',
             'Charges': 'Charges',
-            'Study enter':'Study e.'
+            'Study enter':'St. e.'
         }
 
         axi_i.set_title(names[o], size=5, pad=-14)

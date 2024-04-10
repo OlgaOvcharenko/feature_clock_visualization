@@ -137,7 +137,7 @@ def test_between_all():
     ax.set_xticks([])
     ax.set_ylabel("UMAP2", size=8)
     ax.set_xlabel("UMAP1", size=8)
-    ax.set_title("Diabetis", size=8)
+    ax.set_title("Diabetes", size=8)
     ax.yaxis.set_label_coords(x=-0.01, y=0.5)
     ax.xaxis.set_label_coords(x=0.5, y=-0.02)
     plt.subplots_adjust(
@@ -178,7 +178,7 @@ def test_between_all():
     ax.set_xticks([])
     ax.set_ylabel("UMAP2", size=8)
     ax.set_xlabel("UMAP1", size=8)
-    ax.set_title("Diabetis", size=8)
+    ax.set_title("Diabetes", size=8)
     ax.yaxis.set_label_coords(x=-0.01, y=0.5)
     ax.xaxis.set_label_coords(x=0.5, y=-0.02)
     plt.subplots_adjust(
@@ -276,18 +276,6 @@ def test_between_all_3():
 
     # Local
     sc = axi[1].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
-    # legend2 = axi[1].legend(
-    #     handles = sc.legend_elements()[0],
-    #     loc="upper center",
-    #     # bbox_to_anchor=(0.0, 0.0),
-    #     fontsize=7,
-    #     ncol=3,
-    #     markerscale=0.6,
-    #     handlelength=1.5,
-    #     columnspacing=0.8,
-    #     handletextpad=0.1,
-    #     labels=["Healthy", "Diabetis"])
-    # axi[1].add_artist(legend2)
 
     arrows2, arrow_labels2 = plot_inst.plot_local_clocks(
         standartize_data=True,
@@ -298,6 +286,7 @@ def test_between_all_3():
         scale_circles=[1.5, 1.5],
         move_circles=[[-2.2, 0], [2.5, 0]],
         annotates=[0.9, 0.9],
+        clocks_labels=["Healthy", "Diabetes"],
         arrow_width=0.08,
         plot_scatter=False,
         plot_hulls=False
@@ -313,18 +302,6 @@ def test_between_all_3():
 
     # Between
     sc = axi[2].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
-    # legend3 = axi[2].legend(
-    #     handles = sc.legend_elements()[0],
-    #     labels=["Healthy", "Diabetis"],
-    #     loc="upper center",
-    #     # bbox_to_anchor=(0.0, 0.0),
-    #     fontsize=7,
-    #     ncol=3,
-    #     markerscale=0.6,
-    #     handlelength=1.5,
-    #     columnspacing=0.8,
-    #     handletextpad=0.1,)
-    # axi[2].add_artist(legend3)
 
     arrows3, arrow_labels3 = plot_inst.plot_between_clock(
         standartize_data=True,
@@ -336,7 +313,8 @@ def test_between_all_3():
         annotates=[0.7],
         arrow_width=0.08,
         plot_scatter=False,
-        plot_hulls=False
+        plot_hulls=False,
+        clocks_labels=["Healthy", "Diabetes"],
     )
 
     arrows_dict = {}
@@ -356,7 +334,7 @@ def test_between_all_3():
         list(arrows_dict.values())[2:]
     
     labels = ["Factors:", "Labels:"] + [list(arrows_dict.keys())[0]] + ["Healthy"] + \
-        [list(arrows_dict.keys())[1]] + ["Diabetis"] + \
+        [list(arrows_dict.keys())[1]] + ["Diabetes"] + \
         list(arrows_dict.keys())[2:]
 
 
@@ -374,6 +352,8 @@ def test_between_all_3():
         handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
         # markerfirst=False 
     )
+    for lh in leg.legendHandles: 
+        lh.set_alpha(1)
 
     for vpack in leg._legend_handle_box.get_children()[:1]:
         for hpack in vpack.get_children():

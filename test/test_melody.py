@@ -1,4 +1,5 @@
-from matplotlib import pyplot as plt
+from matplotlib import cm, pyplot as plt
+import matplotlib
 import numpy as np
 import pandas as pd
 from src.feature_clock.plot import NonLinearClock
@@ -15,7 +16,6 @@ def make_legend_arrow(legend, orig_handle,
     return p
 
 
-
 def read_data(path):
     return pd.read_csv(path, header=0)
 
@@ -27,6 +27,14 @@ def setup_melody_data(method="tsne", drop_labels=True):
     # X.drop(columns=["Genre"], inplace=True)
     X["Genre"], _ = pd.factorize(X["Genre"])
     X = X.dropna()
+
+    X.rename(columns={
+        'LyricalContect':'Lyrical contect', 
+        'ReleasedYear':'Year of release', 
+        'NumInstruments':'Num of instruments',
+        'SongLength':'Song length'
+    }, inplace=True)
+
 
     labels = X["Popularity"]
     if drop_labels:
@@ -52,7 +60,7 @@ def setup_melody_data(method="tsne", drop_labels=True):
         raise NotImplementedError()
     
     # get clusters
-    clusters = HDBSCAN(min_samples=30).fit_predict(X)
+    clusters = HDBSCAN(min_samples=10, min_cluster_size=30).fit_predict(X)
     # clusters = KMeans(n_clusters=2).fit_predict(X)
 
     return X, obs, standard_embedding, labels, clusters
@@ -247,9 +255,9 @@ def test_between_all_3():
         standard_embedding[:, 1],
         marker=".",
         c=labels,
-        cmap="jet",
+        cmap=cm.coolwarm,
         alpha=0.05,
-        # s=1
+        s=30
     )
     
     arrows1, arrow_labels1 = plot_inst.plot_global_clock(
@@ -261,21 +269,9 @@ def test_between_all_3():
         scale_circle=2.5,
         move_circle=[0, 0],
         annotate=1.5,
-        arrow_width=0.08,
+        arrow_width=0.2,
         plot_scatter=False
     )
-    # ax.legend(
-    #     arrows,
-    #     arrow_labels,
-    #     loc="lower center",
-    #     bbox_to_anchor=(0.5, 1.07),
-    #     fontsize=7,
-    #     ncol=4,
-    #     markerscale=0.6,
-    #     handlelength=1.5,
-    #     columnspacing=0.8,
-    #     handletextpad=0.5,
-    # )
 
     axi[0].set_yticks([])
     axi[0].set_xticks([])
@@ -284,36 +280,38 @@ def test_between_all_3():
     axi[0].set_title("Global clock", size=8)
     axi[0].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[0].xaxis.set_label_coords(x=0.5, y=-0.02)
-    # plt.subplots_adjust(
-    #     left=0.05,
-    #     right=0.95,
-    #     top=0.79,
-    #     bottom=0.05,  # wspace=0.21, hspace=0.33
-    # )
-    # plt.savefig("plots/paper/melody/melody_global.pdf")
 
     # Local
-    # fig, ax = plt.subplots(1, figsize=(3.33, 3.33))
-    sc1 = axi[1].scatter(
-        standard_embedding[:, 0],
-        standard_embedding[:, 1],
-        marker=".",
-        c=labels,
-        cmap="jet",
-        alpha=0.05,
-        # s=1
-    )
+    scs = []
+    for val, i in zip([-1, 0, 1], [0, 2, 4]):
+        if val == -1:
+            sc = axi[1].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
+                            color="gray", alpha=0.1, s=30)
+            axi[2].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
+                       color="gray", alpha=0.1, s=30)
+            
+        else:
+            sc = axi[1].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
+                                color=matplotlib.colormaps["Paired"].colors[i], alpha=0.3, s=30)
+            
+            axi[2].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
+                        color=matplotlib.colormaps["Paired"].colors[i], alpha=0.3, s=30)
+        
+        scs.append(sc)
+
     arrows2, arrow_labels2 = plot_inst.plot_local_clocks(
         standartize_data=False,
         standartize_coef=False,
         biggest_arrow_method=True,
         univar_importance=False,
         ax=axi[1],
-        scale_circles=[1, 1, 1, 1, 1, 1],
-        move_circles=[[-1, 0], [2, 0], [3, 0], [1, 0], [1, 0], [1, 0]],
-        annotates=[1, 1,1, 1, 1, 0.1],
-        arrow_width=0.08,
-        plot_scatter=False
+        scale_circles=[1, 1,],
+        move_circles=[[2, -0.6], [-0.5, 0.5]],
+        annotates=[1, 1,1],
+        arrow_width=0.15,
+        clocks_labels=["0", "1"],
+        plot_scatter=False,
+        plot_hulls=False
     )
 
     axi[1].set_yticks([])
@@ -324,26 +322,17 @@ def test_between_all_3():
     axi[1].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
 
-    sc2 = axi[2].scatter(
-        standard_embedding[:, 0],
-        standard_embedding[:, 1],
-        marker=".",
-        c=labels,
-        cmap="jet",
-        alpha=0.05,
-        # s=3
-    )
-
     arrows3, arrow_labels3 = plot_inst.plot_between_clock(
         standartize_data=False,
         standartize_coef=True,
         univar_importance=True,
         ax=axi[2],
-        scale_circles=[1, 2, 1],
-        move_circles=[[0, 0], [1, 0], [0, 0]],
-        annotates=[1.0, 1.0, 1.0],
-        arrow_width=0.08,
-        plot_scatter=False
+        scale_circles=[1,],
+        move_circles=[[0, 0]],
+        annotates=[1.0,],
+        arrow_width=0.15,
+        plot_scatter=False,
+        plot_hulls=False
     )
 
     arrows_dict = {}
@@ -357,13 +346,29 @@ def test_between_all_3():
     hatches = [plt.plot([],marker="", ls="")[0]] + list(arrows_dict.values())
     labels = ["Factors:"] + list(arrows_dict.keys())
 
+    hatches = [plt.plot([],marker="", ls="")[0]]*2 + \
+        [list(arrows_dict.values())[0]] + [scs[1]] + \
+        [list(arrows_dict.values())[1]] + [scs[2]] + \
+        [list(arrows_dict.values())[2]] + [scs[0]] + \
+        [list(arrows_dict.values())[3]] + [plt.plot([],marker="", ls="")[0]] + \
+        [list(arrows_dict.values())[4]] + [plt.plot([],marker="", ls="")[0]] + \
+        [list(arrows_dict.values())[5]] + [plt.plot([],marker="", ls="")[0]] 
+
+    labels = ["Factors:", "Labels:"] + \
+        [list(arrows_dict.keys())[0]] + ["0"] + \
+        [list(arrows_dict.keys())[1]] + ["1"] + \
+        [list(arrows_dict.keys())[2]] + ["No class"] + \
+        [list(arrows_dict.keys())[3]] + [""] + \
+        [list(arrows_dict.keys())[4]] + [""] + \
+        [list(arrows_dict.keys())[5]] + [""] 
+
     leg = axi[2].legend(
         hatches,
         labels,
         loc="lower center",
-        bbox_to_anchor=(-0.84, 1.12),
+        bbox_to_anchor=(-0.7, 1.12),
         fontsize=7,
-        ncol=8,
+        ncol=7,
         markerscale=0.6,
         handlelength=1.5,
         columnspacing=0.8,
@@ -373,6 +378,8 @@ def test_between_all_3():
     for vpack in leg._legend_handle_box.get_children()[:1]:
         for hpack in vpack.get_children():
             hpack.get_children()[0].set_width(0)
+    for lh in leg.legendHandles: 
+        lh.set_alpha(1)
 
     axi[2].set_yticks([])
     axi[2].set_xticks([])
@@ -382,16 +389,17 @@ def test_between_all_3():
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
 
-    cbar = fig.colorbar(sc2, ax=axi[2]) # ticks=[100, 50, 0]
+    cbar = fig.colorbar(sc0, ax=axi[0]) # ticks=[100, 50, 0]
     cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
     cbar.solids.set(alpha=1)
     cbar.outline.set_visible(False)
 
     plt.subplots_adjust(
         left=0.02,
-        right=1,
-        top=0.79,
-        bottom=0.06,  # wspace=0.21, hspace=0.33
+        right=0.99,
+        top=0.75,
+        bottom=0.06,  
+        wspace=0.18
     )
     plt.savefig("plots/paper/melody/melody_3.pdf")
 
