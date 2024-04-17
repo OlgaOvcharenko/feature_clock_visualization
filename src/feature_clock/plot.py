@@ -215,12 +215,12 @@ class NonLinearClock:
 
             else:
                 # lm = sm.OLS(y[:, i], X).fit()
-                lm = sm.OLS(y[:, i], np.c_[np.ones(X.shape[0]), X]).fit()
+                lm = sm.OLS(y[:, i], np.c_[np.ones(X.shape[0]), X]).fit() #.fit_regularized("sqrt_lasso", refir=True, L1_wt=0.5)
                 
                 coefs_tmp = lm.params[1:]
                 pvals_tmp = lm.pvalues[1:]
                 x_std_tmp = X.std(axis=0)
-                
+
                 for k in remove_cols:
                     coefs_tmp = np.insert(coefs_tmp, k, 0)
                     pvals_tmp = np.insert(pvals_tmp, k, 0)
@@ -282,12 +282,6 @@ class NonLinearClock:
             std_x.append(X_i.std(axis=0))
             std_y.append(y.std())
 
-            # for i, val in enumerate(self.observations):
-            #     print(val)
-            #     print(lm.coef_[0][i])
-            #     print(pval[i])
-            #     print(pval[i] <= significance)
-
         return (
             np.array(coefs),
             np.array(pvals),
@@ -310,6 +304,8 @@ class NonLinearClock:
         plot_scatter: bool = True,
         plot_top_k: int = 0,
     ):
+        # print(self.high_dim_data)
+        # print(self.observations)
         coefs, _, is_significant, std_x, std_y = self._get_importance(
             self.high_dim_data.to_numpy(),
             self.projections,
@@ -701,7 +697,7 @@ class NonLinearClock:
         return arrows, arrow_labels
 
     def _draw_clusters(self, ax, data, alpha):
-        print(data["cluster"].unique())
+        # print(data["cluster"].unique())
         for i in data["cluster"].unique():
             if i >= 0:
                 points = data[data["cluster"] == i]
@@ -1002,7 +998,7 @@ class NonLinearClock:
         grapf_cl = Graph(n_clusters)
         grapf_cl.graph = adj_matrix
         mst = grapf_cl.primMST()
-        print(f"MST constructed for the inter-cluster clock ([[node1, node2, distance], ...]): \n {mst}")
+        print(f"MST constructed for the Inter-group clock ([[node1, node2, distance], ...]): \n {mst}")
         return mst
 
     def _get_angle_to_x(self, points_a, points_b):

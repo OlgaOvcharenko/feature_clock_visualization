@@ -15,8 +15,6 @@ def make_legend_arrow(legend, orig_handle,
     return p
 
 
-
-
 def read_data(path):
     return pd.read_csv(path, header=0)
 

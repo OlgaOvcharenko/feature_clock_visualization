@@ -29,21 +29,20 @@ def setup_melody_data(method="tsne", drop_labels=True):
     X = X.dropna()
 
     X.rename(columns={
-        'LyricalContect':'Lyrical contect', 
-        'ReleasedYear':'Year of release', 
-        'NumInstruments':'Num of instruments',
-        'SongLength':'Song length'
+        'LyricalContent':'Lyrical Content', 
+        'ReleasedYear':'Year of Release', 
+        'NumInstruments':'Num of Instruments',
+        'SongLength':'Song Length'
     }, inplace=True)
 
+    for col in X.columns:
+        X[col] = (X[col] - X[col].mean()) / X[col].std()
 
     labels = X["Popularity"]
     if drop_labels:
         X.drop(columns=["Popularity"], inplace=True)
     obs = list(X.columns)
 
-    for col in X.columns:
-        X[col] = (X[col] - X[col].mean()) / X[col].std()
-    
     # compute umap
     if method == "umap":
         reducer = umap.UMAP(random_state=42)
@@ -385,13 +384,14 @@ def test_between_all_3():
     axi[2].set_xticks([])
     axi[2].set_ylabel("UMAP2", size=8)
     axi[2].set_xlabel("UMAP1", size=8)
-    axi[2].set_title("Inter-cluster clock", size=8)
+    axi[2].set_title("Inter-group clock", size=8)
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
 
-    cbar = fig.colorbar(sc0, ax=axi[0]) # ticks=[100, 50, 0]
-    cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
+    cbar = fig.colorbar(sc0, ax=axi[0], pad=0.02) # ticks=[100, 50, 0]
+    cbar.ax.tick_params(labelsize=5, length=0.8, pad=0.2, grid_linewidth=0.08) #labelrotation=90,
     cbar.solids.set(alpha=1)
+    cbar.set_label('Song popularity', size=7, rotation=270, labelpad=10)
     cbar.outline.set_visible(False)
 
     plt.subplots_adjust(

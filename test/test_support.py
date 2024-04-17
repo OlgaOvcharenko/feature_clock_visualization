@@ -306,7 +306,7 @@ def test_between_all_3_5():
     axi[2].set_xticks([])
     axi[2].set_ylabel("t-SNE2", size=8)
     axi[2].set_xlabel("t-SNE1", size=8)
-    axi[2].set_title("Inter-cluster clock", size=8)
+    axi[2].set_title("Inter-group clock", size=8)
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
 
@@ -522,7 +522,7 @@ def test_between_all_3():
     axi[2].set_xticks([])
     axi[2].set_ylabel("t-SNE2", size=8)
     axi[2].set_xlabel("t-SNE1", size=8)
-    axi[2].set_title("Inter-cluster clock", size=8)
+    axi[2].set_title("Inter-group clock", size=8)
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
 
@@ -714,7 +714,7 @@ def test_between_all_3_5():
     axi[2].set_xticks([])
     axi[2].set_ylabel("t-SNE2", size=8)
     axi[2].set_xlabel("t-SNE1", size=8)
-    axi[2].set_title("Inter-cluster clock", size=8)
+    axi[2].set_title("Inter-group clock", size=8)
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
 
@@ -919,7 +919,7 @@ def test_local_hdbscan():
     ax2.set_xticks([])
     ax2.set_ylabel("t-SNE2", size=8)
     ax2.set_xlabel("t-SNE1", size=8)
-    ax2.set_title("Inter-cluster clock", size=8)
+    ax2.set_title("Inter-group clock", size=8)
     ax2.yaxis.set_label_coords(x=-0.01, y=0.5)
     ax2.xaxis.set_label_coords(x=0.5, y=-0.02)
 
@@ -1004,11 +1004,11 @@ def test_local_hdbscan():
     ax21.yaxis.set_label_coords(0, 1.15)
     ax22.xaxis.set_label_coords(-0.5, -0.04)
 
-    cbar = fig.colorbar(im, ax=[ax11, ax12, ax13, ax21, ax22, ax23], pad=0.03, aspect=40)
+    cbar = fig.colorbar(im, ax=[ax11, ax12, ax13, ax21, ax22, ax23], pad=0.03, aspect=40, ticks=[0, 5, 10, 15])
     cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
     cbar.outline.set_visible(False)
 
     plt.savefig("plots/paper/support/support_local_hdbscan.pdf")
 
-# test_between_all_3()
+test_between_all_3()
 test_local_hdbscan()

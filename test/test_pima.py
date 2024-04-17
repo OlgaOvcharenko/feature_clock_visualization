@@ -363,7 +363,7 @@ def test_between_all_3():
     axi[2].set_xticks([])
     axi[2].set_ylabel("UMAP2", size=8)
     axi[2].set_xlabel("UMAP1", size=8)
-    axi[2].set_title("Inter-cluster clock", size=8)
+    axi[2].set_title("Inter-group clock", size=8)
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
     plt.subplots_adjust(
@@ -380,7 +380,7 @@ def test_between_all_3():
 def teaser():
     X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap")
 
-    fig, axi = plt.subplots(1, 1, figsize=(2.375, 2.375))
+    fig, axi = plt.subplots(1, 1, figsize=(1, 1))
     plt.tight_layout()
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters)
     arrows, arrow_labels = plot_inst.plot_global_clock(
@@ -393,6 +393,7 @@ def teaser():
         move_circle=[0, 0],
         annotate=0.8,
         arrow_width=0.08,
+        plot_scatter=False
     )
 
     axi.set_yticks([])
@@ -409,19 +410,19 @@ def teaser():
     for a, l in zip(arrow_labels, letters):
         names_dict[a] = l
     print(names_dict)
-    leg = axi.legend(
-        arrows,
-        letters,
-        loc="lower center",
-        bbox_to_anchor=(0.5, 0.88),
-        fontsize=7,
-        ncol=8,
-        markerscale=0.6,
-        handlelength=1.5,
-        columnspacing=0.8,
-        handletextpad=0.5,
-       handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
-    )
+    # leg = axi.legend(
+    #     arrows,
+    #     letters,
+    #     loc="lower center",
+    #     bbox_to_anchor=(0.5, 0.88),
+    #     fontsize=7,
+    #     ncol=8,
+    #     markerscale=0.6,
+    #     handlelength=1.5,
+    #     columnspacing=0.8,
+    #     handletextpad=0.5,
+    #    handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
+    # )
 
     # axi[0].set_yticks([])
     # axi[0].set_xticks([])
@@ -437,8 +438,8 @@ def teaser():
         top=0.98,
         bottom=0.01,  # wspace=0.21, hspace=0.33
     )
-    plt.savefig("plots/paper/pima/pima_general_clock.pdf")
+    plt.savefig("plots/paper/pima/pima_only_clock.pdf")
 
 # print_pima_all()
-test_between_all_3()
-# teaser()
+# test_between_all_3()
+teaser()

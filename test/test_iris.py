@@ -1,5 +1,5 @@
 import math
-from matplotlib import gridspec, pyplot as plt
+from matplotlib import cm, gridspec, pyplot as plt
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -12,6 +12,7 @@ from sklearn import decomposition  # decomposition.PCA
 from sklearn import manifold 
 from matplotlib.legend_handler import HandlerPatch
 import matplotlib.patches as mpatches
+from imblearn.over_sampling import SMOTE
 
 def make_legend_arrow(legend, orig_handle,
                       xdescent, ydescent,
@@ -33,20 +34,30 @@ def setup_iris_data(method="tsne", drop_labels=True):
                       "PetalWidthCm": "PetalWidth"}, inplace=True)
     
     X.drop(columns={"Id"}, inplace=True)
-    X = X.dropna()
 
+    X = X.dropna()
+    # X = pd.concat([X[X["Species"] == "Iris-setosa"][0:49], X[X["Species"] == "Iris-versicolor"], X[X["Species"] == "Iris-virginica"]], ignore_index=True)
     X["Species"] = X.Species.map({"Iris-setosa":0, "Iris-versicolor":1, "Iris-virginica":2}).to_numpy() # pd. factorize(X["Species"])[0]
+
+    for col in X.columns:
+        if col != 'Species':
+            X[col] = (X[col] - X[col].mean()) / X[col].std()
+
+            Q1 = X[col].quantile(0.25)
+            Q3 = X[col].quantile(0.77)
+            IQR = Q3 - Q1
+            X = X[~((X[col] < (Q1 - 1.5 * IQR)) | (X[col] > (Q3 + 1.5 * IQR)))]
+
+    print(X.Species.value_counts())
+
     labels = X["Species"]
     if drop_labels:
         X.drop(columns=["Species"], inplace=True)
     obs = list(X.columns)
 
-    for col in X.columns:
-        X[col] = (X[col] - X[col].mean()) / X[col].std()
-
     # compute umap
     if method == "umap":
-        reducer = umap.UMAP(min_dist=0.2, n_neighbors=30, random_state=42)
+        reducer = umap.UMAP(random_state=42)
         if not drop_labels:
             K = X.drop(columns=["Species"], inplace=False)
             standard_embedding = reducer.fit_transform(K)
@@ -70,6 +81,9 @@ def setup_iris_data(method="tsne", drop_labels=True):
     clusters = HDBSCAN(min_samples=12).fit_predict(X)
     # clusters = KMeans(n_clusters=3, n_init="auto", max_iter=1000).fit_predict(X)
 
+    for i in range(standard_embedding.shape[1]):
+        standard_embedding[:, i] = (standard_embedding[:, i] - standard_embedding[:, i].mean()) / standard_embedding[:, i].std()
+    
     return X, obs, standard_embedding, labels, clusters
 
 def print_iris_all():
@@ -264,87 +278,6 @@ def test_between_all():
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
     plt.savefig("plots/paper/iris/iris_global.pdf")
-
-    # # Local
-    # fig, ax = plt.subplots(1, figsize=(2.375, 2.375))
-    # arrows, arrow_labels = plot_inst.plot_local_clocks(
-    #     standartize_data=True,
-    #     standartize_coef=True,
-    #     biggest_arrow_method=True,
-    #     univar_importance=False,
-    #     ax=ax,
-    #     scale_circles=[3, 0.5, 0.5],
-    #     move_circles=[[0, 0], [0, 0], [0, 0]],
-    #     annotates=[0.5, 0.5, 0.5],
-    #     arrow_width=0.05,
-    # )
-    # # ax.legend(
-    # #     arrows,
-    # #     arrow_labels,
-    # #     loc="lower center",
-    # #     bbox_to_anchor=(0.5, 1.07),
-    # #     fontsize=7,
-    # #     ncol=4,
-    # #     markerscale=0.6,
-    # #     handlelength=1.5,
-    # #     columnspacing=0.8,
-    # #     handletextpad=0.5,
-    # # )
-
-    # ax.set_yticks([])
-    # ax.set_xticks([])
-    # ax.set_ylabel("UMAP2", size=8)
-    # ax.set_xlabel("UMAP1", size=8)
-    # ax.set_title("Diabetis", size=8)
-    # ax.yaxis.set_label_coords(x=-0.01, y=0.5)
-    # ax.xaxis.set_label_coords(x=0.5, y=-0.02)
-    # plt.subplots_adjust(
-    #     left=0.05,
-    #     right=0.95,
-    #     top=0.79,
-    #     bottom=0.05,  # wspace=0.21, hspace=0.33
-    # )
-    # plt.savefig("plots/paper/iris/iris_local.pdf")
-
-    # # Between
-    # fig, ax = plt.subplots(1, figsize=(3.33, 2.8))
-    # arrows, arrow_labels = plot_inst.plot_between_clock(
-    #     standartize_data=True,
-    #     standartize_coef=True,
-    #     univar_importance=True,
-    #     ax=ax,
-    #     scale_circles=[1],
-    #     move_circles=[[0, 0]],
-    #     annotates=[0.6],
-    #     arrow_width=0.05,
-    # )
-    # # ax.legend(
-    # #     arrows,
-    # #     arrow_labels,
-    # #     loc="lower center",
-    # #     bbox_to_anchor=(0.5, 1.07),
-    # #     fontsize=7,
-    # #     ncol=4,
-    # #     markerscale=0.6,
-    # #     handlelength=1.5,
-    # #     columnspacing=0.8,
-    # #     handletextpad=0.5,
-    # # )
-
-    # ax.set_yticks([])
-    # ax.set_xticks([])
-    # ax.set_ylabel("UMAP2", size=8)
-    # ax.set_xlabel("UMAP1", size=8)
-    # ax.set_title("Malignant cells", size=8)
-    # ax.yaxis.set_label_coords(x=-0.01, y=0.5)
-    # ax.xaxis.set_label_coords(x=0.5, y=-0.02)
-    # plt.subplots_adjust(
-    #     left=0.05,
-    #     right=0.95,
-    #     top=0.79,
-    #     bottom=0.05,  # wspace=0.21, hspace=0.33
-    # )
-    # plt.savefig("plots/paper/iris/iris_between.pdf")
 
 
 def test_between_all_3():
@@ -552,6 +485,7 @@ def test_pca_all_3():
     ax24 = fig.add_subplot(spec23[1, 1])
 
     df = pd.read_csv("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/Iris.csv")
+    # df = df.groupby('Species', group_keys=False).apply(lambda x: x.sample(2000, random_state=42, replace=True))
     labels = df.Species.map({"Iris-setosa":0, "Iris-versicolor":1, "Iris-virginica":2}).to_numpy()
     
     df.rename(columns={"SepalLengthCm": "SepalLength", 
@@ -596,7 +530,7 @@ def test_pca_all_3():
 
     # second plot
     X_new, obs, standard_embedding, labels, clusters = setup_iris_data(method="tsne", drop_labels=True)
-    standard_embedding[:,0], standard_embedding[:,1] = 1 * standard_embedding[:,0], 7 * standard_embedding[:,1]
+    standard_embedding[:,0], standard_embedding[:,1] = 1 * standard_embedding[:,0], 1 * standard_embedding[:,1]
     for (i, o), axi in zip(enumerate(obs), [ax21, ax22, ax23, ax24]):
         if o == "Species":
             break
@@ -607,7 +541,7 @@ def test_pca_all_3():
             marker=".",
             s=1,
             c=X_new[o],
-            cmap="jet",
+            cmap=cm.coolwarm,
             alpha=0.8
         )
         axi.set_yticks([])
@@ -630,15 +564,6 @@ def test_pca_all_3():
         # axi.set_xlim((-31.47527813911438, 17.232176065444946))
         # axi.set_ylim((- x_delta_from_mid,  x_delta_from_mid))
 
-    # ax21.text(
-    #     0.03, 0.9,
-    #     o[0:3] + o[5:8],
-    #     size=5,
-    #     ha="left",
-    #     va="top",
-    #     transform=ax21.transAxes,
-    # )
-
     ax21.set_ylabel("t-SNE2", size=8)
     ax23.set_xlabel("t-SNE1", size=8)
 
@@ -657,13 +582,12 @@ def test_pca_all_3():
     ax3.yaxis.set_label_coords(x=-0.01, y=.5)
     ax3.xaxis.set_label_coords(x=0.5, y=-0.02)
 
-    X_new, obs, standard_embedding, labels, clusters = setup_iris_data(method="tsne")
-
-    standard_embedding[:,0], standard_embedding[:,1] = 1 * standard_embedding[:,0], 7 * standard_embedding[:,1]
-
+    X_new, obs, standard_embedding, labels, clusters = setup_iris_data(method="tsne", drop_labels=True)
+    standard_embedding[:,0], standard_embedding[:,1] = 1 * standard_embedding[:,0], 1 * standard_embedding[:,1]
+    
     sc = ax3.scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap=colormap, norm=normalize, alpha=0.2, zorder=0, edgecolors='face')
 
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="tsne", cluster_labels=clusters, color_scheme=colors)
+    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="umap", cluster_labels=labels, color_scheme=colors)
     _, _ = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -671,9 +595,9 @@ def test_pca_all_3():
         univar_importance=False,
         ax=ax3,
         scale_circle=1.5,
-        move_circle=[-2, 0],
-        annotate=8,
-        arrow_width=0.4,
+        move_circle=[-0.3, 0.0],
+        annotate=0.5,
+        arrow_width=0.05,
         plot_scatter=False
     )
 
@@ -683,9 +607,11 @@ def test_pca_all_3():
         [list(arrows_dict.values())[2]] + [sc.legend_elements()[0][2]] + \
         [list(arrows_dict.values())[3]]
     
-    labels = ["Factors:", "Labels:"] + [list(arrows_dict.keys())[0]] + ["Setosa"] + \
+    labels = ["Factors:", "Labels:"] + \
+        [list(arrows_dict.keys())[0]] + ["Setosa"] + \
         [list(arrows_dict.keys())[1]] + ["Versicolor"] + \
-        [list(arrows_dict.keys())[2]] + ["Virginica"] + [list(arrows_dict.keys())[3]]
+        [list(arrows_dict.keys())[2]] + ["Virginica"] + \
+        [list(arrows_dict.keys())[3]]
 
     leg = ax22.legend(
         hatches,
@@ -703,6 +629,8 @@ def test_pca_all_3():
     for vpack in leg._legend_handle_box.get_children()[:1]:
         for hpack in vpack.get_children():
             hpack.get_children()[0].set_width(0)
+    for lh in leg.legendHandles: 
+        lh.set_alpha(1)
 
     plt.savefig("plots/paper/iris/plot_biplot.pdf")
 

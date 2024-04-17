@@ -1,6 +1,6 @@
 [project]
 name = "feature_clock"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Olga Ovcharenko", email="ovcharenko.folga@gmail.com" },
 ]
