@@ -68,7 +68,7 @@ def setup_support_data(method="tsne", drop_labels=True):
         'scoma':'Coma score',
         'sps':'Physiology score',
         'hday':'Study enter',
-        'dnr':'Rescuscitate order',
+        'dnr':'Resuscitate order',
         'charges':'Charges',
         'age': 'Age'
     }, inplace=True)
@@ -471,7 +471,7 @@ def test_between_all_3():
         move_circles=[[0, 0]],
         annotates=[0.5],
         clocks_labels=["Survival", "Death"],
-        clocks_labels_angles = [270],
+        clocks_labels_angles = [90],
         arrow_width=0.08,
         plot_top_k=4,
         plot_scatter=False,
