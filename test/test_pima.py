@@ -1,4 +1,4 @@
-from matplotlib import pyplot as plt
+from matplotlib import cm, gridspec, pyplot as plt
 from matplotlib.legend_handler import HandlerPatch
 import numpy as np
 import pandas as pd
@@ -236,8 +236,29 @@ def test_between_all_3():
         'tab:pink', 'tab:green', 'tab:blue', 'tab:orange',
         'tab:purple', 'tab:cyan', 'tab:red', 'tab:brown', 'tab:olive']
 
-    fig, axi = plt.subplots(1, 3, figsize=((7.125-0.17), ((7.125-0.17)/1.8)/1.618))
-    plt.tight_layout()
+    dpi = 1000
+    fig_size = ((7.125-0.17), ((7.125-0.17)/1.8)/1.618)
+
+    fig = plt.figure(constrained_layout=True, figsize=fig_size, dpi=dpi, facecolor="w",edgecolor="k",)
+    spec2 = gridspec.GridSpec(ncols=4, nrows=1, figure=fig, 
+                     left=0.02, right=1, top=0.77, bottom=0.06, wspace=0.15)
+    ax1 = fig.add_subplot(spec2[0])
+    ax2 = fig.add_subplot(spec2[1])
+    ax3 = fig.add_subplot(spec2[2])
+
+    spec23 = gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=spec2[3], wspace=0.05, hspace=0.05)
+    ax4_11 = fig.add_subplot(spec23[0, 0])
+    ax4_12 = fig.add_subplot(spec23[0, 1])
+    ax4_13 = fig.add_subplot(spec23[0, 2])
+    ax4_21 = fig.add_subplot(spec23[1, 0])
+    ax4_22 = fig.add_subplot(spec23[1, 1])
+    ax4_23 = fig.add_subplot(spec23[1, 2])
+    ax4_31 = fig.add_subplot(spec23[2, 0])
+    ax4_32 = fig.add_subplot(spec23[2, 1])
+    ax4_33 = fig.add_subplot(spec23[2, 2])
+
+    axi = [ax1, ax2, ax3]
+
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=labels, color_scheme=colors)
     
     sc = axi[0].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
@@ -338,11 +359,11 @@ def test_between_all_3():
         list(arrows_dict.keys())[2:]
 
 
-    leg = axi[1].legend(
+    leg = axi[2].legend(
         hatches,
         labels,
         loc="lower center",
-        bbox_to_anchor=(0.5, 1.12),
+        bbox_to_anchor=(-0.13, 1.1),
         fontsize=7,
         ncol=9,
         markerscale=0.6,
@@ -366,14 +387,45 @@ def test_between_all_3():
     axi[2].set_title("Inter-group clock", size=8)
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
-    plt.subplots_adjust(
-        left=0.02,
-        right=0.98,
-        top=0.75,
-        bottom=0.06,  
-        wspace=0.1, 
-        # hspace=0.1
-    )
+    
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap", drop_labels=False)
+    
+    for (i, o), axi in zip(enumerate(obs), [ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33]):
+        im = axi.scatter(
+            standard_embedding[:, 0],
+            standard_embedding[:, 1],
+            marker=".",
+            s=1.3,
+            c=X_new[o],
+            cmap=cm.coolwarm,
+            # vmin=0, vmax=1
+        )
+        axi.set_yticks([])
+        axi.set_xticks([])
+        # axi.yaxis.set_label_coords(x=-0.01, y=0.5)
+        # axi.xaxis.set_label_coords(x=0.5, y=-0.02)
+
+        axi.set_aspect('equal')
+        print(axi.get_ylim())
+        axi.set_ylim((axi.get_ylim()[0]-2, axi.get_ylim()[1]+2))
+        
+        if o == "Outcome":
+            o = "Labels"
+        elif o == "BloodPressure":
+            o = "BloodPr."
+        axi.set_title(o, size=5, pad=-14)
+
+    ax4_21.set_ylabel("UMAP2", size=8)
+    ax4_32.set_xlabel("UMAP1", size=8)
+
+    ax4_21.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax4_32.xaxis.set_label_coords(x=0.55, y=-0.07)
+
+    cbar = fig.colorbar(im, ax=[ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33], 
+                        pad=0.02, aspect=40, ticks=[1.0, 0.5, 0.0, -0.5])
+    cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
+    cbar.outline.set_visible(False)
+
     plt.savefig("plots/paper/pima/pima_3.pdf")
 
 
@@ -441,5 +493,5 @@ def teaser():
     plt.savefig("plots/paper/pima/pima_only_clock.pdf")
 
 # print_pima_all()
-# test_between_all_3()
-teaser()
+test_between_all_3()
+# teaser()

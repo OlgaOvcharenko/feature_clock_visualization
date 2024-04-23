@@ -1,4 +1,4 @@
-from matplotlib import cm, pyplot as plt
+from matplotlib import cm, gridspec, pyplot as plt
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -243,9 +243,27 @@ def test_between_all_3():
     colors = [
         'tab:pink', 'tab:green', 'tab:blue', 'tab:red', 'tab:orange',
         'tab:purple', 'tab:cyan', 'tab:olive', 'tab:brown']
+    
+    fig_size = ((7.125-0.17), ((7.125-0.17)/1.8)/1.618)
 
-    fig, axi = plt.subplots(1, 3, figsize=((7.125-0.17), ((7.125-0.17)/1.8)/1.618))
-    plt.tight_layout()
+    fig = plt.figure(constrained_layout=True, figsize=fig_size, dpi=1000, facecolor="w",edgecolor="k",)
+    spec2 = gridspec.GridSpec(ncols=4, nrows=1, figure=fig, 
+                     left=0.02, right=1, top=0.77, bottom=0.06, wspace=0.15)
+    ax1 = fig.add_subplot(spec2[0])
+    ax2 = fig.add_subplot(spec2[1])
+    ax3 = fig.add_subplot(spec2[2])
+    axi = [ax1, ax2, ax3]
+
+    spec23 = gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=spec2[3], wspace=0.05)
+    ax4_11 = fig.add_subplot(spec23[0, 0])
+    ax4_12 = fig.add_subplot(spec23[0, 1])
+    ax4_13 = fig.add_subplot(spec23[0, 2])
+    ax4_21 = fig.add_subplot(spec23[1, 0])
+    ax4_22 = fig.add_subplot(spec23[1, 1])
+    ax4_23 = fig.add_subplot(spec23[1, 2])
+    ax4_32 = fig.add_subplot(spec23[2, 1])
+
+
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters, color_scheme=colors)
     # print(plot_inst.get_num_clusters())
 
@@ -282,7 +300,7 @@ def test_between_all_3():
 
     # Local
     scs = []
-    for val, i in zip([-1, 0, 1], [0, 2, 4]):
+    for val, i in zip([-1, 0, 1], [0, 2, 5]):
         if val == -1:
             sc = axi[1].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
                             color="gray", alpha=0.1, s=30)
@@ -365,7 +383,7 @@ def test_between_all_3():
         hatches,
         labels,
         loc="lower center",
-        bbox_to_anchor=(-0.7, 1.12),
+        bbox_to_anchor=(-0.13, 1.1),
         fontsize=7,
         ncol=7,
         markerscale=0.6,
@@ -388,19 +406,49 @@ def test_between_all_3():
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
 
-    cbar = fig.colorbar(sc0, ax=axi[0], pad=0.02) # ticks=[100, 50, 0]
+    cbar = fig.colorbar(sc0, ax=axi[0], pad=0.02, aspect=40) # ticks=[100, 50, 0]
     cbar.ax.tick_params(labelsize=5, length=0.8, pad=0.2, grid_linewidth=0.08) #labelrotation=90,
     cbar.solids.set(alpha=1)
-    cbar.set_label('Song popularity', size=7, rotation=270, labelpad=10)
+    cbar.set_label('Song popularity', size=6, rotation=270, labelpad=8)
     cbar.outline.set_visible(False)
 
-    plt.subplots_adjust(
-        left=0.02,
-        right=0.99,
-        top=0.75,
-        bottom=0.06,  
-        wspace=0.18
-    )
+    X_new, obs, standard_embedding, labels, clusters = setup_melody_data(method="umap", drop_labels=False)
+    
+    for (i, o), axi in zip(enumerate(obs), [ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_32]):
+        im = axi.scatter(
+            standard_embedding[:, 0],
+            standard_embedding[:, 1],
+            marker=".",
+            s=1.3,
+            c=X_new[o],
+            cmap=cm.coolwarm,
+            # vmin=0, vmax=1
+        )
+        axi.set_yticks([])
+        axi.set_xticks([])
+        # axi.yaxis.set_label_coords(x=-0.01, y=0.5)
+        # axi.xaxis.set_label_coords(x=0.5, y=-0.02)
+        
+        if o == "Song Length":
+            o = "Song Len."
+        elif o == "Num of Instruments":
+            o = "Num Inst."
+        elif o == "Lyrical Content":
+            o = "Lyrical C."
+        elif o == "Year of Release":
+            o = "Rel. Year"
+        axi.set_title(o, size=5, pad=-14)
+
+    ax4_21.set_ylabel("UMAP2", size=8)
+    ax4_32.set_xlabel("UMAP1", size=8)
+
+    ax4_21.yaxis.set_label_coords(x=-0.01, y=0.5)
+    ax4_32.xaxis.set_label_coords(x=0.55, y=-0.07)
+
+    cbar = fig.colorbar(im, ax=[ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_32], 
+                        pad=0.02, aspect=40)
+    cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
+    cbar.outline.set_visible(False)
     plt.savefig("plots/paper/melody/melody_3.pdf")
 
 
