@@ -70,7 +70,8 @@ def setup_support_data(method="tsne", drop_labels=True):
         'hday':'Study enter',
         'dnr':'Resuscitate order',
         'charges':'Charges',
-        'age': 'Age'
+        'age': 'Age',
+        'dnrday': 'DNR order day'
     }, inplace=True)
     
     obs = list(X.columns)
