@@ -81,6 +81,7 @@ def setup_support_data(method="tsne", drop_labels=True):
 
     for col in X.columns:
         X[col] = (X[col] - X[col].mean()) / X[col].std()
+        # print([X[col].min(), X[col].max()])
     
     # compute umap
     if method == "umap":
@@ -532,15 +533,27 @@ def test_between_all_3():
 
     standard_embedding[:,0], standard_embedding[:,1] = 5 * standard_embedding[:,0], 1 * standard_embedding[:,1]
     for (i, o), axi_i in zip(enumerate(arrow_labels), [ax21, ax22, ax23, ax24]):
-        im = axi_i.scatter(
-            standard_embedding[:, 0],
-            standard_embedding[:, 1],
-            marker=".",
-            s=1,
-            c=X_new[o],
-            cmap=cm.coolwarm,
-            alpha=0.8
-        )
+        if i == 0:
+            im = axi_i.scatter(
+                standard_embedding[:, 0],
+                standard_embedding[:, 1],
+                marker=".",
+                s=1,
+                c=X_new[o],
+                cmap=cm.coolwarm,
+                alpha=0.8
+            )
+        else: 
+            axi_i.scatter(
+                standard_embedding[:, 0],
+                standard_embedding[:, 1],
+                marker=".",
+                s=1,
+                c=X_new[o],
+                cmap=cm.coolwarm,
+                alpha=0.8
+            )
+
         axi_i.set_yticks([])
         axi_i.set_xticks([])
 
@@ -975,15 +988,27 @@ def test_local_hdbscan():
     # fourth plot
     standard_embedding[:,0], standard_embedding[:,1] = 20 * standard_embedding[:,0], 1 * standard_embedding[:,1]
     for (i, o), axi_i in zip(enumerate(dict_keys), [ax11, ax12, ax13, ax21, ax22, ax23]):
-        im = axi_i.scatter(
-            standard_embedding[:, 0],
-            standard_embedding[:, 1],
-            marker=".",
-            s=1,
-            c=X_new[o],
-            cmap=cm.coolwarm,
-            alpha=0.8
-        )
+        if i == 0:
+            im = axi_i.scatter(
+                standard_embedding[:, 0],
+                standard_embedding[:, 1],
+                marker=".",
+                s=1,
+                c=X_new[o],
+                cmap=cm.coolwarm,
+                alpha=0.8
+            )
+        else: 
+            axi_i.scatter(
+                standard_embedding[:, 0],
+                standard_embedding[:, 1],
+                marker=".",
+                s=1,
+                c=X_new[o],
+                cmap=cm.coolwarm,
+                alpha=0.8
+            )
+
         axi_i.set_yticks([])
         axi_i.set_xticks([])
 
@@ -1005,11 +1030,11 @@ def test_local_hdbscan():
     ax21.yaxis.set_label_coords(0, 1.15)
     ax22.xaxis.set_label_coords(-0.5, -0.04)
 
-    cbar = fig.colorbar(im, ax=[ax11, ax12, ax13, ax21, ax22, ax23], pad=0.03, aspect=40, ticks=[0, 5, 10, 15])
+    cbar = fig.colorbar(im, ax=[ax11, ax12, ax13, ax21, ax22, ax23], pad=0.03, aspect=40,) #ticks=[0, 5, 10, 15])
     cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
     cbar.outline.set_visible(False)
 
     plt.savefig("plots/paper/support/support_local_hdbscan.pdf")
 
 test_between_all_3()
-test_local_hdbscan()
+# test_local_hdbscan()

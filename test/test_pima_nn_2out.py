@@ -80,6 +80,8 @@ def print_pima_all(file, dataset_i):
         facecolor="w",
         edgecolor="k",
     )
+
+    axs = []
     for i, o in enumerate(obs):
         im = axi[i % 3, i // 3].scatter(
             standard_embedding[:, 0],
@@ -194,7 +196,8 @@ def test_between_all_2():
     axis_array = [ax2_11, ax2_12, ax2_13, ax2_21, ax2_22, ax2_23, ax2_31, ax2_32, ax2_33]
 
     X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="", drop_labels=False, file = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_2_2out.csv")
-    standard_embedding[:,0], standard_embedding[:,1] = 1 * standard_embedding[:,0], 7 * standard_embedding[:,1]
+    standard_embedding[:,0], standard_embedding[:,1] = 1 * standard_embedding[:,0], 1 * standard_embedding[:,1]
+    ims = []
     for (i, o), axi in zip(enumerate(obs), axis_array):
         if o == "Species":
             break

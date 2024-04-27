@@ -197,7 +197,7 @@ class NonLinearClock:
                     remove_cols.append(j)
         for k in remove_cols:
             X = np.delete(X, k, 1)
-
+        
         for i in range(y.shape[1]):
             if univar:
                 coefs_a, pvals_a, is_significant_a = [], [], []
@@ -322,11 +322,41 @@ class NonLinearClock:
                 )
 
         if biggest_arrow:
-            is_significant = np.logical_or(is_significant[0], is_significant[1])
             coefs_points = [[x, y] for x, y in zip(coefs[0], coefs[1])]
             coefs_new = np.array(
                 [math.sqrt((x * x) + (y * y)) for x, y in zip(coefs[0], coefs[1])]
             )
+
+            # is_significant = np.logical_or(is_significant[0], is_significant[1])
+            is_significant_tmp = np.zeros(is_significant[0].shape)
+            for i in range(is_significant[0].shape[0]):
+                if is_significant[0][i] == is_significant[1][i]:
+                    is_significant_tmp[i] = is_significant[0][i]
+                else :
+                    print("\nDifferent values")
+
+                    # Project and rotate
+                    angle = math.degrees(math.atan(coefs[1][i]/coefs[0][i]))
+                    proj_tmp = self._project_line(
+                        self.low_dim_data,
+                        angle,
+                        point_a=[0, 0],
+                        point_b=coefs_points[i],
+                    )
+
+                    # Predict
+                    coefs_tmp, _, is_s_tmp, _, _ = self._get_importance(
+                        self.high_dim_data.to_numpy(),
+                        np.array([proj_tmp]).T,
+                        univar=univar_importance,
+                        significance=feature_significance,
+                    )
+                    # print(coefs_tmp[0][i])
+                    # print(coefs_new[i])
+                    # print(is_s_tmp[0][i])
+
+                    is_significant_tmp[i] = is_s_tmp[0][i]
+            is_significant = np.array(is_significant_tmp)
 
             if plot_top_k != 0:
                 min_ix = list(
@@ -894,11 +924,36 @@ class NonLinearClock:
             )
 
             if biggest_arrow:
-                is_significant = np.logical_or(is_significant[0], is_significant[1])
+                # is_significant = np.logical_or(is_significant[0], is_significant[1])
                 coefs_points = [[x, y] for x, y in zip(coefs[0], coefs[1])]
                 coefs_new = np.array(
                     [math.sqrt((x * x) + (y * y)) for x, y in zip(coefs[0], coefs[1])]
                 )
+
+                is_significant_tmp = np.zeros(is_significant[0].shape)
+                for i in range(is_significant[0].shape[0]):
+                    if is_significant[0][i] == is_significant[1][i]:
+                        is_significant_tmp[i] = is_significant[0][i]
+                    else :
+                        # Project and rotate
+                        angle = math.degrees(math.atan(coefs[1][i]/coefs[0][i]))
+                        proj_tmp = self._project_line(
+                            self.low_dim_data,
+                            angle,
+                            point_a=[0, 0],
+                            point_b=coefs_points[i],
+                        )
+
+                        # Predict
+                        coefs_tmp, _, is_s_tmp, _, _ = self._get_importance(
+                            self.high_dim_data.to_numpy(),
+                            np.array([proj_tmp]).T,
+                            univar=univar_importance,
+                            significance=feature_significance,
+                        )
+
+                        is_significant_tmp[i] = is_s_tmp[0][i]
+                is_significant = np.array(is_significant_tmp)
 
                 if plot_top_k != 0:
                     min_ix = list(

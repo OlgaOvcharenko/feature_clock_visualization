@@ -12,7 +12,6 @@ from sklearn import decomposition  # decomposition.PCA
 from sklearn import manifold 
 from matplotlib.legend_handler import HandlerPatch
 import matplotlib.patches as mpatches
-from imblearn.over_sampling import SMOTE
 
 def make_legend_arrow(legend, orig_handle,
                       xdescent, ydescent,
