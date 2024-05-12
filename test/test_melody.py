@@ -59,8 +59,9 @@ def setup_melody_data(method="tsne", drop_labels=True):
         raise NotImplementedError()
     
     # get clusters
-    clusters = HDBSCAN(min_samples=10, min_cluster_size=30).fit_predict(X)
-    # clusters = KMeans(n_clusters=2).fit_predict(X)
+    # clusters = HDBSCAN(min_samples=10, min_cluster_size=30).fit_predict(X)
+    clusters = labels > 0.5
+    print(clusters) 
 
     return X, obs, standard_embedding, labels, clusters
 
@@ -263,19 +264,42 @@ def test_between_all_3():
     ax4_23 = fig.add_subplot(spec23[1, 2])
     ax4_32 = fig.add_subplot(spec23[2, 1])
 
+    # Local
+    scs = []
+    for val, i in zip([-1, 0, 1], [0, 2, 8]):
+        if val == -1:
+            sc = axi[0].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
+                            color="gray", alpha=0.1, s=30)
+            sc = axi[1].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
+                            color="gray", alpha=0.1, s=30)
+            axi[2].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
+                       color="gray", alpha=0.1, s=30)
+            
+        else:
+            sc = axi[0].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
+                                color=matplotlib.colormaps["Paired"].colors[i], alpha=0.3, s=30)
+            
+            sc = axi[1].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
+                                color=matplotlib.colormaps["Paired"].colors[i], alpha=0.3, s=30)
+            
+            axi[2].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
+                        color=matplotlib.colormaps["Paired"].colors[i], alpha=0.3, s=30)
+        
+        scs.append(sc)
+
 
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters, color_scheme=colors)
     # print(plot_inst.get_num_clusters())
 
-    sc0 = axi[0].scatter(
-        standard_embedding[:, 0],
-        standard_embedding[:, 1],
-        marker=".",
-        c=labels,
-        cmap=cm.coolwarm,
-        alpha=0.05,
-        s=30
-    )
+    # sc0 = axi[0].scatter(
+    #     standard_embedding[:, 0],
+    #     standard_embedding[:, 1],
+    #     marker=".",
+    #     c=labels,
+    #     cmap=cm.coolwarm,
+    #     alpha=0.05,
+    #     s=30
+    # )
     
     arrows1, arrow_labels1 = plot_inst.plot_global_clock(
         standartize_data=False,
@@ -298,35 +322,17 @@ def test_between_all_3():
     axi[0].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[0].xaxis.set_label_coords(x=0.5, y=-0.02)
 
-    # Local
-    scs = []
-    for val, i in zip([-1, 0, 1], [0, 2, 5]):
-        if val == -1:
-            sc = axi[1].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                            color="gray", alpha=0.1, s=30)
-            axi[2].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                       color="gray", alpha=0.1, s=30)
-            
-        else:
-            sc = axi[1].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                                color=matplotlib.colormaps["Paired"].colors[i], alpha=0.3, s=30)
-            
-            axi[2].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                        color=matplotlib.colormaps["Paired"].colors[i], alpha=0.3, s=30)
-        
-        scs.append(sc)
-
     arrows2, arrow_labels2 = plot_inst.plot_local_clocks(
         standartize_data=False,
         standartize_coef=False,
         biggest_arrow_method=True,
         univar_importance=False,
         ax=axi[1],
-        scale_circles=[1, 1,],
-        move_circles=[[2, -0.6], [-0.5, 0.5]],
+        scale_circles=[1.5, 1.3,],
+        move_circles=[[1.5, 1], [-1, -1]],
         annotates=[1, 1,1],
         arrow_width=0.15,
-        clocks_labels=["0", "1"],
+        clocks_labels=["Unpopular", "Popular"],
         plot_scatter=False,
         plot_hulls=False
     )
@@ -344,12 +350,13 @@ def test_between_all_3():
         standartize_coef=True,
         univar_importance=True,
         ax=axi[2],
-        scale_circles=[1,],
+        scale_circles=[2,],
         move_circles=[[0, 0]],
         annotates=[1.0,],
         arrow_width=0.15,
         plot_scatter=False,
-        plot_hulls=False
+        plot_hulls=False,
+        clocks_labels=["Unpopular", "Popular"],
     )
 
     arrows_dict = {}
@@ -366,15 +373,15 @@ def test_between_all_3():
     hatches = [plt.plot([],marker="", ls="")[0]]*2 + \
         [list(arrows_dict.values())[0]] + [scs[1]] + \
         [list(arrows_dict.values())[1]] + [scs[2]] + \
-        [list(arrows_dict.values())[2]] + [scs[0]] + \
+        [list(arrows_dict.values())[2]] + [plt.plot([],marker="", ls="")[0]] + \
         [list(arrows_dict.values())[3]] + [plt.plot([],marker="", ls="")[0]] + \
         [list(arrows_dict.values())[4]] + [plt.plot([],marker="", ls="")[0]] + \
         [list(arrows_dict.values())[5]] + [plt.plot([],marker="", ls="")[0]] 
 
     labels = ["Factors:", "Labels:"] + \
-        [list(arrows_dict.keys())[0]] + ["0"] + \
-        [list(arrows_dict.keys())[1]] + ["1"] + \
-        [list(arrows_dict.keys())[2]] + ["No class"] + \
+        [list(arrows_dict.keys())[0]] + ["Unpopular"] + \
+        [list(arrows_dict.keys())[1]] + ["Popular"] + \
+        [list(arrows_dict.keys())[2]] + [""] + \
         [list(arrows_dict.keys())[3]] + [""] + \
         [list(arrows_dict.keys())[4]] + [""] + \
         [list(arrows_dict.keys())[5]] + [""] 
@@ -406,11 +413,11 @@ def test_between_all_3():
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
 
-    cbar = fig.colorbar(sc0, ax=axi[0], pad=0.02, aspect=40) # ticks=[100, 50, 0]
-    cbar.ax.tick_params(labelsize=5, length=0.8, pad=0.2, grid_linewidth=0.08) #labelrotation=90,
-    cbar.solids.set(alpha=1)
-    cbar.set_label('Song popularity', size=6, rotation=270, labelpad=8)
-    cbar.outline.set_visible(False)
+    # cbar = fig.colorbar(sc0, ax=axi[0], pad=0.02, aspect=40) # ticks=[100, 50, 0]
+    # cbar.ax.tick_params(labelsize=5, length=0.8, pad=0.2, grid_linewidth=0.08) #labelrotation=90,
+    # cbar.solids.set(alpha=1)
+    # cbar.set_label('Song popularity', size=6, rotation=270, labelpad=8)
+    # cbar.outline.set_visible(False)
 
     X_new, obs, standard_embedding, labels, clusters = setup_melody_data(method="umap", drop_labels=False)
     

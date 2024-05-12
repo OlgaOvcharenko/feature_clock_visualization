@@ -304,8 +304,6 @@ class NonLinearClock:
         plot_scatter: bool = True,
         plot_top_k: int = 0,
     ):
-        # print(self.high_dim_data)
-        # print(self.observations)
         coefs, _, is_significant, std_x, std_y = self._get_importance(
             self.high_dim_data.to_numpy(),
             self.projections,
@@ -330,10 +328,10 @@ class NonLinearClock:
             # is_significant = np.logical_or(is_significant[0], is_significant[1])
             is_significant_tmp = np.zeros(is_significant[0].shape)
             for i in range(is_significant[0].shape[0]):
-                if is_significant[0][i] == is_significant[1][i]:
-                    is_significant_tmp[i] = is_significant[0][i]
+                if is_significant[0][i] == True or is_significant[1][i] == True:
+                    is_significant_tmp[i] = True
                 else :
-                    print("\nDifferent values")
+                    print("\nBoth False values.")
 
                     # Project and rotate
                     angle = math.degrees(math.atan(coefs[1][i]/coefs[0][i]))
@@ -345,15 +343,16 @@ class NonLinearClock:
                     )
 
                     # Predict
-                    coefs_tmp, _, is_s_tmp, _, _ = self._get_importance(
+                    coefs_tmp, p_val_tmp, is_s_tmp, _, _ = self._get_importance(
                         self.high_dim_data.to_numpy(),
                         np.array([proj_tmp]).T,
                         univar=univar_importance,
                         significance=feature_significance,
                     )
-                    # print(coefs_tmp[0][i])
-                    # print(coefs_new[i])
-                    # print(is_s_tmp[0][i])
+                    print(coefs_tmp[0][i])
+                    print(coefs_new[i])
+                    print(is_s_tmp[0][i])
+                    print(p_val_tmp[0][i])
 
                     is_significant_tmp[i] = is_s_tmp[0][i]
             is_significant = np.array(is_significant_tmp)

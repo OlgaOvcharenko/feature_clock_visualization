@@ -696,7 +696,7 @@ def test_all_4_in_row_hdbscan():
     ax4_33 = fig.add_subplot(spec23[2, 2])
 
     scs = []
-    for val, i in zip([-1, 0, 1], [0, 2, 4]):
+    for val, i in zip([-1, 0, 1], [0, 2, 8]):
         if val == -1:
             sc = ax1.scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
                             color="gray", alpha=0.1, s=30)

@@ -64,7 +64,7 @@ def setup_iris_data(method="tsne", drop_labels=True):
             standard_embedding = reducer.fit_transform(X)
 
     elif method == "tsne":
-        tsne = manifold.TSNE(n_components = 2, learning_rate = 'auto', random_state = 42, n_iter=1000)
+        tsne = manifold.TSNE(n_components = 2, learning_rate = 'auto', random_state = 42, n_iter=1000, perplexity=17)
         standard_embedding = tsne.fit_transform(X)
 
     elif method == "phate":
@@ -522,8 +522,8 @@ def test_pca_all_3():
 
     ax1.set_yticks([])
     ax1.set_xticks([])
-    ax1.set_ylabel("PCA2", size=8)
-    ax1.set_xlabel("PCA1", size=8)
+    ax1.set_ylabel("PC2", size=8)
+    ax1.set_xlabel("PC1", size=8)
     ax1.yaxis.set_label_coords(x=-0.01, y=.5)
     ax1.xaxis.set_label_coords(x=0.5, y=-0.02)
 
@@ -597,6 +597,8 @@ def test_pca_all_3():
         move_circle=[-0.3, 0.0],
         annotate=0.5,
         arrow_width=0.05,
+        # annotate=4.5,
+        # arrow_width=0.5,
         plot_scatter=False
     )
 

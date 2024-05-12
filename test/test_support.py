@@ -405,7 +405,7 @@ def test_between_all_3():
     ax24 = fig.add_subplot(spec23[1, 1])
 
     scs = []
-    for val, i in zip([0, 1], [2, 4]):
+    for val, i in zip([0, 1], [2, 8]):
         sc = axi[0].scatter(standard_embedding[labels == val,0], standard_embedding[labels == val,1], marker= '.', 
                             color=matplotlib.colormaps["Paired"].colors[i], alpha=0.2, s=15)
         scs.append(sc)
@@ -924,7 +924,7 @@ def test_local_hdbscan():
         move_circles=[[0, 0]],
         annotates=[0.5],
         arrow_width=0.08,
-        plot_top_k=5,
+        plot_top_k=4,
         plot_scatter=False,
         plot_hulls=False
     )
@@ -1037,4 +1037,4 @@ def test_local_hdbscan():
     plt.savefig("plots/paper/support/support_local_hdbscan.pdf")
 
 test_between_all_3()
-# test_local_hdbscan()
+test_local_hdbscan()
