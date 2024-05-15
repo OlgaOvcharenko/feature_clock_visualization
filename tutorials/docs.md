@@ -186,8 +186,8 @@ arrows, arrow_labels = clock_instance.plot_between_clock(
 | Output **arrow_labels** | Feature names (for each clock) for each arrow that can later be used by user to create a legend. | `list[list[str]]`
 
 ## Tutorial
-There is a simple [tutorial](tutorials/iris.md) for the Iris flower dataset.
-For more examples (e.g., [melody popularity](test/test_melody.py), [glioblastoma cell states](test/test_neftel.py), [diabetis by Pima Indians](test/test_pima.py)),  see *test/* folder.
+There is a simple [tutorial](https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/tutorials/iris.md) for the [Iris flower dataset](https://www.kaggle.com/datasets/uciml/iris).
+For more examples (e.g., [melody popularity](https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/test/test_melody.py), [glioblastoma cell states](https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/test/test_neftel.py), [diabetis by Pima Indians](https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/test/test_pima.py)),  see [*test/*](https://github.com/OlgaOvcharenko/feature_clock_visualization/tree/main/test).
 
 <hr>
 

@@ -7,8 +7,8 @@
 # Feature Clock: High-Dimensional Effects in Two-Dimensional Plots
 
 - [Package](https://pypi.org/project/feature-clock/) 
-- [Documentation](tutorials/docs.md) 
-- [Tutorial](tutorials/iris.md) 
+- [Documentation](https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/tutorials/docs.md) 
+- [Tutorial](https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/tutorials/iris.md) 
 - [Examples](https://github.com/OlgaOvcharenko/feature_clock_visualization/tree/main/test) 
 
 [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
@@ -54,7 +54,7 @@ Feature Clock can be installed from PyPI:
 pip install feature-clock
 ```
 
-All dependencies are listed in [requirements.txt](requirements.txt) and can be installed separately.
+All dependencies are listed in [requirements.txt](https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/requirements.txt) and can be installed separately.
 
 ```sh
 pip install -r requirements.txt
@@ -64,7 +64,7 @@ pip install -r requirements.txt
 [Apache License Version 2.0](LICENSE)
 
 ## Documentation
-There is [documentation](tutorials/docs.md), and a simple [tutorial](tutorials/iris.md).
+There is [documentation](https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/tutorials/docs.md), and a simple [tutorial](https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/tutorials/iris.md).
 
 
 <hr>

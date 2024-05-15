@@ -39,7 +39,7 @@ def setup_iris_data(file_name):
     return X, obs, standard_embedding, labels
 ```
 
-Now, we use high- and low-dimensional data to make a clock. For more details of how PCA loadings were calculated and plotted, see [test/test_iris.py](test/test_iris.py).
+Now, we use high- and low-dimensional data to make a clock. For more details of how PCA loadings were calculated and plotted, see [test/test_iris.py](https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/test/test_iris.py).
 
 ```python 
 def make_clock(file_name, fig_size, dpi):
