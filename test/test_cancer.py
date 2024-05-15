@@ -19,7 +19,7 @@ def read_data(path):
 
 
 def setup_cancer_data(method="tsne", drop_labels=True):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/Cancer_Data.csv"
+    file_name = "feature_clock_visualization/data/Cancer_Data.csv"
     X = read_data(file_name)
 
     X.drop(columns=["id"], inplace=True)
