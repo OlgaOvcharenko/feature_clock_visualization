@@ -9,10 +9,11 @@ from matplotlib.legend_handler import HandlerPatch
 import matplotlib.patches as mpatches
 from hdbscan import HDBSCAN
 
-def make_legend_arrow(legend, orig_handle,
-                      xdescent, ydescent,
-                      width, height, fontsize):
-    p = mpatches.FancyArrow(0, 0.5*height, width, 0, length_includes_head=True, head_width=0.75*height )
+
+def make_legend_arrow(legend, orig_handle, xdescent, ydescent, width, height, fontsize):
+    p = mpatches.FancyArrow(
+        0, 0.5 * height, width, 0, length_includes_head=True, head_width=0.75 * height
+    )
     return p
 
 
@@ -72,7 +73,6 @@ def setup_neftel_data(method="tsne"):
     res_labels = np.max(res_vect, axis=0)
 
     clusters = HDBSCAN(min_samples=10, min_cluster_size=30).fit_predict(new_data)
-
 
     return new_data, obs, standard_embedding, res_labels, clusters
 
@@ -140,7 +140,7 @@ def print_neftel_all():
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
     cbar = fig.colorbar(im, ax=axi.ravel().tolist(), pad=0.1)
-    cbar.ax.tick_params(labelsize=7) 
+    cbar.ax.tick_params(labelsize=7)
     plt.savefig("plots/paper/neftel/plot_neftelAll.pdf")
 
 
@@ -269,10 +269,11 @@ def test_between_all():
     )
     plt.savefig("plots/paper/neftel/neftel_between.pdf")
 
+
 def test_all_in_row():
     X_new, obs, standard_embedding, labels = setup_neftel_data(method="umap")
 
-    fig, axi = plt.subplots(1, 3, figsize=(7.125-0.66, 2.375))
+    fig, axi = plt.subplots(1, 3, figsize=(7.125 - 0.66, 2.375))
     plt.tight_layout()
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, "UMAP")
     arrows, arrow_labels = plot_inst.plot_global_clock(
@@ -284,7 +285,7 @@ def test_all_in_row():
         scale_circle=2,
         move_circle=[0, 0],
         annotate=0.6,
-        arrow_width=0.05
+        arrow_width=0.05,
     )
 
     axi[0].set_yticks([])
@@ -305,7 +306,7 @@ def test_all_in_row():
         scale_circles=[1, 0.4, 0.25],
         move_circles=[[-0.2, 0], [0.4, 0.3], [-0.1, -0.4]],
         annotates=[0.5, 0.5, 0.3],
-        arrow_width=0.05
+        arrow_width=0.05,
     )
 
     axi[1].set_yticks([])
@@ -325,7 +326,7 @@ def test_all_in_row():
         scale_circles=[1, 1.5],
         move_circles=[[0, 0], [0.7, 0]],
         annotates=[0.3, 0.2],
-        arrow_width=0.05
+        arrow_width=0.05,
     )
     axi[2].legend(
         arrows,
@@ -356,11 +357,10 @@ def test_all_in_row():
     plt.savefig("plots/paper/neftel/neftel_3.pdf")
 
 
-
 def test_experiment1():
     X_new, obs, standard_embedding, labels = setup_neftel_data(method="umap")
 
-    fig, ax = plt.subplots(1, figsize=(3.4775/2, 3.4775/2))
+    fig, ax = plt.subplots(1, figsize=(3.4775 / 2, 3.4775 / 2))
     plt.tight_layout()
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, "UMAP")
     arrows, arrow_labels = plot_inst.plot_global_clock(
@@ -373,7 +373,7 @@ def test_experiment1():
         move_circle=[0, 0],
         annotate=0.9,
         arrow_width=0.03,
-        angle_shift=5
+        angle_shift=5,
     )
 
     ax.set_yticks([])
@@ -391,7 +391,7 @@ def test_experiment1():
     )
     plt.savefig("plots/paper/neftel/neftel_all_only_clock.pdf")
 
-    fig, ax = plt.subplots(1, figsize=(3.4775/2, 3.4775/2))
+    fig, ax = plt.subplots(1, figsize=(3.4775 / 2, 3.4775 / 2))
     plt.tight_layout()
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=True,
@@ -402,9 +402,9 @@ def test_experiment1():
         scale_circle=2,
         move_circle=[0, 0],
         annotate=0.9,
-        arrow_width=0.05
+        arrow_width=0.05,
     )
-    
+
     ax.set_yticks([])
     ax.set_xticks([])
     ax.set_ylabel("UMAP2", size=8)
@@ -424,7 +424,7 @@ def test_experiment1():
 def test_experiment2():
     X_new, obs, standard_embedding, labels, _ = setup_neftel_data(method="umap")
 
-    fig, ax = plt.subplots(1, figsize=(3.4775/2, 3.4775/2))
+    fig, ax = plt.subplots(1, figsize=(3.4775 / 2, 3.4775 / 2))
     plt.tight_layout()
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, "UMAP")
     arrows, arrow_labels = plot_inst.plot_global_clock(
@@ -437,7 +437,7 @@ def test_experiment2():
         move_circle=[0, 0],
         annotate=0.9,
         arrow_width=0.01,
-        angle_shift=1
+        angle_shift=1,
     )
 
     ax.set_yticks([])
@@ -454,8 +454,8 @@ def test_experiment2():
         bottom=0.08,  # wspace=0.21, hspace=0.33
     )
     plt.savefig("plots/paper/neftel/neftel_all_1_degree.pdf")
-    
-    fig, ax = plt.subplots(1, figsize=(3.4775/2, 3.4775/2))
+
+    fig, ax = plt.subplots(1, figsize=(3.4775 / 2, 3.4775 / 2))
     plt.tight_layout()
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=True,
@@ -467,7 +467,7 @@ def test_experiment2():
         move_circle=[0, 0],
         annotate=0.9,
         arrow_width=0.01,
-        angle_shift=5
+        angle_shift=5,
     )
 
     ax.set_yticks([])
@@ -485,7 +485,6 @@ def test_experiment2():
     )
     plt.savefig("plots/paper/neftel/neftel_all_5_degree.pdf")
 
-    
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=True,
         standartize_coef=True,
@@ -496,7 +495,7 @@ def test_experiment2():
         move_circle=[0, 0],
         annotate=0.9,
         arrow_width=0.01,
-        angle_shift=15
+        angle_shift=15,
     )
 
     ax.set_yticks([])
@@ -522,11 +521,25 @@ def test_all_4_in_row():
     # plt.tight_layout()
 
     dpi = 1000
-    fig_size = ((7.125-0.17), ((7.125-0.17)/1.8)/1.618)
+    fig_size = ((7.125 - 0.17), ((7.125 - 0.17) / 1.8) / 1.618)
 
-    fig = plt.figure(constrained_layout=True, figsize=fig_size, dpi=dpi, facecolor="w",edgecolor="k",)
-    spec2 = gridspec.GridSpec(ncols=4, nrows=1, figure=fig, 
-                     left=0.02, right=1, top=0.82, bottom=0.06, wspace=0.15)
+    fig = plt.figure(
+        constrained_layout=True,
+        figsize=fig_size,
+        dpi=dpi,
+        facecolor="w",
+        edgecolor="k",
+    )
+    spec2 = gridspec.GridSpec(
+        ncols=4,
+        nrows=1,
+        figure=fig,
+        left=0.02,
+        right=1,
+        top=0.82,
+        bottom=0.06,
+        wspace=0.15,
+    )
     ax1 = fig.add_subplot(spec2[0])
     ax2 = fig.add_subplot(spec2[1])
     ax3 = fig.add_subplot(spec2[2])
@@ -542,7 +555,6 @@ def test_all_4_in_row():
     ax4_32 = fig.add_subplot(spec23[2, 1])
     ax4_33 = fig.add_subplot(spec23[2, 2])
 
-
     plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, "UMAP")
     arrows1, arrow_labels1 = plot_inst.plot_global_clock(
         standartize_data=True,
@@ -553,7 +565,7 @@ def test_all_4_in_row():
         scale_circle=2,
         move_circle=[0, 0],
         annotate=0.6,
-        arrow_width=0.05
+        arrow_width=0.05,
     )
 
     ax1.set_yticks([])
@@ -574,7 +586,7 @@ def test_all_4_in_row():
         scale_circles=[1.5, 0.9],
         move_circles=[[-0.6, 0.1], [0.6, -0.2]],
         annotates=[0.5, 0.5],
-        arrow_width=0.05
+        arrow_width=0.05,
     )
 
     ax2.set_yticks([])
@@ -594,7 +606,7 @@ def test_all_4_in_row():
         scale_circles=[1.5, 1.5],
         move_circles=[[0, 0], [0.7, 0]],
         annotates=[0.4, 0.2],
-        arrow_width=0.05
+        arrow_width=0.05,
     )
 
     arrows_dict = {}
@@ -604,8 +616,8 @@ def test_all_4_in_row():
         arrows_dict[val] = arrows1[i]
     for i, val in enumerate(arrow_labels2):
         arrows_dict[val] = arrows2[i]
-    
-    hatches = [plt.plot([],marker="", ls="")[0]] + list(arrows_dict.values())
+
+    hatches = [plt.plot([], marker="", ls="")[0]] + list(arrows_dict.values())
     labels = ["Factors:"] + list(arrows_dict.keys())
 
     leg = ax3.legend(
@@ -619,7 +631,9 @@ def test_all_4_in_row():
         handlelength=1.5,
         columnspacing=0.8,
         handletextpad=0.5,
-        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
+        handler_map={
+            mpatches.FancyArrow: HandlerPatch(patch_func=make_legend_arrow),
+        },
     )
     for vpack in leg._legend_handle_box.get_children()[:1]:
         for hpack in vpack.get_children():
@@ -634,8 +648,11 @@ def test_all_4_in_row():
     ax3.xaxis.set_label_coords(x=0.5, y=-0.02)
 
     X_new, obs, standard_embedding, labels = setup_neftel_data(method="umap")
-    
-    for (i, o), axi in zip(enumerate(obs), [ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33]):
+
+    for (i, o), axi in zip(
+        enumerate(obs),
+        [ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33],
+    ):
         im = axi.scatter(
             standard_embedding[:, 0],
             standard_embedding[:, 1],
@@ -649,7 +666,7 @@ def test_all_4_in_row():
         axi.set_xticks([])
         # axi.yaxis.set_label_coords(x=-0.01, y=0.5)
         # axi.xaxis.set_label_coords(x=0.5, y=-0.02)
-        
+
         if o == "genes_expressed":
             o = "genes_exp."
         axi.set_title(o, size=5, pad=-14)
@@ -660,9 +677,15 @@ def test_all_4_in_row():
     ax4_21.yaxis.set_label_coords(x=-0.01, y=0.5)
     ax4_32.xaxis.set_label_coords(x=0.55, y=-0.07)
 
-    cbar = fig.colorbar(im, ax=[ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33], 
-                        pad=0.02, aspect=40)
-    cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
+    cbar = fig.colorbar(
+        im,
+        ax=[ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33],
+        pad=0.02,
+        aspect=40,
+    )
+    cbar.ax.tick_params(
+        labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1
+    )  # labelrotation=90,
     cbar.outline.set_visible(False)
 
     plt.savefig("plots/paper/neftel/neftel_3.pdf")
@@ -675,11 +698,25 @@ def test_all_4_in_row_hdbscan():
     # plt.tight_layout()
 
     dpi = 1000
-    fig_size = ((7.125-0.17), ((7.125-0.17)/1.8)/1.618)
+    fig_size = ((7.125 - 0.17), ((7.125 - 0.17) / 1.8) / 1.618)
 
-    fig = plt.figure(constrained_layout=True, figsize=fig_size, dpi=dpi, facecolor="w",edgecolor="k",)
-    spec2 = gridspec.GridSpec(ncols=4, nrows=1, figure=fig, 
-                     left=0.02, right=1, top=0.77, bottom=0.06, wspace=0.15)
+    fig = plt.figure(
+        constrained_layout=True,
+        figsize=fig_size,
+        dpi=dpi,
+        facecolor="w",
+        edgecolor="k",
+    )
+    spec2 = gridspec.GridSpec(
+        ncols=4,
+        nrows=1,
+        figure=fig,
+        left=0.02,
+        right=1,
+        top=0.77,
+        bottom=0.06,
+        wspace=0.15,
+    )
     ax1 = fig.add_subplot(spec2[0])
     ax2 = fig.add_subplot(spec2[1])
     ax3 = fig.add_subplot(spec2[2])
@@ -698,27 +735,65 @@ def test_all_4_in_row_hdbscan():
     scs = []
     for val, i in zip([-1, 0, 1], [0, 2, 8]):
         if val == -1:
-            sc = ax1.scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                            color="gray", alpha=0.1, s=30)
-            ax2.scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                            color="gray", alpha=0.1, s=30)
-            ax3.scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                       color="gray", alpha=0.1, s=30)
-            
+            sc = ax1.scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color="gray",
+                alpha=0.1,
+                s=30,
+            )
+            ax2.scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color="gray",
+                alpha=0.1,
+                s=30,
+            )
+            ax3.scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color="gray",
+                alpha=0.1,
+                s=30,
+            )
+
         else:
-            sc = ax1.scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                                color=matplotlib.colormaps["Paired"].colors[i], alpha=0.2, s=30)
-            
-            ax2.scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                        color=matplotlib.colormaps["Paired"].colors[i], alpha=0.2, s=30)
-            ax3.scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                       color=matplotlib.colormaps["Paired"].colors[i], alpha=0.2, s=30)
-        
+            sc = ax1.scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color=matplotlib.colormaps["Paired"].colors[i],
+                alpha=0.2,
+                s=30,
+            )
+
+            ax2.scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color=matplotlib.colormaps["Paired"].colors[i],
+                alpha=0.2,
+                s=30,
+            )
+            ax3.scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color=matplotlib.colormaps["Paired"].colors[i],
+                alpha=0.2,
+                s=30,
+            )
+
         scs.append(sc)
 
     print(clusters)
 
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters)
+    plot_inst = NonLinearClock(
+        X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters
+    )
     arrows1, arrow_labels1 = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -729,7 +804,7 @@ def test_all_4_in_row_hdbscan():
         move_circle=[0, 0],
         annotate=5.5,
         arrow_width=0.5,
-        plot_scatter=False
+        plot_scatter=False,
     )
 
     ax1.set_yticks([])
@@ -749,12 +824,12 @@ def test_all_4_in_row_hdbscan():
         ax=ax2,
         scale_circles=[0.3, 0.4],
         clocks_labels=["0", "1"],
-        clocks_labels_angles = [45, 270],
+        clocks_labels_angles=[45, 270],
         move_circles=[[0, 0], [0, 0]],
         annotates=[5, 3],
         arrow_width=0.45,
         plot_hulls=False,
-        plot_scatter=False
+        plot_scatter=False,
     )
 
     ax2.set_yticks([])
@@ -776,7 +851,7 @@ def test_all_4_in_row_hdbscan():
         annotates=[5],
         arrow_width=0.5,
         plot_hulls=False,
-        plot_scatter=False
+        plot_scatter=False,
     )
 
     arrows_dict = {}
@@ -786,28 +861,50 @@ def test_all_4_in_row_hdbscan():
         arrows_dict[val] = arrows1[i]
     for i, val in enumerate(arrow_labels2):
         arrows_dict[val] = arrows2[i]
-    
-    hatches = [plt.plot([],marker="", ls="")[0]]*2 + \
-        [list(arrows_dict.values())[0]] + [scs[1]] + \
-        [list(arrows_dict.values())[1]] + [scs[2]] + \
-        [list(arrows_dict.values())[2]] + [scs[0]] + \
-        [list(arrows_dict.values())[3]] + [plt.plot([],marker="", ls="")[0]] + \
-        [list(arrows_dict.values())[4]] + [plt.plot([],marker="", ls="")[0]] + \
-        [list(arrows_dict.values())[5]] + [plt.plot([],marker="", ls="")[0]] + \
-        [list(arrows_dict.values())[6]] + [plt.plot([],marker="", ls="")[0]] + \
-        [list(arrows_dict.values())[7]] + [plt.plot([],marker="", ls="")[0]] + \
-        [list(arrows_dict.values())[8]] + [plt.plot([],marker="", ls="")[0]]
 
-    labels = ["Factors:", "Labels:"] + \
-        [list(arrows_dict.keys())[0]] + ["0"] + \
-        [list(arrows_dict.keys())[1]] + ["1"] + \
-        [list(arrows_dict.keys())[2]] + ["No class"] + \
-        [list(arrows_dict.keys())[3]] + [""] + \
-        [list(arrows_dict.keys())[4]] + [""] + \
-        [list(arrows_dict.keys())[5]] + [""] + \
-        [list(arrows_dict.keys())[6]] + [""] + \
-        [list(arrows_dict.keys())[7]] + [""] + \
-        [list(arrows_dict.keys())[8]] + [""]
+    hatches = (
+        [plt.plot([], marker="", ls="")[0]] * 2
+        + [list(arrows_dict.values())[0]]
+        + [scs[1]]
+        + [list(arrows_dict.values())[1]]
+        + [scs[2]]
+        + [list(arrows_dict.values())[2]]
+        + [scs[0]]
+        + [list(arrows_dict.values())[3]]
+        + [plt.plot([], marker="", ls="")[0]]
+        + [list(arrows_dict.values())[4]]
+        + [plt.plot([], marker="", ls="")[0]]
+        + [list(arrows_dict.values())[5]]
+        + [plt.plot([], marker="", ls="")[0]]
+        + [list(arrows_dict.values())[6]]
+        + [plt.plot([], marker="", ls="")[0]]
+        + [list(arrows_dict.values())[7]]
+        + [plt.plot([], marker="", ls="")[0]]
+        + [list(arrows_dict.values())[8]]
+        + [plt.plot([], marker="", ls="")[0]]
+    )
+
+    labels = (
+        ["Factors:", "Labels:"]
+        + [list(arrows_dict.keys())[0]]
+        + ["0"]
+        + [list(arrows_dict.keys())[1]]
+        + ["1"]
+        + [list(arrows_dict.keys())[2]]
+        + ["No class"]
+        + [list(arrows_dict.keys())[3]]
+        + [""]
+        + [list(arrows_dict.keys())[4]]
+        + [""]
+        + [list(arrows_dict.keys())[5]]
+        + [""]
+        + [list(arrows_dict.keys())[6]]
+        + [""]
+        + [list(arrows_dict.keys())[7]]
+        + [""]
+        + [list(arrows_dict.keys())[8]]
+        + [""]
+    )
 
     leg = ax3.legend(
         hatches,
@@ -820,12 +917,14 @@ def test_all_4_in_row_hdbscan():
         handlelength=1.5,
         columnspacing=0.8,
         handletextpad=0.5,
-        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
+        handler_map={
+            mpatches.FancyArrow: HandlerPatch(patch_func=make_legend_arrow),
+        },
     )
     for vpack in leg._legend_handle_box.get_children()[:1]:
         for hpack in vpack.get_children():
             hpack.get_children()[0].set_width(0)
-    for lh in leg.legendHandles: 
+    for lh in leg.legendHandles:
         lh.set_alpha(1)
 
     ax3.set_yticks([])
@@ -837,8 +936,11 @@ def test_all_4_in_row_hdbscan():
     ax3.xaxis.set_label_coords(x=0.5, y=-0.02)
 
     X_new, obs, standard_embedding, labels, clusters = setup_neftel_data(method="umap")
-    
-    for (i, o), axi in zip(enumerate(obs), [ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33]):
+
+    for (i, o), axi in zip(
+        enumerate(obs),
+        [ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33],
+    ):
         im = axi.scatter(
             standard_embedding[:, 0],
             standard_embedding[:, 1],
@@ -852,7 +954,7 @@ def test_all_4_in_row_hdbscan():
         axi.set_xticks([])
         # axi.yaxis.set_label_coords(x=-0.01, y=0.5)
         # axi.xaxis.set_label_coords(x=0.5, y=-0.02)
-        
+
         if o == "genes_expressed":
             o = "genes_exp."
         axi.set_title(o, size=5, pad=-14)
@@ -863,9 +965,15 @@ def test_all_4_in_row_hdbscan():
     ax4_21.yaxis.set_label_coords(x=-0.01, y=0.5)
     ax4_32.xaxis.set_label_coords(x=0.55, y=-0.07)
 
-    cbar = fig.colorbar(im, ax=[ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33], 
-                        pad=0.02, aspect=40)
-    cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
+    cbar = fig.colorbar(
+        im,
+        ax=[ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33],
+        pad=0.02,
+        aspect=40,
+    )
+    cbar.ax.tick_params(
+        labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1
+    )  # labelrotation=90,
     cbar.outline.set_visible(False)
 
     plt.savefig("plots/paper/neftel/neftel_3.pdf")

@@ -64,5 +64,8 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/OlgaOvcharenko/feature_clock_visualization"
+Homepage = "https://pypi.org/project/feature-clock/"
+Repository = "https://github.com/OlgaOvcharenko/feature_clock_visualization"
+Documentation = "https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/tutorials/docs.md"
+Tutorial = "https://github.com/OlgaOvcharenko/feature_clock_visualization/blob/main/tutorials/iris.md"
 Issues = "https://github.com/OlgaOvcharenko/feature_clock_visualization/issues"

@@ -8,10 +8,11 @@ from sklearn.cluster import KMeans
 from matplotlib.legend_handler import HandlerPatch
 import matplotlib.patches as mpatches
 
-def make_legend_arrow(legend, orig_handle,
-                      xdescent, ydescent,
-                      width, height, fontsize):
-    p = mpatches.FancyArrow(0, 0.5*height, width, 0, length_includes_head=True, head_width=0.75*height )
+
+def make_legend_arrow(legend, orig_handle, xdescent, ydescent, width, height, fontsize):
+    p = mpatches.FancyArrow(
+        0, 0.5 * height, width, 0, length_includes_head=True, head_width=0.75 * height
+    )
     return p
 
 
@@ -19,7 +20,7 @@ def read_data(path):
     return pd.read_csv(path, header=0)
 
 
-def setup_pima_data(method="tsne", drop_labels=True, file: str=""):
+def setup_pima_data(method="tsne", drop_labels=True, file: str = ""):
     file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/diabetes.csv"
     X = read_data(file_name)
     X.rename(columns={"DiabetesPedigreeFunction": "Pedigree"}, inplace=True)
@@ -47,15 +48,18 @@ def setup_pima_data(method="tsne", drop_labels=True, file: str=""):
 
     elif method == "phate":
         raise NotImplementedError()
-    
+
     # get clusters
     clusters = HDBSCAN(min_samples=12).fit_predict(X)
     # clusters = KMeans(n_clusters=3, n_init="auto", max_iter=1000).fit_predict(X)
 
     return X, obs, standard_embedding, labels, clusters
 
+
 def print_pima_all(file, dataset_i):
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap", drop_labels=False, file=file)
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
+        method="umap", drop_labels=False, file=file
+    )
     dpi = 1000
     # fig_size = (2.375, 2.375)
     fig_size = (3.2325, 2.9)
@@ -85,7 +89,7 @@ def print_pima_all(file, dataset_i):
 
     axi[1, 0].set_ylabel("UMAP2", size=8)
     axi[2, 1].set_xlabel("UMAP1", size=8)
-    
+
     plt.subplots_adjust(
         left=0.05,
         right=0.95,
@@ -93,27 +97,52 @@ def print_pima_all(file, dataset_i):
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
     cbar = fig.colorbar(im, ax=axi.ravel().tolist(), pad=0.1)
-    cbar.ax.tick_params(labelsize=7) 
+    cbar.ax.tick_params(labelsize=7)
     # for ax in axi:
     #     for a in ax:
-    #         a.axis('off') 
+    #         a.axis('off')
     plt.savefig(f"plots/paper/pima_network/plot_pimaAll_nn_{dataset_i}.pdf")
 
 
 def test_between_all_1():
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap", file="/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_1.csv")
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
+        method="umap",
+        file="/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_1.csv",
+    )
 
-    fig, ax = plt.subplots(1, figsize=(3.2325, 3.2325)) #(2.375, 2.375)
+    fig, ax = plt.subplots(1, figsize=(3.2325, 3.2325))  # (2.375, 2.375)
     plt.tight_layout()
 
-    sc = ax.scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.3)
+    sc = ax.scatter(
+        standard_embedding[:, 0],
+        standard_embedding[:, 1],
+        marker=".",
+        c=labels,
+        cmap="Accent",
+        zorder=0,
+        alpha=0.3,
+    )
     colors = [
-        'tab:pink', 'tab:green', 'tab:blue', 'tab:olive', 'tab:orange',
-        'tab:purple', 'tab:cyan', 'tab:red', 'tab:brown']
-    
+        "tab:pink",
+        "tab:green",
+        "tab:blue",
+        "tab:olive",
+        "tab:orange",
+        "tab:purple",
+        "tab:cyan",
+        "tab:red",
+        "tab:brown",
+    ]
+
     plot_inst = NonLinearClock(
-        X_new, obs, standard_embedding, labels, 
-        method="UMAP", cluster_labels=clusters, color_scheme=colors)
+        X_new,
+        obs,
+        standard_embedding,
+        labels,
+        method="UMAP",
+        cluster_labels=clusters,
+        color_scheme=colors,
+    )
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -126,8 +155,24 @@ def test_between_all_1():
         arrow_width=0.1,
     )
 
-    hatches = [plt.plot([],marker="", ls="")[0]]*4 + arrows[0:3] + [sc.legend_elements()[0][0]] + arrows[3:6] + [sc.legend_elements()[0][1]] + arrows[6:] + [plt.plot([],marker="", ls="")[0]]*2
-    labels = ["Factors:", " ", "", "Labels: "] + arrow_labels[0:3] + ["No diabetes"] + arrow_labels[3:6] + ["Diabetes"] + arrow_labels[6:] + [" ", " "]
+    hatches = (
+        [plt.plot([], marker="", ls="")[0]] * 4
+        + arrows[0:3]
+        + [sc.legend_elements()[0][0]]
+        + arrows[3:6]
+        + [sc.legend_elements()[0][1]]
+        + arrows[6:]
+        + [plt.plot([], marker="", ls="")[0]] * 2
+    )
+    labels = (
+        ["Factors:", " ", "", "Labels: "]
+        + arrow_labels[0:3]
+        + ["No diabetes"]
+        + arrow_labels[3:6]
+        + ["Diabetes"]
+        + arrow_labels[6:]
+        + [" ", " "]
+    )
     leg = ax.legend(
         hatches,
         labels,
@@ -139,7 +184,9 @@ def test_between_all_1():
         handlelength=1.5,
         columnspacing=0.8,
         handletextpad=0.5,
-        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
+        handler_map={
+            mpatches.FancyArrow: HandlerPatch(patch_func=make_legend_arrow),
+        },
     )
 
     for vpack in leg._legend_handle_box.get_children()[:1]:
@@ -161,21 +208,47 @@ def test_between_all_1():
     )
     plt.savefig("plots/paper/pima_network/pima_global_nn_1.pdf")
 
-def test_between_all_2():
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap", file = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_2.csv")
 
-    fig, ax = plt.subplots(1, figsize=(3.2325, 3.2325)) #(2.375, 2.375)
+def test_between_all_2():
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
+        method="umap",
+        file="/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_2.csv",
+    )
+
+    fig, ax = plt.subplots(1, figsize=(3.2325, 3.2325))  # (2.375, 2.375)
     plt.tight_layout()
 
-    sc = ax.scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.3)
+    sc = ax.scatter(
+        standard_embedding[:, 0],
+        standard_embedding[:, 1],
+        marker=".",
+        c=labels,
+        cmap="Accent",
+        zorder=0,
+        alpha=0.3,
+    )
 
     colors = [
-        'tab:pink', 'tab:green', 'tab:blue', 'tab:olive', 'tab:orange',
-        'tab:purple', 'tab:cyan', 'tab:red', 'tab:brown']
-    
+        "tab:pink",
+        "tab:green",
+        "tab:blue",
+        "tab:olive",
+        "tab:orange",
+        "tab:purple",
+        "tab:cyan",
+        "tab:red",
+        "tab:brown",
+    ]
+
     plot_inst = NonLinearClock(
-        X_new, obs, standard_embedding, labels, method="UMAP", 
-        cluster_labels=clusters, color_scheme=colors)
+        X_new,
+        obs,
+        standard_embedding,
+        labels,
+        method="UMAP",
+        cluster_labels=clusters,
+        color_scheme=colors,
+    )
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -185,13 +258,26 @@ def test_between_all_2():
         scale_circle=3,
         move_circle=[0, 0],
         annotate=0.9,
-        arrow_width=0.1
+        arrow_width=0.1,
     )
 
-    hatches = [plt.plot([],marker="", ls="")[0]]*3 + arrows[0:2] + [sc.legend_elements()[0][0]] + arrows[2:] + [sc.legend_elements()[0][1]]
-    labels = ["Factors:", " ", "Labels: "] + arrow_labels[0:2] + ["No diabetes"] + arrow_labels[2:] + ["Diabetes"]
+    hatches = (
+        [plt.plot([], marker="", ls="")[0]] * 3
+        + arrows[0:2]
+        + [sc.legend_elements()[0][0]]
+        + arrows[2:]
+        + [sc.legend_elements()[0][1]]
+    )
+    labels = (
+        ["Factors:", " ", "Labels: "]
+        + arrow_labels[0:2]
+        + ["No diabetes"]
+        + arrow_labels[2:]
+        + ["Diabetes"]
+    )
     leg = ax.legend(
-        hatches, labels,
+        hatches,
+        labels,
         loc="lower center",
         bbox_to_anchor=(0.5, 1.09),
         fontsize=7,
@@ -200,7 +286,9 @@ def test_between_all_2():
         handlelength=1.5,
         columnspacing=0.8,
         handletextpad=0.5,
-        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
+        handler_map={
+            mpatches.FancyArrow: HandlerPatch(patch_func=make_legend_arrow),
+        },
     )
 
     for vpack in leg._legend_handle_box.get_children()[:1]:

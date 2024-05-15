@@ -9,12 +9,12 @@ from sklearn.cluster import KMeans
 from matplotlib.legend_handler import HandlerPatch
 import matplotlib.patches as mpatches
 
-def make_legend_arrow(legend, orig_handle,
-                      xdescent, ydescent,
-                      width, height, fontsize):
-    p = mpatches.FancyArrow(0, 0.5*height, width, 0, length_includes_head=True, head_width=0.75*height )
-    return p
 
+def make_legend_arrow(legend, orig_handle, xdescent, ydescent, width, height, fontsize):
+    p = mpatches.FancyArrow(
+        0, 0.5 * height, width, 0, length_includes_head=True, head_width=0.75 * height
+    )
+    return p
 
 
 def read_data(path):
@@ -49,15 +49,18 @@ def setup_pima_data(method="tsne", drop_labels=True):
 
     elif method == "phate":
         raise NotImplementedError()
-    
+
     # get clusters
     clusters = HDBSCAN(min_samples=12).fit_predict(X)
     # clusters = KMeans(n_clusters=3, n_init="auto", max_iter=1000).fit_predict(X)
 
     return X, obs, standard_embedding, labels, clusters
 
+
 def print_pima_all():
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap", drop_labels=False)
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
+        method="umap", drop_labels=False
+    )
     dpi = 1000
     # fig_size = (2.375, 2.375)
     fig_size = (3.2325, 2.9)
@@ -70,7 +73,17 @@ def print_pima_all():
         facecolor="w",
         edgecolor="k",
     )
-    names = {'SkinThickness': 'a', 'Insulin': 'd', 'BMI': 'g', 'Age': 'b', 'Pregnancies': 'e', "Pedigree": "h", 'BloodPressure': 'c', 'Glucose': 'f', "Outcome": "i"}
+    names = {
+        "SkinThickness": "a",
+        "Insulin": "d",
+        "BMI": "g",
+        "Age": "b",
+        "Pregnancies": "e",
+        "Pedigree": "h",
+        "BloodPressure": "c",
+        "Glucose": "f",
+        "Outcome": "i",
+    }
     for i, o in enumerate(list(names.keys())):
         im = axi[i % 3, i // 3].scatter(
             standard_embedding[:, 0],
@@ -96,10 +109,10 @@ def print_pima_all():
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
     # cbar = fig.colorbar(im, ax=axi.ravel().tolist(), pad=0.1)
-    # cbar.ax.tick_params(labelsize=7) 
+    # cbar.ax.tick_params(labelsize=7)
     for ax in axi:
         for a in ax:
-            a.axis('off') 
+            a.axis("off")
     plt.savefig("plots/paper/pima/plot_pimaAll_teaser.pdf")
 
 
@@ -108,7 +121,9 @@ def test_between_all():
 
     fig, ax = plt.subplots(1, figsize=(3.33, 2.8))
     plt.tight_layout()
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters)
+    plot_inst = NonLinearClock(
+        X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters
+    )
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -118,7 +133,7 @@ def test_between_all():
         scale_circle=1,
         move_circle=[0, 0],
         annotate=0.6,
-        arrow_width=1.5
+        arrow_width=1.5,
     )
     ax.legend(
         arrows,
@@ -233,20 +248,44 @@ def test_between_all():
 def test_between_all_3():
     X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap")
     colors = [
-        'tab:pink', 'tab:green', 'tab:blue', 'tab:orange',
-        'tab:purple', 'tab:cyan', 'tab:red', 'tab:brown', 'tab:olive']
+        "tab:pink",
+        "tab:green",
+        "tab:blue",
+        "tab:orange",
+        "tab:purple",
+        "tab:cyan",
+        "tab:red",
+        "tab:brown",
+        "tab:olive",
+    ]
 
     dpi = 1000
-    fig_size = ((7.125-0.17), ((7.125-0.17)/1.8)/1.618)
+    fig_size = ((7.125 - 0.17), ((7.125 - 0.17) / 1.8) / 1.618)
 
-    fig = plt.figure(constrained_layout=True, figsize=fig_size, dpi=dpi, facecolor="w",edgecolor="k",)
-    spec2 = gridspec.GridSpec(ncols=4, nrows=1, figure=fig, 
-                     left=0.02, right=1, top=0.77, bottom=0.06, wspace=0.15)
+    fig = plt.figure(
+        constrained_layout=True,
+        figsize=fig_size,
+        dpi=dpi,
+        facecolor="w",
+        edgecolor="k",
+    )
+    spec2 = gridspec.GridSpec(
+        ncols=4,
+        nrows=1,
+        figure=fig,
+        left=0.02,
+        right=1,
+        top=0.77,
+        bottom=0.06,
+        wspace=0.15,
+    )
     ax1 = fig.add_subplot(spec2[0])
     ax2 = fig.add_subplot(spec2[1])
     ax3 = fig.add_subplot(spec2[2])
 
-    spec23 = gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=spec2[3], wspace=0.05, hspace=0.05)
+    spec23 = gridspec.GridSpecFromSubplotSpec(
+        3, 3, subplot_spec=spec2[3], wspace=0.05, hspace=0.05
+    )
     ax4_11 = fig.add_subplot(spec23[0, 0])
     ax4_12 = fig.add_subplot(spec23[0, 1])
     ax4_13 = fig.add_subplot(spec23[0, 2])
@@ -259,9 +298,25 @@ def test_between_all_3():
 
     axi = [ax1, ax2, ax3]
 
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=labels, color_scheme=colors)
-    
-    sc = axi[0].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
+    plot_inst = NonLinearClock(
+        X_new,
+        obs,
+        standard_embedding,
+        labels,
+        method="UMAP",
+        cluster_labels=labels,
+        color_scheme=colors,
+    )
+
+    sc = axi[0].scatter(
+        standard_embedding[:, 0],
+        standard_embedding[:, 1],
+        marker=".",
+        c=labels,
+        cmap="Accent",
+        zorder=0,
+        alpha=0.2,
+    )
     # legend1 = axi[0].legend(
     #     handles = sc.legend_elements()[0],
     #     loc="upper center",
@@ -285,7 +340,7 @@ def test_between_all_3():
         scale_circle=2.5,
         move_circle=[0, 0],
         annotate=1.0,
-        arrow_width=0.08
+        arrow_width=0.08,
     )
     axi[0].set_yticks([])
     axi[0].set_xticks([])
@@ -296,7 +351,15 @@ def test_between_all_3():
     axi[0].xaxis.set_label_coords(x=0.5, y=-0.02)
 
     # Local
-    sc = axi[1].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
+    sc = axi[1].scatter(
+        standard_embedding[:, 0],
+        standard_embedding[:, 1],
+        marker=".",
+        c=labels,
+        cmap="Accent",
+        zorder=0,
+        alpha=0.2,
+    )
 
     arrows2, arrow_labels2 = plot_inst.plot_local_clocks(
         standartize_data=True,
@@ -310,7 +373,7 @@ def test_between_all_3():
         clocks_labels=["Healthy", "Diabetes"],
         arrow_width=0.08,
         plot_scatter=False,
-        plot_hulls=False
+        plot_hulls=False,
     )
 
     axi[1].set_yticks([])
@@ -322,7 +385,15 @@ def test_between_all_3():
     axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
 
     # Between
-    sc = axi[2].scatter(standard_embedding[:,0], standard_embedding[:,1], marker= '.', c=labels, cmap="Accent", zorder=0, alpha=0.2)
+    sc = axi[2].scatter(
+        standard_embedding[:, 0],
+        standard_embedding[:, 1],
+        marker=".",
+        c=labels,
+        cmap="Accent",
+        zorder=0,
+        alpha=0.2,
+    )
 
     arrows3, arrow_labels3 = plot_inst.plot_between_clock(
         standartize_data=True,
@@ -345,19 +416,27 @@ def test_between_all_3():
         arrows_dict[val] = arrows1[i]
     for i, val in enumerate(arrow_labels2):
         arrows_dict[val] = arrows2[i]
-    
+
     # hatches = [plt.plot([],marker="", ls="")[0]]*2 + list(arrows_dict.values()) + sc.legend_elements()[0]
     # labels = ["Factors:", "Labels:"] + list(arrows_dict.keys()) + ["Healthy", "Diabetis"]
 
-    hatches = [plt.plot([],marker="", ls="")[0]]*2 + \
-        [list(arrows_dict.values())[0]] + [sc.legend_elements()[0][0]] + \
-        [list(arrows_dict.values())[1]] + [sc.legend_elements()[0][1]] + \
-        list(arrows_dict.values())[2:]
-    
-    labels = ["Factors:", "Labels:"] + [list(arrows_dict.keys())[0]] + ["Healthy"] + \
-        [list(arrows_dict.keys())[1]] + ["Diabetes"] + \
-        list(arrows_dict.keys())[2:]
+    hatches = (
+        [plt.plot([], marker="", ls="")[0]] * 2
+        + [list(arrows_dict.values())[0]]
+        + [sc.legend_elements()[0][0]]
+        + [list(arrows_dict.values())[1]]
+        + [sc.legend_elements()[0][1]]
+        + list(arrows_dict.values())[2:]
+    )
 
+    labels = (
+        ["Factors:", "Labels:"]
+        + [list(arrows_dict.keys())[0]]
+        + ["Healthy"]
+        + [list(arrows_dict.keys())[1]]
+        + ["Diabetes"]
+        + list(arrows_dict.keys())[2:]
+    )
 
     leg = axi[2].legend(
         hatches,
@@ -370,10 +449,12 @@ def test_between_all_3():
         handlelength=1.3,
         columnspacing=0.8,
         handletextpad=0.5,
-        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
-        # markerfirst=False 
+        handler_map={
+            mpatches.FancyArrow: HandlerPatch(patch_func=make_legend_arrow),
+        },
+        # markerfirst=False
     )
-    for lh in leg.legendHandles: 
+    for lh in leg.legendHandles:
         lh.set_alpha(1)
 
     for vpack in leg._legend_handle_box.get_children()[:1]:
@@ -387,10 +468,15 @@ def test_between_all_3():
     axi[2].set_title("Inter-group clock", size=8)
     axi[2].yaxis.set_label_coords(x=-0.01, y=0.5)
     axi[2].xaxis.set_label_coords(x=0.5, y=-0.02)
-    
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap", drop_labels=False)
-    
-    for (i, o), axi in zip(enumerate(obs), [ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33]):
+
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
+        method="umap", drop_labels=False
+    )
+
+    for (i, o), axi in zip(
+        enumerate(obs),
+        [ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33],
+    ):
         im = axi.scatter(
             standard_embedding[:, 0],
             standard_embedding[:, 1],
@@ -405,10 +491,10 @@ def test_between_all_3():
         # axi.yaxis.set_label_coords(x=-0.01, y=0.5)
         # axi.xaxis.set_label_coords(x=0.5, y=-0.02)
 
-        axi.set_aspect('equal')
+        axi.set_aspect("equal")
         print(axi.get_ylim())
-        axi.set_ylim((axi.get_ylim()[0]-2, axi.get_ylim()[1]+2))
-        
+        axi.set_ylim((axi.get_ylim()[0] - 2, axi.get_ylim()[1] + 2))
+
         if o == "Outcome":
             o = "Labels"
         elif o == "BloodPressure":
@@ -421,9 +507,16 @@ def test_between_all_3():
     ax4_21.yaxis.set_label_coords(x=-0.01, y=0.5)
     ax4_32.xaxis.set_label_coords(x=0.55, y=-0.07)
 
-    cbar = fig.colorbar(im, ax=[ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33], 
-                        pad=0.02, aspect=40, ticks=[1.0, 0.5, 0.0, -0.5])
-    cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
+    cbar = fig.colorbar(
+        im,
+        ax=[ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_31, ax4_32, ax4_33],
+        pad=0.02,
+        aspect=40,
+        ticks=[1.0, 0.5, 0.0, -0.5],
+    )
+    cbar.ax.tick_params(
+        labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1
+    )  # labelrotation=90,
     cbar.outline.set_visible(False)
 
     plt.savefig("plots/paper/pima/pima_3.pdf")
@@ -434,7 +527,9 @@ def teaser():
 
     fig, axi = plt.subplots(1, 1, figsize=(1, 1))
     plt.tight_layout()
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters)
+    plot_inst = NonLinearClock(
+        X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters
+    )
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -445,7 +540,7 @@ def teaser():
         move_circle=[0, 0],
         annotate=0.8,
         arrow_width=0.08,
-        plot_scatter=False
+        plot_scatter=False,
     )
 
     axi.set_yticks([])
@@ -456,7 +551,6 @@ def teaser():
     # axi[1].yaxis.set_label_coords(x=-0.01, y=0.5)
     # axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
 
-    
     names_dict = {}
     letters = ["a", "b", "c", "d", "e", "f", "g", "h", "i"]
     for a, l in zip(arrow_labels, letters):
@@ -483,7 +577,7 @@ def teaser():
     # axi[0].set_title("Diabetis", size=8)
     # axi[0].yaxis.set_label_coords(x=-0.01, y=0.5)
     # axi[0].xaxis.set_label_coords(x=0.5, y=-0.02)
-    axi.axis('off')
+    axi.axis("off")
     plt.subplots_adjust(
         left=0.01,
         right=0.99,
@@ -491,6 +585,7 @@ def teaser():
         bottom=0.01,  # wspace=0.21, hspace=0.33
     )
     plt.savefig("plots/paper/pima/pima_only_clock.pdf")
+
 
 # print_pima_all()
 test_between_all_3()

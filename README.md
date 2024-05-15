@@ -6,12 +6,12 @@
 
 # Feature Clock: High-Dimensional Effects in Two-Dimensional Plots
 
-| | |
-| --- | --- |
-| [Package](https://pypi.org/project/feature-clock/) | 
-| [Documentation](tutorials/docs.md) | 
-| [Tutorial](tutorials/iris.md) | 
-| [Examples](https://github.com/OlgaOvcharenko/feature_clock_visualization/tree/main/test) |
+| | 
+| --- | 
+| [Package](https://pypi.org/project/feature-clock/) 
+| [Documentation](tutorials/docs.md) 
+| [Tutorial](tutorials/iris.md) 
+| [Examples](https://github.com/OlgaOvcharenko/feature_clock_visualization/tree/main/test) 
 
 ## What is it?
 

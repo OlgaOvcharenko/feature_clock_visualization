@@ -9,10 +9,11 @@ from sklearn.cluster import KMeans
 from matplotlib.legend_handler import HandlerPatch
 import matplotlib.patches as mpatches
 
-def make_legend_arrow(legend, orig_handle,
-                      xdescent, ydescent,
-                      width, height, fontsize):
-    p = mpatches.FancyArrow(0, 0.5*height, width, 0, length_includes_head=True, head_width=0.75*height )
+
+def make_legend_arrow(legend, orig_handle, xdescent, ydescent, width, height, fontsize):
+    p = mpatches.FancyArrow(
+        0, 0.5 * height, width, 0, length_includes_head=True, head_width=0.75 * height
+    )
     return p
 
 
@@ -28,12 +29,15 @@ def setup_melody_data(method="tsne", drop_labels=True):
     X["Genre"], _ = pd.factorize(X["Genre"])
     X = X.dropna()
 
-    X.rename(columns={
-        'LyricalContent':'Lyrical Content', 
-        'ReleasedYear':'Year of Release', 
-        'NumInstruments':'Num of Instruments',
-        'SongLength':'Song Length'
-    }, inplace=True)
+    X.rename(
+        columns={
+            "LyricalContent": "Lyrical Content",
+            "ReleasedYear": "Year of Release",
+            "NumInstruments": "Num of Instruments",
+            "SongLength": "Song Length",
+        },
+        inplace=True,
+    )
 
     for col in X.columns:
         X[col] = (X[col] - X[col].mean()) / X[col].std()
@@ -57,16 +61,19 @@ def setup_melody_data(method="tsne", drop_labels=True):
 
     elif method == "phate":
         raise NotImplementedError()
-    
+
     # get clusters
     # clusters = HDBSCAN(min_samples=10, min_cluster_size=30).fit_predict(X)
     clusters = labels > 0.5
-    print(clusters) 
+    print(clusters)
 
     return X, obs, standard_embedding, labels, clusters
 
+
 def print_melody_all():
-    X_new, obs, standard_embedding, labels, clusters = setup_melody_data(method="umap", drop_labels=False)
+    X_new, obs, standard_embedding, labels, clusters = setup_melody_data(
+        method="umap", drop_labels=False
+    )
     dpi = 1000
     # fig_size = (2.375, 2.375)
     fig_size = (3.2325, 2.9)
@@ -104,10 +111,10 @@ def print_melody_all():
         bottom=0.05,  # wspace=0.21, hspace=0.33
     )
     cbar = fig.colorbar(im, ax=axi.ravel().tolist(), pad=0.1)
-    cbar.ax.tick_params(labelsize=7) 
+    cbar.ax.tick_params(labelsize=7)
     # for ax in axi:
     #     for a in ax:
-    #         a.axis('off') 
+    #         a.axis('off')
     plt.savefig("plots/paper/melody/plot_melodyAll_teaser.pdf")
 
 
@@ -116,7 +123,9 @@ def test_between_all():
 
     fig, ax = plt.subplots(1, figsize=(3.33, 2.8))
     plt.tight_layout()
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters)
+    plot_inst = NonLinearClock(
+        X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters
+    )
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -126,7 +135,7 @@ def test_between_all():
         scale_circle=1,
         move_circle=[0, 0],
         annotate=0.6,
-        arrow_width=1.5
+        arrow_width=1.5,
     )
     ax.legend(
         arrows,
@@ -242,14 +251,36 @@ def test_between_all_3():
     X_new, obs, standard_embedding, labels, clusters = setup_melody_data(method="umap")
 
     colors = [
-        'tab:pink', 'tab:green', 'tab:blue', 'tab:red', 'tab:orange',
-        'tab:purple', 'tab:cyan', 'tab:olive', 'tab:brown']
-    
-    fig_size = ((7.125-0.17), ((7.125-0.17)/1.8)/1.618)
+        "tab:pink",
+        "tab:green",
+        "tab:blue",
+        "tab:red",
+        "tab:orange",
+        "tab:purple",
+        "tab:cyan",
+        "tab:olive",
+        "tab:brown",
+    ]
 
-    fig = plt.figure(constrained_layout=True, figsize=fig_size, dpi=1000, facecolor="w",edgecolor="k",)
-    spec2 = gridspec.GridSpec(ncols=4, nrows=1, figure=fig, 
-                     left=0.02, right=1, top=0.77, bottom=0.06, wspace=0.15)
+    fig_size = ((7.125 - 0.17), ((7.125 - 0.17) / 1.8) / 1.618)
+
+    fig = plt.figure(
+        constrained_layout=True,
+        figsize=fig_size,
+        dpi=1000,
+        facecolor="w",
+        edgecolor="k",
+    )
+    spec2 = gridspec.GridSpec(
+        ncols=4,
+        nrows=1,
+        figure=fig,
+        left=0.02,
+        right=1,
+        top=0.77,
+        bottom=0.06,
+        wspace=0.15,
+    )
     ax1 = fig.add_subplot(spec2[0])
     ax2 = fig.add_subplot(spec2[1])
     ax3 = fig.add_subplot(spec2[2])
@@ -268,27 +299,70 @@ def test_between_all_3():
     scs = []
     for val, i in zip([-1, 0, 1], [0, 2, 8]):
         if val == -1:
-            sc = axi[0].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                            color="gray", alpha=0.1, s=30)
-            sc = axi[1].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                            color="gray", alpha=0.1, s=30)
-            axi[2].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                       color="gray", alpha=0.1, s=30)
-            
+            sc = axi[0].scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color="gray",
+                alpha=0.1,
+                s=30,
+            )
+            sc = axi[1].scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color="gray",
+                alpha=0.1,
+                s=30,
+            )
+            axi[2].scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color="gray",
+                alpha=0.1,
+                s=30,
+            )
+
         else:
-            sc = axi[0].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                                color=matplotlib.colormaps["Paired"].colors[i], alpha=0.3, s=30)
-            
-            sc = axi[1].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                                color=matplotlib.colormaps["Paired"].colors[i], alpha=0.3, s=30)
-            
-            axi[2].scatter(standard_embedding[clusters == val,0], standard_embedding[clusters == val,1], marker= '.', 
-                        color=matplotlib.colormaps["Paired"].colors[i], alpha=0.3, s=30)
-        
+            sc = axi[0].scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color=matplotlib.colormaps["Paired"].colors[i],
+                alpha=0.3,
+                s=30,
+            )
+
+            sc = axi[1].scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color=matplotlib.colormaps["Paired"].colors[i],
+                alpha=0.3,
+                s=30,
+            )
+
+            axi[2].scatter(
+                standard_embedding[clusters == val, 0],
+                standard_embedding[clusters == val, 1],
+                marker=".",
+                color=matplotlib.colormaps["Paired"].colors[i],
+                alpha=0.3,
+                s=30,
+            )
+
         scs.append(sc)
 
-
-    plot_inst = NonLinearClock(X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters, color_scheme=colors)
+    plot_inst = NonLinearClock(
+        X_new,
+        obs,
+        standard_embedding,
+        labels,
+        method="UMAP",
+        cluster_labels=clusters,
+        color_scheme=colors,
+    )
     # print(plot_inst.get_num_clusters())
 
     # sc0 = axi[0].scatter(
@@ -300,7 +374,7 @@ def test_between_all_3():
     #     alpha=0.05,
     #     s=30
     # )
-    
+
     arrows1, arrow_labels1 = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -311,7 +385,7 @@ def test_between_all_3():
         move_circle=[0, 0],
         annotate=1.5,
         arrow_width=0.2,
-        plot_scatter=False
+        plot_scatter=False,
     )
 
     axi[0].set_yticks([])
@@ -328,13 +402,16 @@ def test_between_all_3():
         biggest_arrow_method=True,
         univar_importance=False,
         ax=axi[1],
-        scale_circles=[1.5, 1.3,],
+        scale_circles=[
+            1.5,
+            1.3,
+        ],
         move_circles=[[1.5, 1], [-1, -1]],
-        annotates=[1, 1,1],
+        annotates=[1, 1, 1],
         arrow_width=0.15,
         clocks_labels=["Unpopular", "Popular"],
         plot_scatter=False,
-        plot_hulls=False
+        plot_hulls=False,
     )
 
     axi[1].set_yticks([])
@@ -350,9 +427,13 @@ def test_between_all_3():
         standartize_coef=True,
         univar_importance=True,
         ax=axi[2],
-        scale_circles=[2,],
+        scale_circles=[
+            2,
+        ],
         move_circles=[[0, 0]],
-        annotates=[1.0,],
+        annotates=[
+            1.0,
+        ],
         arrow_width=0.15,
         plot_scatter=False,
         plot_hulls=False,
@@ -367,24 +448,40 @@ def test_between_all_3():
     for i, val in enumerate(arrow_labels2):
         arrows_dict[val] = arrows2[i]
 
-    hatches = [plt.plot([],marker="", ls="")[0]] + list(arrows_dict.values())
+    hatches = [plt.plot([], marker="", ls="")[0]] + list(arrows_dict.values())
     labels = ["Factors:"] + list(arrows_dict.keys())
 
-    hatches = [plt.plot([],marker="", ls="")[0]]*2 + \
-        [list(arrows_dict.values())[0]] + [scs[1]] + \
-        [list(arrows_dict.values())[1]] + [scs[2]] + \
-        [list(arrows_dict.values())[2]] + [plt.plot([],marker="", ls="")[0]] + \
-        [list(arrows_dict.values())[3]] + [plt.plot([],marker="", ls="")[0]] + \
-        [list(arrows_dict.values())[4]] + [plt.plot([],marker="", ls="")[0]] + \
-        [list(arrows_dict.values())[5]] + [plt.plot([],marker="", ls="")[0]] 
+    hatches = (
+        [plt.plot([], marker="", ls="")[0]] * 2
+        + [list(arrows_dict.values())[0]]
+        + [scs[1]]
+        + [list(arrows_dict.values())[1]]
+        + [scs[2]]
+        + [list(arrows_dict.values())[2]]
+        + [plt.plot([], marker="", ls="")[0]]
+        + [list(arrows_dict.values())[3]]
+        + [plt.plot([], marker="", ls="")[0]]
+        + [list(arrows_dict.values())[4]]
+        + [plt.plot([], marker="", ls="")[0]]
+        + [list(arrows_dict.values())[5]]
+        + [plt.plot([], marker="", ls="")[0]]
+    )
 
-    labels = ["Factors:", "Labels:"] + \
-        [list(arrows_dict.keys())[0]] + ["Unpopular"] + \
-        [list(arrows_dict.keys())[1]] + ["Popular"] + \
-        [list(arrows_dict.keys())[2]] + [""] + \
-        [list(arrows_dict.keys())[3]] + [""] + \
-        [list(arrows_dict.keys())[4]] + [""] + \
-        [list(arrows_dict.keys())[5]] + [""] 
+    labels = (
+        ["Factors:", "Labels:"]
+        + [list(arrows_dict.keys())[0]]
+        + ["Unpopular"]
+        + [list(arrows_dict.keys())[1]]
+        + ["Popular"]
+        + [list(arrows_dict.keys())[2]]
+        + [""]
+        + [list(arrows_dict.keys())[3]]
+        + [""]
+        + [list(arrows_dict.keys())[4]]
+        + [""]
+        + [list(arrows_dict.keys())[5]]
+        + [""]
+    )
 
     leg = axi[2].legend(
         hatches,
@@ -397,12 +494,14 @@ def test_between_all_3():
         handlelength=1.5,
         columnspacing=0.8,
         handletextpad=0.5,
-        handler_map={mpatches.FancyArrow : HandlerPatch(patch_func=make_legend_arrow),},
+        handler_map={
+            mpatches.FancyArrow: HandlerPatch(patch_func=make_legend_arrow),
+        },
     )
     for vpack in leg._legend_handle_box.get_children()[:1]:
         for hpack in vpack.get_children():
             hpack.get_children()[0].set_width(0)
-    for lh in leg.legendHandles: 
+    for lh in leg.legendHandles:
         lh.set_alpha(1)
 
     axi[2].set_yticks([])
@@ -419,9 +518,13 @@ def test_between_all_3():
     # cbar.set_label('Song popularity', size=6, rotation=270, labelpad=8)
     # cbar.outline.set_visible(False)
 
-    X_new, obs, standard_embedding, labels, clusters = setup_melody_data(method="umap", drop_labels=False)
-    
-    for (i, o), axi in zip(enumerate(obs), [ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_32]):
+    X_new, obs, standard_embedding, labels, clusters = setup_melody_data(
+        method="umap", drop_labels=False
+    )
+
+    for (i, o), axi in zip(
+        enumerate(obs), [ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_32]
+    ):
         im = axi.scatter(
             standard_embedding[:, 0],
             standard_embedding[:, 1],
@@ -435,7 +538,7 @@ def test_between_all_3():
         axi.set_xticks([])
         # axi.yaxis.set_label_coords(x=-0.01, y=0.5)
         # axi.xaxis.set_label_coords(x=0.5, y=-0.02)
-        
+
         if o == "Song Length":
             o = "Song Len."
         elif o == "Num of Instruments":
@@ -452,9 +555,15 @@ def test_between_all_3():
     ax4_21.yaxis.set_label_coords(x=-0.01, y=0.5)
     ax4_32.xaxis.set_label_coords(x=0.55, y=-0.07)
 
-    cbar = fig.colorbar(im, ax=[ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_32], 
-                        pad=0.02, aspect=40)
-    cbar.ax.tick_params(labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1) #labelrotation=90,
+    cbar = fig.colorbar(
+        im,
+        ax=[ax4_11, ax4_12, ax4_13, ax4_21, ax4_22, ax4_23, ax4_32],
+        pad=0.02,
+        aspect=40,
+    )
+    cbar.ax.tick_params(
+        labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1
+    )  # labelrotation=90,
     cbar.outline.set_visible(False)
     plt.savefig("plots/paper/melody/melody_3.pdf")
 
