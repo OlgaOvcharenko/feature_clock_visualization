@@ -20,4 +20,4 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint --fail-under=5.0 -module-naming-style=any $(git ls-files '*.py')
+        pylint --fail-under=5.0 --module-naming-style=any $(git ls-files '*.py')
