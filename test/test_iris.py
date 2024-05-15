@@ -26,7 +26,7 @@ def read_data(path):
 
 
 def setup_iris_data(method="tsne", drop_labels=True):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/Iris.csv"
+    file_name = "feature_clock_visualization/data/Iris.csv"
     X = read_data(file_name)
     X.rename(
         columns={
@@ -151,97 +151,8 @@ def print_iris_all():
     # for ax in axi:
     #     for a in ax:
     #         a.axis('off')
-
     # axi[1][2].set_visible(False)
     plt.savefig("plots/paper/iris/plot_irisAll.pdf")
-
-
-def test_pca():
-    dpi = 1000
-    fig_size = (3.2325, 3.2325)
-    fig, axi = plt.subplots(
-        1,
-        1,
-        num=None,
-        figsize=fig_size,
-        dpi=dpi,
-        facecolor="w",
-        edgecolor="k",
-    )
-
-    df = pd.read_csv(
-        "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/Iris.csv"
-    )
-    labels = df.Species.map(
-        {"Iris-setosa": 0, "Iris-versicolor": 1, "Iris-virginica": 2}
-    ).to_numpy()
-
-    df.rename(
-        columns={
-            "SepalLengthCm": "SepalLength",
-            "SepalWidthCm": "SepalWidth",
-            "PetalLengthCm": "PetalLength",
-            "PetalWidthCm": "PetalWidth",
-        },
-        inplace=True,
-    )
-
-    df.drop(columns={"Id"}, inplace=True)
-    df = df.dropna()
-
-    X = df.drop("Species", axis=1).to_numpy()
-    pca = decomposition.PCA(n_components=2)
-    pcaT = pca.fit_transform(X)
-
-    C = pca.components_
-
-    sc = axi.scatter(pcaT[:, 0], pcaT[:, 1], marker=".", c=labels, cmap="tab10")
-
-    legend1 = axi.legend(
-        handles=sc.legend_elements()[0],
-        loc="upper center",
-        # bbox_to_anchor=(0.0, 0.0),
-        fontsize=7,
-        ncol=3,
-        markerscale=0.6,
-        handlelength=1.5,
-        columnspacing=0.8,
-        handletextpad=0.1,
-        labels=["Setosa", "Versicolor", "Virginica"],
-    )
-
-    axi.add_artist(legend1)
-
-    colors = ["tab:orange", "tab:green", "tab:red", "tab:gray"]
-    labels = ["SepalLength", "SepalWidth", "PetalLength", "PetalWidth"]
-
-    for i in range(0, 4):
-        axi.arrow(
-            -1.5, 0, C[0][i], C[1][i], color=colors[i], width=0.04, label=labels[i]
-        )
-
-    axi.set_yticks([])
-    axi.set_xticks([])
-    axi.set_ylabel("PCA2", size=8)
-    axi.set_xlabel("PCA1", size=8)
-    axi.yaxis.set_label_coords(x=-0.01, y=0.5)
-    axi.xaxis.set_label_coords(x=0.5, y=-0.02)
-
-    axi.legend(
-        loc="lower center",
-        bbox_to_anchor=(0.5, 1.0),
-        fontsize=7,
-        ncol=2,
-        markerscale=0.6,
-        handlelength=1.3,
-        columnspacing=0.8,
-        handletextpad=0.1,
-    )
-
-    plt.subplots_adjust(
-        left=0.05, right=0.99, top=0.86, bottom=0.05, wspace=0.21, hspace=0.33
-    )
-    plt.savefig("plots/paper/iris/plot_biplot.pdf")
 
 
 def test_between_all():
@@ -338,18 +249,6 @@ def test_between_all_3():
         annotate=1.0,
         arrow_width=0.08,
     )
-    # ax.legend(
-    #     arrows,
-    #     arrow_labels,
-    #     loc="lower center",
-    #     bbox_to_anchor=(0.5, 1.07),
-    #     fontsize=7,
-    #     ncol=4,
-    #     markerscale=0.6,
-    #     handlelength=1.5,
-    #     columnspacing=0.8,
-    #     handletextpad=0.5,
-    # )
 
     axi[0].set_yticks([])
     axi[0].set_xticks([])
@@ -379,18 +278,6 @@ def test_between_all_3():
         annotates=[1.0, 1.0, 0.8],
         arrow_width=0.08,
     )
-    # ax.legend(
-    #     arrows,
-    #     arrow_labels,
-    #     loc="lower center",
-    #     bbox_to_anchor=(0.5, 1.07),
-    #     fontsize=7,
-    #     ncol=4,
-    #     markerscale=0.6,
-    #     handlelength=1.5,
-    #     columnspacing=0.8,
-    #     handletextpad=0.5,
-    # )
 
     axi[1].set_yticks([])
     axi[1].set_xticks([])
@@ -398,17 +285,8 @@ def test_between_all_3():
     axi[1].set_xlabel("UMAP1", size=8)
     axi[1].set_title("Diabetis", size=8)
     axi[1].yaxis.set_label_coords(x=-0.01, y=0.5)
-    axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
-    # plt.subplots_adjust(
-    #     left=0.05,
-    #     right=0.95,
-    #     top=0.79,
-    #     bottom=0.05,  # wspace=0.21, hspace=0.33
-    # )
-    # plt.savefig("plots/paper/iris/iris_local.pdf")
 
     # Between
-    # fig, ax = plt.subplots(1, figsize=(3.33, 2.8))
     _, _ = plot_inst.plot_between_clock(
         standartize_data=True,
         standartize_coef=True,
@@ -448,70 +326,6 @@ def test_between_all_3():
     plt.savefig("plots/paper/iris/iris_3.pdf")
 
 
-def teaser():
-    X_new, obs, standard_embedding, labels, clusters = setup_iris_data(method="umap")
-
-    fig, axi = plt.subplots(1, 1, figsize=(2.375, 2.375))
-    plt.tight_layout()
-    plot_inst = NonLinearClock(
-        X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters
-    )
-    arrows, arrow_labels = plot_inst.plot_global_clock(
-        standartize_data=False,
-        standartize_coef=True,
-        biggest_arrow_method=True,
-        univar_importance=False,
-        ax=axi,
-        scale_circle=1.2,
-        move_circle=[0, 0],
-        annotate=1.0,
-        arrow_width=0.08,
-    )
-
-    axi.set_yticks([])
-    axi.set_xticks([])
-    # axi[1].set_ylabel("UMAP2", size=8)
-    # axi[1].set_xlabel("UMAP1", size=8)
-    # axi[1].set_title("Diabetis", size=8)
-    # axi[1].yaxis.set_label_coords(x=-0.01, y=0.5)
-    # axi[1].xaxis.set_label_coords(x=0.5, y=-0.02)
-    plt.subplots_adjust(
-        left=0.05,
-        right=0.95,
-        top=0.79,
-        bottom=0.05,  # wspace=0.21, hspace=0.33
-    )
-
-    # axi.legend(
-    #     arrows,
-    #     arrow_labels,
-    #     loc="lower center",
-    #     bbox_to_anchor=(-0.84, 1.12),
-    #     fontsize=7,
-    #     ncol=8,
-    #     markerscale=0.6,
-    #     handlelength=1.5,
-    #     columnspacing=0.8,
-    #     handletextpad=0.5,
-    # )
-
-    # axi[0].set_yticks([])
-    # axi[0].set_xticks([])
-    # axi[0].set_ylabel("UMAP2", size=8)
-    # axi[0].set_xlabel("UMAP1", size=8)
-    # axi[0].set_title("Diabetis", size=8)
-    # axi[0].yaxis.set_label_coords(x=-0.01, y=0.5)
-    # axi[0].xaxis.set_label_coords(x=0.5, y=-0.02)
-    axi.axis("off")
-    plt.subplots_adjust(
-        left=0.0,
-        right=0.95,
-        top=0.95,
-        bottom=0.1,  # wspace=0.21, hspace=0.33
-    )
-    plt.savefig("plots/paper/iris/iris_general_clock.pdf")
-
-
 def test_pca_all_3():
     dpi = 1000
     fig_size = ((7.125 - 0.17) / 2, ((7.125 - 0.17) / 2.8) / 1.618)
@@ -535,9 +349,7 @@ def test_pca_all_3():
     ax23 = fig.add_subplot(spec23[1, 0])
     ax24 = fig.add_subplot(spec23[1, 1])
 
-    df = pd.read_csv(
-        "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/Iris.csv"
-    )
+    df = pd.read_csv("feature_clock_visualization/data/Iris.csv")
     # df = df.groupby('Species', group_keys=False).apply(lambda x: x.sample(2000, random_state=42, replace=True))
     labels = df.Species.map(
         {"Iris-setosa": 0, "Iris-versicolor": 1, "Iris-virginica": 2}
@@ -628,20 +440,6 @@ def test_pca_all_3():
         axi.yaxis.set_label_coords(x=-0.01, y=0.5)
         axi.xaxis.set_label_coords(x=0.5, y=-0.02)
         axi.set_title(o[0:3] + o[5:8], size=5, pad=-14)
-
-        # # axi.set_ylim(np.min(standard_embedding[:,0]), np.max(standard_embedding[:,0]))
-        # # axi.set_aspect('equal')
-
-        # xl, xu = -31.47527813911438, 17.232176065444946
-        # yl, yu = -13.430956748127937, 12.969043251872062
-
-        # ym = (yl - yu) /2
-        # xm = (xl - xu) / 2
-
-        # x_delta_from_mid = math.fabs(xm -xu)
-
-        # axi.set_xlim((-31.47527813911438, 17.232176065444946))
-        # axi.set_ylim((- x_delta_from_mid,  x_delta_from_mid))
 
     ax21.set_ylabel("t-SNE2", size=8)
     ax23.set_xlabel("t-SNE1", size=8)
@@ -756,12 +554,5 @@ def test_pca_all_3():
 
 
 # print_iris_all()
-# print_iris_pca()
-# test_pca()
-# test_between_all_3()
-# teaser()
-
-# test_between_all()
-
-
+test_between_all()
 test_pca_all_3()

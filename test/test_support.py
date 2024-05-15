@@ -14,10 +14,23 @@ import matplotlib.patches as mpatches
 from sklearn import manifold, preprocessing
 
 
-def make_legend_arrow(legend, orig_handle, xdescent, ydescent, width, height, fontsize):
+def make_legend_arrow(
+        legend,
+        orig_handle,
+        xdescent,
+        ydescent,
+        width,
+        height,
+        fontsize):
     p = mpatches.FancyArrow(
-        0, 0.5 * height, width, 0, length_includes_head=True, head_width=0.75 * height
-    )
+        0,
+        0.5 *
+        height,
+        width,
+        0,
+        length_includes_head=True,
+        head_width=0.75 *
+        height)
     return p
 
 
@@ -26,11 +39,18 @@ def read_data(path):
 
 
 def setup_support_data(method="tsne", drop_labels=True):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/support2.csv"
+    file_name = "feature_clock_visualization/data/support2.csv"
     X = read_data(file_name)
     X.drop(columns=["id"], inplace=True)
 
-    X.drop(columns=["death", "sfdm2", "d.time", "surv2m", "surv6m"], inplace=True)
+    X.drop(
+        columns=[
+            "death",
+            "sfdm2",
+            "d.time",
+            "surv2m",
+            "surv6m"],
+        inplace=True)
 
     for c in X.columns:
         if c in ["sex", "dzgroup", "dzclass", "income", "race", "ca", "dnr"]:
@@ -97,8 +117,10 @@ def setup_support_data(method="tsne", drop_labels=True):
 
     elif method == "tsne":
         tsne = manifold.TSNE(
-            n_components=2, random_state=42, perplexity=50, learning_rate="auto"
-        )
+            n_components=2,
+            random_state=42,
+            perplexity=50,
+            learning_rate="auto")
         standard_embedding = tsne.fit_transform(X)
 
     elif method == "phate":
@@ -297,7 +319,8 @@ def test_between_all_3_5():
         "chartreuse",
     ]
 
-    X_new, obs, standard_embedding, labels, clusters = setup_support_data(method="tsne")
+    X_new, obs, standard_embedding, labels, clusters = setup_support_data(
+        method="tsne")
 
     i = 0
     for k in range(len(obs)):
@@ -700,7 +723,8 @@ def test_between_all_3():
         "navy",
     ]
 
-    X_new, obs, standard_embedding, labels, clusters = setup_support_data(method="tsne")
+    X_new, obs, standard_embedding, labels, clusters = setup_support_data(
+        method="tsne")
 
     i = 0
     for k in range(len(obs)):
@@ -741,8 +765,13 @@ def test_between_all_3():
         edgecolor="k",
     )
     spec2 = gridspec.GridSpec(
-        ncols=4, nrows=1, figure=fig, left=0.02, right=0.99, top=0.67, bottom=0.06
-    )
+        ncols=4,
+        nrows=1,
+        figure=fig,
+        left=0.02,
+        right=0.99,
+        top=0.67,
+        bottom=0.06)
     ax1 = fig.add_subplot(spec2[0])
     ax3 = fig.add_subplot(spec2[2])
     ax4 = fig.add_subplot(spec2[3])
@@ -929,7 +958,10 @@ def test_between_all_3():
         5 * standard_embedding[:, 0],
         1 * standard_embedding[:, 1],
     )
-    for (i, o), axi_i in zip(enumerate(arrow_labels), [ax21, ax22, ax23, ax24]):
+    for (
+        i, o), axi_i in zip(
+        enumerate(arrow_labels), [
+            ax21, ax22, ax23, ax24]):
         if i == 0:
             im = axi_i.scatter(
                 standard_embedding[:, 0],
@@ -1157,7 +1189,8 @@ def test_between_all_3_5():
         "chartreuse",
     ]
 
-    X_new, obs, standard_embedding, labels, clusters = setup_support_data(method="tsne")
+    X_new, obs, standard_embedding, labels, clusters = setup_support_data(
+        method="tsne")
 
     i = 0
     for k in range(len(obs)):
@@ -1562,7 +1595,8 @@ def test_local_hdbscan():
         "ADL family": "navy",
     }
 
-    X_new, obs, standard_embedding, labels, clusters = setup_support_data(method="tsne")
+    X_new, obs, standard_embedding, labels, clusters = setup_support_data(
+        method="tsne")
 
     i = 0
     for k in range(len(obs)):
@@ -1603,8 +1637,13 @@ def test_local_hdbscan():
         edgecolor="k",
     )
     spec2 = gridspec.GridSpec(
-        ncols=3, nrows=1, figure=fig, left=0.04, right=0.99, top=0.63, bottom=0.06
-    )
+        ncols=3,
+        nrows=1,
+        figure=fig,
+        left=0.04,
+        right=0.99,
+        top=0.63,
+        bottom=0.06)
     ax1 = fig.add_subplot(spec2[0])
     ax2 = fig.add_subplot(spec2[1])
 

@@ -22,7 +22,7 @@ def read_data(path):
 
 
 def setup_melody_data(method="tsne", drop_labels=True):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/melody.csv"
+    file_name = "feature_clock_visualization/data/melody.csv"
     X = read_data(file_name)
     # X.rename(columns={"DiabetesPedigreeFunction": "Pedigree"}, inplace=True)
     # X.drop(columns=["Genre"], inplace=True)
@@ -178,18 +178,6 @@ def test_between_all():
         annotates=[0.5, 0.5, 0.5],
         arrow_width=0.05,
     )
-    # ax.legend(
-    #     arrows,
-    #     arrow_labels,
-    #     loc="lower center",
-    #     bbox_to_anchor=(0.5, 1.07),
-    #     fontsize=7,
-    #     ncol=4,
-    #     markerscale=0.6,
-    #     handlelength=1.5,
-    #     columnspacing=0.8,
-    #     handletextpad=0.5,
-    # )
 
     ax.set_yticks([])
     ax.set_xticks([])
@@ -363,17 +351,6 @@ def test_between_all_3():
         cluster_labels=clusters,
         color_scheme=colors,
     )
-    # print(plot_inst.get_num_clusters())
-
-    # sc0 = axi[0].scatter(
-    #     standard_embedding[:, 0],
-    #     standard_embedding[:, 1],
-    #     marker=".",
-    #     c=labels,
-    #     cmap=cm.coolwarm,
-    #     alpha=0.05,
-    #     s=30
-    # )
 
     arrows1, arrow_labels1 = plot_inst.plot_global_clock(
         standartize_data=False,
@@ -570,4 +547,3 @@ def test_between_all_3():
 
 # print_melody_all()
 test_between_all_3()
-# teaser()

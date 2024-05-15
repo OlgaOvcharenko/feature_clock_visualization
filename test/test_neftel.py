@@ -10,10 +10,23 @@ import matplotlib.patches as mpatches
 from hdbscan import HDBSCAN
 
 
-def make_legend_arrow(legend, orig_handle, xdescent, ydescent, width, height, fontsize):
+def make_legend_arrow(
+        legend,
+        orig_handle,
+        xdescent,
+        ydescent,
+        width,
+        height,
+        fontsize):
     p = mpatches.FancyArrow(
-        0, 0.5 * height, width, 0, length_includes_head=True, head_width=0.75 * height
-    )
+        0,
+        0.5 *
+        height,
+        width,
+        0,
+        length_includes_head=True,
+        head_width=0.75 *
+        height)
     return p
 
 
@@ -22,7 +35,7 @@ def read_data(path):
 
 
 def setup_neftel_data(method="tsne"):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/neftel_malignant.h5ad"
+    file_name = "feature_clock_visualization/data/neftel_malignant.h5ad"
     X = read_data(file_name)
 
     obs = [
@@ -39,7 +52,8 @@ def setup_neftel_data(method="tsne"):
 
     new_data = X.obs[obs].dropna()
     for col in new_data.columns:
-        new_data[col] = (new_data[col] - new_data[col].mean()) / new_data[col].std()
+        new_data[col] = (new_data[col] - new_data[col].mean()
+                         ) / new_data[col].std()
 
     X_new = sp.AnnData(new_data)
 
@@ -72,7 +86,9 @@ def setup_neftel_data(method="tsne"):
     res_vect = np.stack((ac, opc, mes_max, npc_max))
     res_labels = np.max(res_vect, axis=0)
 
-    clusters = HDBSCAN(min_samples=10, min_cluster_size=30).fit_predict(new_data)
+    clusters = HDBSCAN(
+        min_samples=10,
+        min_cluster_size=30).fit_predict(new_data)
 
     return new_data, obs, standard_embedding, res_labels, clusters
 
@@ -422,7 +438,8 @@ def test_experiment1():
 
 
 def test_experiment2():
-    X_new, obs, standard_embedding, labels, _ = setup_neftel_data(method="umap")
+    X_new, obs, standard_embedding, labels, _ = setup_neftel_data(
+        method="umap")
 
     fig, ax = plt.subplots(1, figsize=(3.4775 / 2, 3.4775 / 2))
     plt.tight_layout()
@@ -515,7 +532,8 @@ def test_experiment2():
 
 
 def test_all_4_in_row():
-    X_new, obs, standard_embedding, labels, _ = setup_neftel_data(method="umap")
+    X_new, obs, standard_embedding, labels, _ = setup_neftel_data(
+        method="umap")
 
     # fig, axi = plt.subplots(1, 3, figsize=(7.125-0.66, 2.375))
     # plt.tight_layout()
@@ -544,7 +562,8 @@ def test_all_4_in_row():
     ax2 = fig.add_subplot(spec2[1])
     ax3 = fig.add_subplot(spec2[2])
 
-    spec23 = gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=spec2[3], wspace=0.05)
+    spec23 = gridspec.GridSpecFromSubplotSpec(
+        3, 3, subplot_spec=spec2[3], wspace=0.05)
     ax4_11 = fig.add_subplot(spec23[0, 0])
     ax4_12 = fig.add_subplot(spec23[0, 1])
     ax4_13 = fig.add_subplot(spec23[0, 2])
@@ -692,10 +711,8 @@ def test_all_4_in_row():
 
 
 def test_all_4_in_row_hdbscan():
-    X_new, obs, standard_embedding, labels, clusters = setup_neftel_data(method="umap")
-
-    # fig, axi = plt.subplots(1, 3, figsize=(7.125-0.66, 2.375))
-    # plt.tight_layout()
+    X_new, obs, standard_embedding, labels, clusters = setup_neftel_data(
+        method="umap")
 
     dpi = 1000
     fig_size = ((7.125 - 0.17), ((7.125 - 0.17) / 1.8) / 1.618)
@@ -721,7 +738,8 @@ def test_all_4_in_row_hdbscan():
     ax2 = fig.add_subplot(spec2[1])
     ax3 = fig.add_subplot(spec2[2])
 
-    spec23 = gridspec.GridSpecFromSubplotSpec(3, 3, subplot_spec=spec2[3], wspace=0.05)
+    spec23 = gridspec.GridSpecFromSubplotSpec(
+        3, 3, subplot_spec=spec2[3], wspace=0.05)
     ax4_11 = fig.add_subplot(spec23[0, 0])
     ax4_12 = fig.add_subplot(spec23[0, 1])
     ax4_13 = fig.add_subplot(spec23[0, 2])
@@ -792,8 +810,12 @@ def test_all_4_in_row_hdbscan():
     print(clusters)
 
     plot_inst = NonLinearClock(
-        X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters
-    )
+        X_new,
+        obs,
+        standard_embedding,
+        labels,
+        method="UMAP",
+        cluster_labels=clusters)
     arrows1, arrow_labels1 = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -935,7 +957,8 @@ def test_all_4_in_row_hdbscan():
     ax3.yaxis.set_label_coords(x=-0.01, y=0.5)
     ax3.xaxis.set_label_coords(x=0.5, y=-0.02)
 
-    X_new, obs, standard_embedding, labels, clusters = setup_neftel_data(method="umap")
+    X_new, obs, standard_embedding, labels, clusters = setup_neftel_data(
+        method="umap")
 
     for (i, o), axi in zip(
         enumerate(obs),
@@ -980,6 +1003,5 @@ def test_all_4_in_row_hdbscan():
 
 
 # test_between_all()
-test_all_4_in_row_hdbscan()
 # print_neftel_all()
-# test_experiment2()
+test_all_4_in_row_hdbscan()

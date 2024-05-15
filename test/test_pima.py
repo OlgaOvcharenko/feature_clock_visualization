@@ -10,10 +10,23 @@ from matplotlib.legend_handler import HandlerPatch
 import matplotlib.patches as mpatches
 
 
-def make_legend_arrow(legend, orig_handle, xdescent, ydescent, width, height, fontsize):
+def make_legend_arrow(
+        legend,
+        orig_handle,
+        xdescent,
+        ydescent,
+        width,
+        height,
+        fontsize):
     p = mpatches.FancyArrow(
-        0, 0.5 * height, width, 0, length_includes_head=True, head_width=0.75 * height
-    )
+        0,
+        0.5 *
+        height,
+        width,
+        0,
+        length_includes_head=True,
+        head_width=0.75 *
+        height)
     return p
 
 
@@ -22,7 +35,7 @@ def read_data(path):
 
 
 def setup_pima_data(method="tsne", drop_labels=True):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/diabetes.csv"
+    file_name = "feature_clock_visualization/data/diabetes.csv"
     X = read_data(file_name)
     X.rename(columns={"DiabetesPedigreeFunction": "Pedigree"}, inplace=True)
     X = X.dropna()
@@ -117,13 +130,18 @@ def print_pima_all():
 
 
 def test_between_all():
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap")
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
+        method="umap")
 
     fig, ax = plt.subplots(1, figsize=(3.33, 2.8))
     plt.tight_layout()
     plot_inst = NonLinearClock(
-        X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters
-    )
+        X_new,
+        obs,
+        standard_embedding,
+        labels,
+        method="UMAP",
+        cluster_labels=clusters)
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,
@@ -246,7 +264,8 @@ def test_between_all():
 
 
 def test_between_all_3():
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap")
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
+        method="umap")
     colors = [
         "tab:pink",
         "tab:green",
@@ -523,13 +542,18 @@ def test_between_all_3():
 
 
 def teaser():
-    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(method="umap")
+    X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
+        method="umap")
 
     fig, axi = plt.subplots(1, 1, figsize=(1, 1))
     plt.tight_layout()
     plot_inst = NonLinearClock(
-        X_new, obs, standard_embedding, labels, method="UMAP", cluster_labels=clusters
-    )
+        X_new,
+        obs,
+        standard_embedding,
+        labels,
+        method="UMAP",
+        cluster_labels=clusters)
     arrows, arrow_labels = plot_inst.plot_global_clock(
         standartize_data=False,
         standartize_coef=True,

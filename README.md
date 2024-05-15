@@ -13,6 +13,8 @@
 | [Tutorial](tutorials/iris.md) 
 | [Examples](https://github.com/OlgaOvcharenko/feature_clock_visualization/tree/main/test) 
 
+[![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
+
 ## What is it?
 
 It is difficult for humans to perceive high-dimensional data. Therefore, high-dimensional data is projected into lower dimensions to visualize it. 

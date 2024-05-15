@@ -21,7 +21,7 @@ def read_data(path):
 
 
 def setup_pima_data(method="tsne", drop_labels=True, file: str = ""):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/diabetes.csv"
+    file_name = "feature_clock_visualization/data/diabetes.csv"
     X = read_data(file_name)
     X.rename(columns={"DiabetesPedigreeFunction": "Pedigree"}, inplace=True)
     X = X.dropna()
@@ -120,7 +120,7 @@ def print_pima_all(file, dataset_i):
 def test_between_all_2():
     X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
         method="",
-        file="/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/emb_6.csv",
+        file="feature_clock_visualization/data/emb_6.csv",
     )
 
     fig_size = ((7.125 - 0.17) / 2, ((7.125 - 0.17) / 2.5) / 1.618)
@@ -257,7 +257,7 @@ def test_between_all_2():
     X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
         method="",
         drop_labels=False,
-        file="/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/emb_6.csv",
+        file="feature_clock_visualization/data/emb_6.csv",
     )
     standard_embedding[:, 0], standard_embedding[:, 1] = (
         1 * standard_embedding[:, 0],
@@ -303,7 +303,7 @@ def test_between_all_2():
 def test_between_all_new():
     X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
         method="",
-        file="/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/emb_1_e-5.csv",
+        file="feature_clock_visualization/data/emb_1_e-5.csv",
     )
 
     fig_size = ((7.125 - 0.17) / 2, ((7.125 - 0.17) / 2.5) / 1.618)
@@ -439,7 +439,7 @@ def test_between_all_new():
     X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
         method="",
         drop_labels=False,
-        file="/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/emb_1_e-5.csv",
+        file="feature_clock_visualization/data/emb_1_e-5.csv",
     )
     standard_embedding[:, 0], standard_embedding[:, 1] = (
         1 * standard_embedding[:, 0],

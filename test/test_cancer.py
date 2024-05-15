@@ -1,14 +1,10 @@
 from matplotlib import pyplot as plt
-import numpy as np
 import pandas as pd
-from sklearn.discriminant_analysis import StandardScaler
 from src.feature_clock.plot import NonLinearClock
 import umap
-from sklearn.cluster import HDBSCAN
 from sklearn.cluster import KMeans
 from matplotlib.legend_handler import HandlerPatch
 import matplotlib.patches as mpatches
-from sklearn import preprocessing
 
 
 def make_legend_arrow(legend, orig_handle, xdescent, ydescent, width, height, fontsize):
@@ -507,9 +503,5 @@ def test_between_all_3():
     plt.savefig("plots/paper/cancer/cancer_3.pdf")
 
 
-# print_cancer_all()
+print_cancer_all()
 test_between_all_3()
-# teaser()
-# import matplotlib.colors as mcolors
-# print(list(mcolors.TABLEAU_COLORS.keys()))
-# print(list(mcolors.CSS4_COLORS.keys()))

@@ -21,7 +21,7 @@ def read_data(path):
 
 
 def setup_pima_data(method="tsne", drop_labels=True, file: str = ""):
-    file_name = "/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/diabetes.csv"
+    file_name = "feature_clock_visualization/data/diabetes.csv"
     X = read_data(file_name)
     X.rename(columns={"DiabetesPedigreeFunction": "Pedigree"}, inplace=True)
     X = X.dropna()
@@ -107,7 +107,7 @@ def print_pima_all(file, dataset_i):
 def test_between_all_1():
     X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
         method="umap",
-        file="/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_1.csv",
+        file="feature_clock_visualization/data/latent_space_1.csv",
     )
 
     fig, ax = plt.subplots(1, figsize=(3.2325, 3.2325))  # (2.375, 2.375)
@@ -212,7 +212,7 @@ def test_between_all_1():
 def test_between_all_2():
     X_new, obs, standard_embedding, labels, clusters = setup_pima_data(
         method="umap",
-        file="/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_2.csv",
+        file="feature_clock_visualization/data/latent_space_2.csv",
     )
 
     fig, ax = plt.subplots(1, figsize=(3.2325, 3.2325))  # (2.375, 2.375)
@@ -311,7 +311,7 @@ def test_between_all_2():
     plt.savefig("plots/paper/pima_network/pima_global_nn_2.pdf")
 
 
-# print_pima_all("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_1.csv", 1)
+# print_pima_all("feature_clock_visualization/data/latent_space_1.csv", 1)
 test_between_all_1()
-# print_pima_all("/Users/olga_ovcharenko/Documents/ETH/FS23/ResearchProject/feature_clock_visualization/data/latent_space_2.csv", 2)
+# print_pima_all("feature_clock_visualization/data/latent_space_2.csv", 2)
 test_between_all_2()
