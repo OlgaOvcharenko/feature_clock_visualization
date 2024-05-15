@@ -1,6 +1,6 @@
 <picture align="center">
-  <source media="(prefers-color-scheme: dark)" srcset="../examples/support/support_3.jpg">
-  <img alt="Feature Clock" src="../examples/support/support_3.jpg" width="80%" height="80%">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/OlgaOvcharenko/feature_clock_visualization/main/examples/support/support_3.jpg">
+  <img alt="Feature Clock" src="https://raw.githubusercontent.com/OlgaOvcharenko/feature_clock_visualization/main/examples/support/support_3.jpg" width="80%" height="80%">
 </picture>
 
 -----------------

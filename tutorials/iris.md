@@ -1,6 +1,6 @@
 <picture align="center">
-  <source media="(prefers-color-scheme: dark)" srcset="../examples/iris/iris.png">
-  <img alt="Feature Clock" src="../examples/iris/iris.png" width="60%" height="60%">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/OlgaOvcharenko/feature_clock_visualization/main/examples/iris/iris.png">
+  <img alt="Feature Clock" src="https://raw.githubusercontent.com/OlgaOvcharenko/feature_clock_visualization/main/examples/iris/iris.png" width="60%" height="60%">
 </picture>
 
 -----------------

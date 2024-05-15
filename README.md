@@ -1,17 +1,15 @@
 <picture align="center">
-  <source media="(prefers-color-scheme: dark)" srcset="examples/pima/pima_only_clock.png">
-  <img style="float: right;" alt="Feature Clock" src="examples/pima/pima_only_clock.png" width="200" 
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/OlgaOvcharenko/feature_clock_visualization/main/examples/pima/pima_only_clock.png">
+  <img style="float: right;" alt="Feature Clock" src="https://raw.githubusercontent.com/OlgaOvcharenko/feature_clock_visualization/main/examples/pima/pima_only_clock.png" width="200" 
      height="200">
 </picture>
 
 # Feature Clock: High-Dimensional Effects in Two-Dimensional Plots
 
-| | 
-| --- | 
-| [Package](https://pypi.org/project/feature-clock/) 
-| [Documentation](tutorials/docs.md) 
-| [Tutorial](tutorials/iris.md) 
-| [Examples](https://github.com/OlgaOvcharenko/feature_clock_visualization/tree/main/test) 
+- [Package](https://pypi.org/project/feature-clock/) 
+- [Documentation](tutorials/docs.md) 
+- [Tutorial](tutorials/iris.md) 
+- [Examples](https://github.com/OlgaOvcharenko/feature_clock_visualization/tree/main/test) 
 
 [![linting: pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
 
