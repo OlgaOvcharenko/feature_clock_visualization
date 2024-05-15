@@ -1,15 +1,15 @@
 <picture align="center">
   <source media="(prefers-color-scheme: dark)" srcset="examples/pima/pima_only_clock.png">
-  <img alt="Feature Clock" src="examples/pima/pima_only_clock.png">
+  <img style="float: right;" alt="Feature Clock" src="examples/pima/pima_only_clock.png" width="200" 
+     height="200">
 </picture>
-
------------------
 
 # Feature Clock: High-Dimensional Effects in Two-Dimensional Plots
 
 | | |
 | --- | --- |
 | [Package](https://pypi.org/project/feature-clock/) | 
+| [Documentation](tutorials/docs.md) | 
 | [Tutorial](tutorials/iris.md) | 
 | [Examples](https://github.com/OlgaOvcharenko/feature_clock_visualization/tree/main/test) |
 
@@ -29,10 +29,10 @@ Our solution, **Feature Clock**, provides novel visualizations that eliminate th
 - [Documentation](#documentation)
 
 ## Main Features
-**Feature Clock** allows creation of three types of static visualizations, high- lighting the contributions of the high-dimensional features to linear directions of the two-dimensional spaces produced by nonlinear dimensionality reduction: 
+**Feature Clock** allows creation of three types of static visualizations, highlighting the contributions of the high-dimensional features to linear directions of the two-dimensional spaces produced by nonlinear dimensionality reduction: 
 
-- ***Global* Feature Clock** indicating the direction of features’ contributions in low-dimensional space for the whole dataset
-- ***Local* Feature Clock** explaining features’ impact within selected points,
+- ***Global* Feature Clock** indicating the direction of features’ contributions in low-dimensional space for the whole dataset.
+- ***Local* Feature Clock** explaining features’ impact within selected points.
 - ***Inter-group* Feature Clock** visualizing contributions between groups of points. 
 
 ## Where to get it
@@ -64,7 +64,7 @@ pip install -r requirements.txt
 [Apache License Version 2.0](LICENSE)
 
 ## Documentation
-The documentation can be foung in [tutorial]().
+There is [documentation](tutorials/docs.md), and a simple [tutorial](tutorials/iris.md).
 
 
 <hr>

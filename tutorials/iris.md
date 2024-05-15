@@ -1,7 +1,9 @@
 <picture align="center">
-  <source media="(prefers-color-scheme: dark)" srcset="examples/iris/iris.png">
-  <img alt="Feature Clock" src="examples/iris/iris.png">
+  <source media="(prefers-color-scheme: dark)" srcset="../examples/iris/iris.png">
+  <img alt="Feature Clock" src="../examples/iris/iris.png" width="60%" height="60%">
 </picture>
+
+-----------------
 
 ## A ***Global* Feature Clock** for the Iris Dataset 
 
@@ -88,4 +90,3 @@ def make_clock(file_name, fig_size, dpi):
     plt.savefig("iris_clock.pdf")
 
 ```
-
