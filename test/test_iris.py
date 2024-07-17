@@ -26,7 +26,7 @@ def read_data(path):
 
 
 def setup_iris_data(method="tsne", drop_labels=True):
-    file_name = "feature_clock_visualization/data/Iris.csv"
+    file_name = "data/Iris.csv"
     X = read_data(file_name)
     X.rename(
         columns={
@@ -343,13 +343,13 @@ def test_pca_all_3():
     ax1 = fig.add_subplot(spec2[0])
     ax3 = fig.add_subplot(spec2[2])
 
-    spec23 = gridspec.GridSpecFromSubplotSpec(2, 2, subplot_spec=spec2[1], wspace=0.05)
+    spec23 = gridspec.GridSpecFromSubplotSpec(2, 2, subplot_spec=spec2[1], wspace=0.08)
     ax21 = fig.add_subplot(spec23[0, 0])
     ax22 = fig.add_subplot(spec23[0, 1])
     ax23 = fig.add_subplot(spec23[1, 0])
     ax24 = fig.add_subplot(spec23[1, 1])
 
-    df = pd.read_csv("feature_clock_visualization/data/Iris.csv")
+    df = pd.read_csv("data/Iris.csv")
     # df = df.groupby('Species', group_keys=False).apply(lambda x: x.sample(2000, random_state=42, replace=True))
     labels = df.Species.map(
         {"Iris-setosa": 0, "Iris-versicolor": 1, "Iris-virginica": 2}
@@ -393,11 +393,11 @@ def test_pca_all_3():
     )
 
     colors = ["tab:cyan", "tab:red", "tab:blue", "tab:pink"]
-    labels = ["SepalLen", "SepalWid", "PetalLen", "PetalWid"]
+    labels = ["SepalLength", "SepalWidth", "PetalLenth", "PetalWidth"]
 
     arrows_dict = {}
     for i in range(0, 4):
-        arrows_dict[labels[i][0:8]] = ax1.arrow(
+        arrows_dict[labels[i]] = ax1.arrow(
             -1,
             0.5,
             (C[0][i]) * 2,
@@ -439,7 +439,8 @@ def test_pca_all_3():
         axi.set_xticks([])
         axi.yaxis.set_label_coords(x=-0.01, y=0.5)
         axi.xaxis.set_label_coords(x=0.5, y=-0.02)
-        axi.set_title(o[0:3] + o[5:8], size=5, pad=-14)
+        # axi.set_title(o[0:3] + o[5:8], size=5, pad=-14)
+        axi.set_title(o, size=4.5, pad=-14)
 
     ax21.set_ylabel("t-SNE2", size=8)
     ax23.set_xlabel("t-SNE1", size=8)
@@ -533,12 +534,12 @@ def test_pca_all_3():
         hatches,
         labels,
         loc="lower center",
-        bbox_to_anchor=(0.25, 1.1),
+        bbox_to_anchor=(0.04, 1.1),
         fontsize=7,
         ncol=5,
-        markerscale=0.6,
+        markerscale=0.4,
         handlelength=1.0,
-        columnspacing=0.8,
+        columnspacing=0.6,
         handletextpad=0.3,
         handler_map={
             mpatches.FancyArrow: HandlerPatch(patch_func=make_legend_arrow),
@@ -554,5 +555,5 @@ def test_pca_all_3():
 
 
 # print_iris_all()
-test_between_all()
+# test_between_all()
 test_pca_all_3()
