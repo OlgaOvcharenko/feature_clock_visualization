@@ -39,7 +39,7 @@ def read_data(path):
 
 
 def setup_support_data(method="tsne", drop_labels=True):
-    file_name = "feature_clock_visualization/data/support2.csv"
+    file_name = "data/support2.csv"
     X = read_data(file_name)
     X.drop(columns=["id"], inplace=True)
 
@@ -769,21 +769,30 @@ def test_between_all_3():
         nrows=1,
         figure=fig,
         left=0.02,
-        right=0.99,
-        top=0.67,
-        bottom=0.06)
+        right=1.0,
+        top=0.72,
+        bottom=0.06,
+        wspace=0.11)
     ax1 = fig.add_subplot(spec2[0])
-    ax3 = fig.add_subplot(spec2[2])
-    ax4 = fig.add_subplot(spec2[3])
+    ax3 = fig.add_subplot(spec2[1])
+    ax4 = fig.add_subplot(spec2[2])
     axi = [ax1, ax3, ax4]
 
     spec23 = gridspec.GridSpecFromSubplotSpec(
-        2, 2, subplot_spec=spec2[1], hspace=0.18, wspace=0.05
+        3, 4, subplot_spec=spec2[3], hspace=0.18, wspace=0.05
     )  # wspace=-0.5, hspace=-0.9)
     ax21 = fig.add_subplot(spec23[0, 0])
     ax22 = fig.add_subplot(spec23[0, 1])
-    ax23 = fig.add_subplot(spec23[1, 0])
-    ax24 = fig.add_subplot(spec23[1, 1])
+    ax23 = fig.add_subplot(spec23[0, 2])
+    ax24 = fig.add_subplot(spec23[0, 3])
+    ax25 = fig.add_subplot(spec23[1, 0])
+    ax26 = fig.add_subplot(spec23[1, 1])
+    ax27 = fig.add_subplot(spec23[1, 2])
+    ax28 = fig.add_subplot(spec23[1, 3])
+    ax29 = fig.add_subplot(spec23[2, 0])
+    ax210 = fig.add_subplot(spec23[2, 1])
+    ax211 = fig.add_subplot(spec23[2, 2])
+    ax212 = fig.add_subplot(spec23[2, 3])
 
     scs = []
     for val, i in zip([0, 1], [2, 8]):
@@ -899,34 +908,43 @@ def test_between_all_3():
     print((list(arrows_dict.keys())))
 
     hatches = (
-        [plt.plot([], marker="", ls="")[0]] * 4
-        + list(arrows_dict.values())[0:3]
+        [plt.plot([], marker="", ls="")[0]] * 3
+        + list(arrows_dict.values())[0:2]
         + [scs[0]]
-        + list(arrows_dict.values())[3:6]
+        + list(arrows_dict.values())[2:4]
         + [scs[1]]
-        + list(arrows_dict.values())[6:9]
+        + list(arrows_dict.values())[4:6]
         + [plt.plot([], marker="", ls="")[0]]
-        + list(arrows_dict.values())[9:12]
+        + list(arrows_dict.values())[6:8]
         + [plt.plot([], marker="", ls="")[0]]
+        + list(arrows_dict.values())[8:10]
+        + [plt.plot([], marker="", ls="")[0]]
+        + list(arrows_dict.values())[10:12]
+        # + [plt.plot([], marker="", ls="")[0]]
     )
+
     labels = (
-        ["Factors:", " ", " ", "Labels (Death in hospital):"]
-        + list(arrows_dict.keys())[0:3]
+        ["Factors:", " ", "Labels:"]
+        + list(arrows_dict.keys())[0:2]
         + ["Survival"]
-        + list(arrows_dict.keys())[3:6]
+        + list(arrows_dict.keys())[2:4]
         + ["Death"]
-        + list(arrows_dict.keys())[6:9]
+        + list(arrows_dict.keys())[4:6]
         + [""]
-        + list(arrows_dict.keys())[9:12]
+        + list(arrows_dict.keys())[6:8]
         + [""]
+        + list(arrows_dict.keys())[8:10]
+        + [""]
+        + list(arrows_dict.keys())[10:12]
+        # + [""]
     )
     leg = axi[2].legend(
         hatches,
         labels,
         loc="lower center",
-        bbox_to_anchor=(-1.29, 1.12),
+        bbox_to_anchor=(-0.1, 1.12),
         fontsize=7,
-        ncol=5,
+        ncol=7,
         markerscale=1,
         handlelength=1.5,
         columnspacing=0.8,
@@ -960,8 +978,8 @@ def test_between_all_3():
     )
     for (
         i, o), axi_i in zip(
-        enumerate(arrow_labels), [
-            ax21, ax22, ax23, ax24]):
+        enumerate(list(arrows_dict.keys())), [
+            ax21, ax22, ax23, ax24, ax25, ax26, ax27, ax28, ax29, ax210, ax211, ax212]):
         if i == 0:
             im = axi_i.scatter(
                 standard_embedding[:, 0],
@@ -990,20 +1008,32 @@ def test_between_all_3():
             "Disease": "Disease",
             "Avg. TISS score": "Avg. TISS",
             "APACHE3 score": "APACHE3",
-            "Cost/charges ratio": "Cost/charges",
+            "Cost/charges ratio": "Cost/ch.",
+            "Diabetes": "Diabetes",
+            "Dementia": "Dementia",
+            "ADL family": "ADL f.",
+            "ADL patient": "ADL p.",
+            "Bilirubin": "Bilirubin",
+            "Resuscitate order": "Resus. o.",
+            "Days in study": "Days study",
+            "DNR order day": "DNR"
         }
 
-        axi_i.set_title(names[o], size=7, pad=-14)
+        axi_i.set_title(names[o], size=4.5, pad=-14)
 
-    ax21.set_ylabel("t-SNE2", size=8)
-    ax23.set_xlabel("t-SNE1", size=8)
+    ax25.set_ylabel("t-SNE2", size=8)
+    ax210.set_xlabel("t-SNE1", size=8)
 
-    ax21.yaxis.set_label_coords(0, -0.1)
-    ax23.xaxis.set_label_coords(1.1, -0.04)
+    # ax25.yaxis.set_label_coords(0, -0.1)
+    # ax210.xaxis.set_label_coords(1.1, -0.04)
 
-    cbar = fig.colorbar(im, ax=[ax21, ax22, ax23, ax24], pad=0.03, aspect=40)
+    ax25.yaxis.set_label_coords(x=-0.025, y=0.5)
+    ax210.xaxis.set_label_coords(x=1.1, y=-0.07)
+
+    cbar = fig.colorbar(im, ax=[
+            ax21, ax22, ax23, ax24, ax25, ax26, ax27, ax28, ax29, ax210, ax211, ax212], pad=0.02, aspect=60)
     cbar.ax.tick_params(
-        labelsize=5, pad=0.2, length=0.8, grid_linewidth=0.1
+        labelsize=4.5, pad=0.2, length=0.8, grid_linewidth=0.08
     )  # labelrotation=90,
     cbar.outline.set_visible(False)
 
@@ -1879,4 +1909,4 @@ def test_local_hdbscan():
 
 
 test_between_all_3()
-test_local_hdbscan()
+# test_local_hdbscan()
